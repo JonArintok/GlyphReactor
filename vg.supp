@@ -1,0 +1,20 @@
+{
+	<insert_a_suppression_name_here>
+	Memcheck:Param
+	writev(vector[...])
+	obj:/lib/x86_64-linux-gnu/libc-2.23.so
+	obj:/usr/lib/x86_64-linux-gnu/libxcb.so.1.1.0
+	obj:/usr/lib/x86_64-linux-gnu/libxcb.so.1.1.0
+	fun:xcb_writev
+	fun:_XSend
+	fun:_XReply
+	fun:XInternAtom
+}
+{
+	<insert_a_suppression_name_here>
+	Memcheck:Leak
+	match-leak-kinds: definite
+	fun:malloc
+	fun:glXGetFBConfigs
+	fun:glXChooseFBConfig
+}

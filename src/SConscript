@@ -1,0 +1,11 @@
+flags = "-Wall -g -std=gnu11"
+env = Environment(CC = "gcc", CCFLAGS = flags)
+src = [
+	"main.c",
+	"oglTools.c",
+	"fileTools.c",
+	"misc.c",
+	"optionsAndErrors.c",
+	"timestamp.c"
+]
+env.Program("AntiGlyph", src, LIBS = ["GL", "GLEW", "SDL2", "m"])
