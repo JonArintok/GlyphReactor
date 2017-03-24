@@ -8,12 +8,11 @@
 #include <SDL2/SDL.h>
 
 #include "optionsAndErrors.h"
+#include "fileTools.h"
 #include "oglTools.h"
 #include "misc.h"
 #include "timestamp.h"
-#include "buf.h"
 #include "../img/texAtlas.h"
-#include "fileTools.h"
 
 
 typedef struct {float x; float y; float z;} scoord; // spacial coordinate
@@ -21,60 +20,22 @@ typedef struct {int16_t u; int16_t v;} tcoord;      // texture coordinate
 typedef struct {scoord s; tcoord t;} vert;         // textured vertex
 typedef uint32_t indx;
 
+#ifdef LOG_VERTEX_DATA_TO
 void printVert(vert v) {
-	printf("x: %7.2f  y: %7.2f  z: %7.2f   u: %5i  v: %5i\n",
+	fprintf(LOG_VERTEX_DATA_TO,
+		"x: %7.2f  y: %7.2f  z: %7.2f   u: %5i  v: %5i\n",
 		v.s.x, v.s.y, v.s.z, v.t.u, v.t.v
 	);
 }
 void printVerts(vert *v, uint32_t count) {
-	printf("%i verts\n", count);
+	fprintf(LOG_VERTEX_DATA_TO, "%i verts\n", count);
 	fr(i,count) {printf("%5i:  ", i); printVert(v[i]);}
 }
 void printIndxs(indx *in, uint32_t count) {
-	printf("%i indxs\n", count);
+	fprintf(LOG_VERTEX_DATA_TO, "%i indxs\n", count);
 	fr(i,count) {printf("%5i:  ", i); printf("%5i\n", in[i]);}
 }
-
-
-BufTypeHead(vert, vertBuf);
-BufTypeHead(indx, indxBuf);
-BufTypeHead(char, charBuf);
-BufType(vert, vertBuf);
-BufType(indx, indxBuf);
-BufType(char, charBuf);
-vertBuf verts;
-indxBuf indxs;
-charBuf charQueue;
-
-void buildTextGeom(const char *txtPath, scoord tlPos) {
-	charQueue = init_charBuf(getFileSize(txtPath));
-	verts     = init_vertBuf(charQueue.space*4);
-	indxs     = init_indxBuf(charQueue.space*6);
-	stringFromFile(txtPath, charQueue.data, charQueue.space);
-	{
-		vert tmpVert = {{0-texAtlGlyphsW/2, 0+texAtlGlyphsH/2, 0}, {texAtlGlyphsStartX, texAtlGlyphsStartY}};
-		push_vertBuf(&verts, tmpVert);
-	}
-	{
-		vert tmpVert = {{0+texAtlGlyphsW/2, 0+texAtlGlyphsH/2, 0}, {texAtlGlyphsEndX,   texAtlGlyphsStartY}};
-		push_vertBuf(&verts, tmpVert);
-	}
-	{
-		vert tmpVert = {{0-texAtlGlyphsW/2, 0-texAtlGlyphsH/2, 0}, {texAtlGlyphsStartX, texAtlGlyphsEndY}};
-		push_vertBuf(&verts, tmpVert);
-	}
-	{
-		vert tmpVert = {{0+texAtlGlyphsW/2, 0-texAtlGlyphsH/2, 0}, {texAtlGlyphsEndX,   texAtlGlyphsEndY}};
-  	push_vertBuf(&verts, tmpVert);
-	}
-	push_indxBuf(&indxs, 0); push_indxBuf(&indxs, 1); push_indxBuf(&indxs, 2);
-	push_indxBuf(&indxs, 1); push_indxBuf(&indxs, 3); push_indxBuf(&indxs, 2);
-}
-
-uint32_t charPos    = 0;
-uint32_t visCharBeg = 0;
-uint32_t visCharEnd = 0;
-
+#endif
 
 
 int main(int argc, char **argv) {
@@ -105,12 +66,39 @@ int main(int argc, char **argv) {
     }
   }
   //printf("OpenGL version: %s\n\n", glGetString(GL_VERSION));_glec
-	scoord TqTlPos = {0-videoSize[0]/2, videoSize[1]/1, 0};
-	buildTextGeom("testFile.txt", TqTlPos);
+	//scoord TqTlPos = {0-videoSize[0]/2, videoSize[1]/1, 0};
+	const char *txtPath = "testFile.txt";
+	uint32_t charCount = getFileSize(txtPath);
+	uint32_t vertCount = charCount*4;
+	uint32_t indxCount = charCount*6;
+	char chars[charCount];
+	vert verts[vertCount];
+	indx indxs[indxCount];
+	stringFromFile(txtPath, chars, charCount);
+	
+	fr(i,vertCount) {
+		verts[i].s.x = 0; verts[i].s.y = 0; verts[i].s.z = 0;
+		verts[i].t.u = 0; verts[i].t.v = 0;
+	}
+  
+	for (uint32_t e = 0, v = 0; e < indxCount; v += 4, e += 6) {
+    indxs[e  ] = v;
+    indxs[e+1] = v+1;
+    indxs[e+2] = v+2;
+    indxs[e+3] = v+1;
+    indxs[e+4] = v+3;
+    indxs[e+5] = v+2;
+	}
+	
 	#ifdef LOG_VERTEX_DATA_TO
-	printVerts(verts.data, verts.count);
-	printIndxs(indxs.data, indxs.count);
+	printVerts(verts, vertCount);
+	printIndxs(indxs, indxCount);
 	#endif
+	
+	//uint32_t charPos    = 0;
+	//uint32_t visCharBeg = 0;
+	//uint32_t visCharEnd = 0;
+	
   GLuint vao;
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -124,14 +112,14 @@ int main(int argc, char **argv) {
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);_glec
   glBufferData(
     GL_ARRAY_BUFFER,
-    verts.count*sizeof(vert),
-    verts.data,
+    vertCount*sizeof(vert),
+    verts,
     GL_STATIC_DRAW
   );_glec
   glBufferData(
     GL_ELEMENT_ARRAY_BUFFER,
-    indxs.count*sizeof(indx),
-    indxs.data,
+    indxCount*sizeof(indx),
+    indxs,
     GL_STATIC_DRAW
   );_glec
   GLuint shaderProgram = createShaderProgram(
@@ -167,7 +155,7 @@ int main(int argc, char **argv) {
   int curFrame = 0;
   bool running = true;
 	glClear(GL_COLOR_BUFFER_BIT);
-  glDrawElements(GL_TRIANGLES, indxs.count, GL_UNSIGNED_INT, 0);_glec
+  glDrawElements(GL_TRIANGLES, indxCount, GL_UNSIGNED_INT, 0);_glec
 	while (running) {
     ts_oldFrameStart = ts_newFrameStart;
     clock_gettime(CLOCK_MONOTONIC, &ts_newFrameStart);
@@ -199,7 +187,7 @@ int main(int argc, char **argv) {
     }
     if (redraw) {
 			glClear(GL_COLOR_BUFFER_BIT);
-      glDrawElements(GL_TRIANGLES, indxs.count, GL_UNSIGNED_INT, 0);_glec
+      glDrawElements(GL_TRIANGLES, indxCount, GL_UNSIGNED_INT, 0);_glec
       redraw = false;
     }
     #ifdef LOG_TIMING_TO
@@ -213,9 +201,6 @@ int main(int argc, char **argv) {
 		SDL_GL_SwapWindow(window);_sdlec
     curFrame++;
 	}
-	free_vertBuf(&verts);
-	free_indxBuf(&indxs);
-	free_charBuf(&charQueue);
 	SDL_GL_DeleteContext(GLcontext);_sdlec
 	SDL_Quit();_sdlec
 	return 0;
