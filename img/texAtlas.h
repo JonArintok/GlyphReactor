@@ -20,7 +20,7 @@
 
 // texel coordinates of top left corner of glyph
 #define texAtlGlyphPosX(glyphVal) \
-  (((glyphVal-texAtlGlyphsAsciiStart)%texAtlGlyphsRowCount)*texAtlGlyphW)
+  (((glyphVal-texAtlGlyphsAsciiStart)%texAtlGlyphsPerRow)*texAtlGlyphW)
 // end macro
 #define texAtlGlyphPosY(glyphVal) \
   (((glyphVal-texAtlGlyphsAsciiStart)/texAtlGlyphsPerRow)*texAtlGlyphH)

@@ -18,7 +18,7 @@
 typedef struct {float x; float y; float z;} scoord; // spacial coordinate
 typedef struct {int16_t u; int16_t v;} tcoord;      // texture coordinate
 typedef struct {scoord s; tcoord t;} vert;         // textured vertex
-typedef uint32_t indx;
+typedef uint16_t indx;
 
 #ifdef LOG_VERTEX_DATA_TO
 void printVert(vert v) {
@@ -38,9 +38,40 @@ void printIndxs(indx *in, uint32_t count) {
 #endif
 
 
+const char delim = ' ';
+uint32_t cleanTxtFile(
+	const char *txtPath,
+	char       *chars,
+	uint32_t    writeLimit
+) {
+	stringFromFile(txtPath, chars, writeLimit);
+	uint32_t readPos = 0;
+	uint32_t writPos = 0;
+	while(true) {
+		if (chars[readPos] == '\0') {
+			chars[writPos] = '\0';
+			break;
+		}
+		if (chars[readPos] < '!' || chars[readPos] > '~') {
+			readPos++;
+			if (chars[writPos-1] != delim) {
+				chars[writPos] = delim;
+				writPos++;
+			}
+			continue;
+		}
+		chars[writPos] = chars[readPos];
+		readPos++;
+		writPos++;
+		if (readPos > writeLimit) _SHOULD_NOT_BE_HERE_;
+	}
+	return writPos;
+}
+
+
 int main(int argc, char **argv) {
   int16_t videoSize[2] = {800, 600};
-  //int16_t halfVideoSize[2] = {videoSize[0]/2, videoSize[1]/2};
+  int16_t halfVideoSize[2] = {videoSize[0]/2, videoSize[1]/2};
 	SDL_Window    *window    = NULL;
 	SDL_GLContext  GLcontext = NULL;
 	SDL_Init(SDL_INIT_VIDEO);_sdlec
@@ -60,8 +91,8 @@ int main(int argc, char **argv) {
   glewExperimental = GL_TRUE;
   {
   	GLenum r = glewInit();//_glec
-		// flush GL_INVALID_ENUM error that I can't do anything about...
-		if (glGetError() == GL_INVALID_ENUM) {};
+		// flush GL_INVALID_ENUM persistent error...
+		if (glGetError() == GL_INVALID_ENUM) {}_glec
     if (r != GLEW_OK) {
       printf("GLEW error: %s\n", glewGetErrorString(r));
       return 1;
@@ -72,45 +103,44 @@ int main(int argc, char **argv) {
 	const char *txtPath = "testFile.txt";
 	const uint32_t fileCharCount = getFileSize(txtPath);
 	char chars[fileCharCount];
-	stringFromFile(txtPath, chars, fileCharCount);
-	const char delim = '\n';
-	uint32_t __charCount;
-	{
-		uint32_t readPos = 0;
-		uint32_t writPos = 0;
-		while(true) {
-			if (chars[readPos] == '\0') {
-				chars[writPos] = '\0';
-				break;
-			}
-			if (chars[readPos] < '!' || chars[readPos] > '~') {
-				readPos++;
-				if (chars[writPos-1] != delim) {
-					chars[writPos] = delim;
-					writPos++;
-				}
-				continue;
-			}
-			chars[writPos] = chars[readPos];
-			readPos++;
-			writPos++;
-			if (readPos > fileCharCount) _SHOULD_NOT_BE_HERE_;
-		}
-		__charCount = writPos;
-	}
-	puts(chars);
-	
-	const uint32_t charCount = __charCount;
+	const uint32_t charCount = cleanTxtFile(txtPath, chars, fileCharCount);
 	const uint32_t vertCount = charCount*4;
 	const uint32_t indxCount = charCount*6;
 	vert verts[vertCount];
 	indx indxs[indxCount];
 	
-	fr(i,vertCount) {
-		verts[i].s.x = 0; verts[i].s.y = 0; verts[i].s.z = 0;
-		verts[i].t.u = 0; verts[i].t.v = 0;
+	const scoord txtOrigin = {-halfVideoSize[0]/2, halfVideoSize[1]/2, 0};
+	for (
+		uint32_t cPos = 0, vPos = 0, row = 0, col = 0;
+		vPos < vertCount;
+		cPos++, vPos+=4
+	) {
+		verts[vPos  ].s.x = txtOrigin.x + col*texAtlGlyphW;
+		verts[vPos  ].s.y = txtOrigin.y - row*texAtlGlyphH;
+		verts[vPos  ].s.z = 0;
+		verts[vPos  ].t.u = texAtlGlyphPosX(chars[cPos]);
+		verts[vPos  ].t.v = texAtlGlyphPosY(chars[cPos]);
+		verts[vPos+1].s.x = txtOrigin.x + (col+1)*texAtlGlyphW;
+		verts[vPos+1].s.y = txtOrigin.y - row*texAtlGlyphH;
+		verts[vPos+1].s.z = 0;
+		verts[vPos+1].t.u = texAtlGlyphPosX(chars[cPos])+texAtlGlyphW;
+		verts[vPos+1].t.v = texAtlGlyphPosY(chars[cPos]);
+		verts[vPos+2].s.x = txtOrigin.x + col*texAtlGlyphW;
+		verts[vPos+2].s.y = txtOrigin.y - (row+1)*texAtlGlyphH;
+		verts[vPos+2].s.z = 0;
+		verts[vPos+2].t.u = texAtlGlyphPosX(chars[cPos]);
+		verts[vPos+2].t.v = texAtlGlyphPosY(chars[cPos])+texAtlGlyphH;
+		verts[vPos+3].s.x = txtOrigin.x + (col+1)*texAtlGlyphW;
+		verts[vPos+3].s.y = txtOrigin.y - (row+1)*texAtlGlyphH;
+		verts[vPos+3].s.z = 0;
+		verts[vPos+3].t.u = texAtlGlyphPosX(chars[cPos])+texAtlGlyphW;
+		verts[vPos+3].t.v = texAtlGlyphPosY(chars[cPos])+texAtlGlyphH;
+		col++;
+		if (chars[cPos] == delim) {
+			row++;
+			col = 0;
+		}
 	}
-  
 	for (uint32_t e = 0, v = 0; e < indxCount; v += 4, e += 6) {
     indxs[e  ] = v;
     indxs[e+1] = v+1;
@@ -165,9 +195,9 @@ int main(int argc, char **argv) {
   glEnableVertexAttribArray(attr_texCoord);_glec
   glVertexAttribPointer(attr_pos,      3, GL_FLOAT, GL_FALSE, 16, (const GLvoid*)  0);_glec
   glVertexAttribPointer(attr_texCoord, 2, GL_SHORT, GL_FALSE, 16, (const GLvoid*) 12);_glec
-  GLint unif_videoSize  = glGetUniformLocation(shaderProgram, "videoSize");
-  GLint unif_texAtlSize = glGetUniformLocation(shaderProgram, "texAtlSize");
-  glUniform2f(unif_videoSize, videoSize[0], videoSize[1]);
+  GLint unif_halfVideoSize = glGetUniformLocation(shaderProgram, "halfVideoSize");
+  GLint unif_texAtlSize    = glGetUniformLocation(shaderProgram, "texAtlSize");
+  glUniform2f(unif_halfVideoSize, halfVideoSize[0], halfVideoSize[1]);
   glUniform2f(unif_texAtlSize, texAtlW, texAtlH);
   /*GLuint tex = */texFromBmp(texAtlPath);
   glUniform1i(glGetUniformLocation(shaderProgram, "tex"), 0);
@@ -185,7 +215,7 @@ int main(int argc, char **argv) {
   int curFrame = 0;
   bool running = true;
 	glClear(GL_COLOR_BUFFER_BIT);
-  glDrawElements(GL_TRIANGLES, indxCount, GL_UNSIGNED_INT, 0);_glec
+  glDrawElements(GL_TRIANGLES, indxCount, GL_UNSIGNED_SHORT, 0);_glec
 	while (running) {
     ts_oldFrameStart = ts_newFrameStart;
     clock_gettime(CLOCK_MONOTONIC, &ts_newFrameStart);
@@ -217,7 +247,7 @@ int main(int argc, char **argv) {
     }
     if (redraw) {
 			glClear(GL_COLOR_BUFFER_BIT);
-      glDrawElements(GL_TRIANGLES, indxCount, GL_UNSIGNED_INT, 0);_glec
+      glDrawElements(GL_TRIANGLES, indxCount, GL_UNSIGNED_SHORT, 0);_glec
       redraw = false;
     }
     #ifdef LOG_TIMING_TO
