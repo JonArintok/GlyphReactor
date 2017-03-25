@@ -59,22 +59,52 @@ int main(int argc, char **argv) {
   SDL_GL_SetSwapInterval(1);_sdlec
   glewExperimental = GL_TRUE;
   {
-  	GLenum r = glewInit();_glec
+  	GLenum r = glewInit();//_glec
+		// flush GL_INVALID_ENUM error that I can't do anything about...
+		if (glGetError() == GL_INVALID_ENUM) {};
     if (r != GLEW_OK) {
       printf("GLEW error: %s\n", glewGetErrorString(r));
       return 1;
     }
   }
   //printf("OpenGL version: %s\n\n", glGetString(GL_VERSION));_glec
-	//scoord TqTlPos = {0-videoSize[0]/2, videoSize[1]/1, 0};
+	
 	const char *txtPath = "testFile.txt";
-	uint32_t charCount = getFileSize(txtPath);
-	uint32_t vertCount = charCount*4;
-	uint32_t indxCount = charCount*6;
-	char chars[charCount];
+	const uint32_t fileCharCount = getFileSize(txtPath);
+	char chars[fileCharCount];
+	stringFromFile(txtPath, chars, fileCharCount);
+	const char delim = '\n';
+	uint32_t __charCount;
+	{
+		uint32_t readPos = 0;
+		uint32_t writPos = 0;
+		while(true) {
+			if (chars[readPos] == '\0') {
+				chars[writPos] = '\0';
+				break;
+			}
+			if (chars[readPos] < '!' || chars[readPos] > '~') {
+				readPos++;
+				if (chars[writPos-1] != delim) {
+					chars[writPos] = delim;
+					writPos++;
+				}
+				continue;
+			}
+			chars[writPos] = chars[readPos];
+			readPos++;
+			writPos++;
+			if (readPos > fileCharCount) _SHOULD_NOT_BE_HERE_;
+		}
+		__charCount = writPos;
+	}
+	puts(chars);
+	
+	const uint32_t charCount = __charCount;
+	const uint32_t vertCount = charCount*4;
+	const uint32_t indxCount = charCount*6;
 	vert verts[vertCount];
 	indx indxs[indxCount];
-	stringFromFile(txtPath, chars, charCount);
 	
 	fr(i,vertCount) {
 		verts[i].s.x = 0; verts[i].s.y = 0; verts[i].s.z = 0;
