@@ -1,5 +1,5 @@
 
-AntiGlyph
+Glyph Reactor
 
 
 Words to be typed are read from a simple txt file,

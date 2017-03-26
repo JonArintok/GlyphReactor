@@ -1,5 +1,3 @@
-// Each glyph is 16 wide and 37 tall.
-// There are 3 rows, each 32 glyphs wide.
 // Origin is in top left corner
 
 #define texAtlPath "img/texAtlas.bmp"
