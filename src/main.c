@@ -17,7 +17,7 @@
 
 typedef struct {float x; float y; float z;} scoord; // spacial coordinate
 typedef struct {int16_t u; int16_t v;} tcoord;      // texture coordinate
-typedef struct {scoord s; tcoord t;} vert;         // textured vertex
+typedef struct {scoord s; tcoord t;} vert;          // textured vertex
 typedef uint16_t indx;
 
 #ifdef LOG_VERTEX_DATA_TO
@@ -101,17 +101,29 @@ int main(int argc, char **argv) {
   //printf("OpenGL version: %s\n\n", glGetString(GL_VERSION));_glec
 	
 	const char *txtPath = "testFile.txt";
+	const uint32_t chamCharCount = 5; // character widths between gun and word
 	const uint32_t fileCharCount = getFileSize(txtPath);
-	char chars[fileCharCount];
-	const uint32_t charCount = cleanTxtFile(txtPath, chars, fileCharCount);
+	char chars[fileCharCount+chamCharCount];
+	const uint32_t charCount = chamCharCount + cleanTxtFile(
+		txtPath,
+		chars+chamCharCount,
+		fileCharCount
+	);
 	const uint32_t vertCount = charCount*4;
 	const uint32_t indxCount = charCount*6;
 	vert verts[vertCount];
 	indx indxs[indxCount];
+	uint32_t visCharBeg = chamCharCount;
+	#define  visVertBeg (visCharBeg*4)
+	#define  visIndxBeg (visCharBeg*6)
+	uint32_t visCharEnd = charCount;
+	#define  visVertEnd (visCharEnd*4)
+	#define  visIndxEnd (visCharEnd*6)
+	#define  visIndxCount (visIndxEnd-visIndxBeg)
 	
 	const scoord txtOrigin = {-halfVideoSize[0]/2, halfVideoSize[1]/2, 0};
 	for (
-		uint32_t cPos = 0, vPos = 0, row = 0, col = 0;
+		uint32_t cPos = visCharBeg, vPos = visVertBeg, row = 0, col = 0;
 		vPos < vertCount;
 		cPos++, vPos+=4
 	) {
@@ -141,7 +153,11 @@ int main(int argc, char **argv) {
 			col = 0;
 		}
 	}
-	for (uint32_t e = 0, v = 0; e < indxCount; v += 4, e += 6) {
+	for (
+		uint32_t e = 0, v = 0;
+		e < indxCount;
+		v += 4, e += 6
+	) {
     indxs[e  ] = v;
     indxs[e+1] = v+1;
     indxs[e+2] = v+2;
@@ -155,9 +171,6 @@ int main(int argc, char **argv) {
 	printIndxs(indxs, indxCount);
 	#endif
 	
-	//uint32_t charPos    = 0;
-	//uint32_t visCharBeg = 0;
-	//uint32_t visCharEnd = 0;
 	
   GLuint vao;
   glEnable(GL_BLEND);
@@ -215,7 +228,12 @@ int main(int argc, char **argv) {
   int curFrame = 0;
   bool running = true;
 	glClear(GL_COLOR_BUFFER_BIT);
-  glDrawElements(GL_TRIANGLES, indxCount, GL_UNSIGNED_SHORT, 0);_glec
+  glDrawElements(
+		GL_TRIANGLES,
+		visIndxCount,
+		GL_UNSIGNED_SHORT,
+		(const GLvoid*)((uint64_t)visIndxBeg*sizeof(indx)) // this is so stupid
+	);_glec
 	while (running) {
     ts_oldFrameStart = ts_newFrameStart;
     clock_gettime(CLOCK_MONOTONIC, &ts_newFrameStart);
@@ -232,22 +250,36 @@ int main(int argc, char **argv) {
       switch (event.type) {
         case SDL_QUIT: running = false; break;
         case SDL_KEYDOWN:
-          printf("KEYDOWN:\n\tscancode: %s\n\tsymbol  : %s\n",
+					#ifdef LOG_EVENTS_TO
+          fprintf(LOG_EVENTS_TO,
+						"KEYDOWN:\n\tscancode: %s\n\tsymbol  : %s\n",
             SDL_GetScancodeName(event.key.keysym.scancode),
             SDL_GetKeyName(event.key.keysym.sym)
           );
+					#endif
+					visCharBeg++;
+					redraw = true;
+					if (visCharBeg >= visCharEnd) running = false;
           break;
         case SDL_KEYUP:
-          printf("KEYUP:\n\tscancode: %s\n\tsymbol  : %s\n",
+					#ifdef LOG_EVENTS_TO
+          fprintf(LOG_EVENTS_TO,
+						"KEYUP:\n\tscancode: %s\n\tsymbol  : %s\n",
             SDL_GetScancodeName(event.key.keysym.scancode),
             SDL_GetKeyName(event.key.keysym.sym)
           );
+					#endif
           break;
       }
     }
     if (redraw) {
 			glClear(GL_COLOR_BUFFER_BIT);
-      glDrawElements(GL_TRIANGLES, indxCount, GL_UNSIGNED_SHORT, 0);_glec
+      glDrawElements(
+				GL_TRIANGLES,
+				visIndxCount,
+				GL_UNSIGNED_SHORT,
+				(const GLvoid*)((uint64_t)visIndxBeg*sizeof(indx))
+			);_glec
       redraw = false;
     }
     #ifdef LOG_TIMING_TO
