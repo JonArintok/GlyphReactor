@@ -68,6 +68,12 @@ uint32_t cleanTxtFile(
 	return writPos;
 }
 
+//bool shiftIsDown(void) {
+//	const SDL_Keymod km = SDL_GetModState();
+//	return km&KMOD_LSHIFT || km&KMOD_RSHIFT || km&KMOD_CAPS;
+//}
+
+
 
 int main(int argc, char **argv) {
   int16_t videoSize[2] = {800, 600};
@@ -225,15 +231,18 @@ int main(int argc, char **argv) {
   timestamp ts_compTime = {0,0}, ts_now = {0,0};
   #endif
   clock_gettime(CLOCK_MONOTONIC, &ts_newFrameStart);
-  int curFrame = 0;
+	uint32_t stuckCharCount = 0;
+	uint32_t misBkspCount = 0;
+  uint32_t curFrame = 0;
   bool running = true;
 	glClear(GL_COLOR_BUFFER_BIT);
   glDrawElements(
 		GL_TRIANGLES,
 		visIndxCount,
 		GL_UNSIGNED_SHORT,
-		(const GLvoid*)((uint64_t)visIndxBeg*sizeof(indx)) // this is so stupid
+		(const GLvoid*)(visIndxBeg*sizeof(indx))
 	);_glec
+	SDL_StartTextInput();
 	while (running) {
     ts_oldFrameStart = ts_newFrameStart;
     clock_gettime(CLOCK_MONOTONIC, &ts_newFrameStart);
@@ -251,16 +260,69 @@ int main(int argc, char **argv) {
         case SDL_QUIT: running = false; break;
         case SDL_KEYDOWN:
 					#ifdef LOG_EVENTS_TO
-          fprintf(LOG_EVENTS_TO,
-						"KEYDOWN:\n\tscancode: %s\n\tsymbol  : %s\n",
+					fprintf(LOG_EVENTS_TO,
+						"KEYDOWN:\n\tscancode   : %s\n\tsymbol     : %s\n",
             SDL_GetScancodeName(event.key.keysym.scancode),
             SDL_GetKeyName(event.key.keysym.sym)
           );
 					#endif
-					visCharBeg++;
-					redraw = true;
-					if (visCharBeg >= visCharEnd) running = false;
+					if (event.key.keysym.sym == SDLK_BACKSPACE) {
+						if (stuckCharCount) {
+							stuckCharCount--;
+							visCharBeg++;
+							redraw = true;
+						}
+						else misBkspCount++;
+					}
+					break;
+				case SDL_TEXTINPUT: {
+					#ifdef LOG_EVENTS_TO
+					fprintf(LOG_EVENTS_TO, "text input event: %s\n", event.text.text);
+					#endif
+					const char charIn = event.text.text[0];
+					if (charIn == chars[visCharBeg] && !stuckCharCount) {
+						visCharBeg++;
+						redraw = true;
+					}
+					else {
+						visCharBeg--;
+						stuckCharCount++;
+						if (visCharBeg < 0 || visCharBeg >= visCharEnd) {
+							running = false;
+							goto exit;
+						}
+						redraw = true;
+						scoord tlCorn = verts[visVertBeg].s;
+						tlCorn.x -= texAtlGlyphW;
+						if (tlCorn.x < txtOrigin.x-texAtlGlyphW*chamCharCount) {
+							running = false;
+						}
+						else {
+							chars[visCharBeg] = charIn;
+							verts[visVertBeg  ].s.x = tlCorn.x;
+							verts[visVertBeg  ].s.y = tlCorn.y;
+							verts[visVertBeg  ].s.z = tlCorn.z;
+							verts[visVertBeg  ].t.u = texAtlGlyphPosX(charIn);
+							verts[visVertBeg  ].t.v = texAtlGlyphPosY(charIn);
+							verts[visVertBeg+1].s.x = tlCorn.x + texAtlGlyphW;
+							verts[visVertBeg+1].s.y = tlCorn.y;
+							verts[visVertBeg+1].s.z = tlCorn.z;
+							verts[visVertBeg+1].t.u = texAtlGlyphPosX(charIn)+texAtlGlyphW;
+							verts[visVertBeg+1].t.v = texAtlGlyphPosY(charIn);
+							verts[visVertBeg+2].s.x = tlCorn.x;
+							verts[visVertBeg+2].s.y = tlCorn.y - texAtlGlyphH;
+							verts[visVertBeg+2].s.z = tlCorn.z;
+							verts[visVertBeg+2].t.u = texAtlGlyphPosX(charIn);
+							verts[visVertBeg+2].t.v = texAtlGlyphPosY(charIn)+texAtlGlyphH;
+							verts[visVertBeg+3].s.x = tlCorn.x + texAtlGlyphW;
+							verts[visVertBeg+3].s.y = tlCorn.y - texAtlGlyphH;
+							verts[visVertBeg+3].s.z = tlCorn.z;
+							verts[visVertBeg+3].t.u = texAtlGlyphPosX(charIn)+texAtlGlyphW;
+							verts[visVertBeg+3].t.v = texAtlGlyphPosY(charIn)+texAtlGlyphH;
+						}
+					}
           break;
+				}
         case SDL_KEYUP:
 					#ifdef LOG_EVENTS_TO
           fprintf(LOG_EVENTS_TO,
@@ -272,13 +334,14 @@ int main(int argc, char **argv) {
           break;
       }
     }
+		if (!running) break;
     if (redraw) {
 			glClear(GL_COLOR_BUFFER_BIT);
       glDrawElements(
 				GL_TRIANGLES,
 				visIndxCount,
 				GL_UNSIGNED_SHORT,
-				(const GLvoid*)((uint64_t)visIndxBeg*sizeof(indx))
+				(const GLvoid*)(visIndxBeg*sizeof(indx))
 			);_glec
       redraw = false;
     }
@@ -293,6 +356,8 @@ int main(int argc, char **argv) {
 		SDL_GL_SwapWindow(window);_sdlec
     curFrame++;
 	}
+	exit:
+	SDL_StopTextInput();
 	SDL_GL_DeleteContext(GLcontext);_sdlec
 	SDL_Quit();_sdlec
 	return 0;

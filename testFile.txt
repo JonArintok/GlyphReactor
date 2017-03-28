@@ -1,4 +1,4 @@
-Hello, Glyph Reactor!
+hello, Glyph Reactor!
 In
 the
 spaceship,
