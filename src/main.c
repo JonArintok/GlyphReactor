@@ -300,8 +300,8 @@ int main(int argc, char **argv) {
 							goto exit;
 						}
 						redraw = true;
-						scoord tlCorn = verts[visVertBeg_].s;
-						//tlCorn.x -= texAtlGlyphW;
+						scoord tlCorn = verts[visVertBeg_+4].s;
+						tlCorn.x -= texAtlGlyphW;
 						if (tlCorn.x <= txtOrigin.x-texAtlGlyphW*chamCharCount) {
 							running = false;
 						}
