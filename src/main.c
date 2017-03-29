@@ -36,6 +36,28 @@ void printIndxs(indx *in, uint32_t count) {
 	fr(i,count) {printf("%5i:  ", i); printf("%5i\n", in[i]);}
 }
 #endif
+void setCharVerts(vert *v, const scoord tlCorn, const char charIn) {
+	v[0].s.x = tlCorn.x;
+	v[0].s.y = tlCorn.y;
+	v[0].s.z = tlCorn.z;
+	v[0].t.u = texAtlGlyphPosX(charIn);
+	v[0].t.v = texAtlGlyphPosY(charIn);
+	v[1].s.x = tlCorn.x + texAtlGlyphW;
+	v[1].s.y = tlCorn.y;
+	v[1].s.z = tlCorn.z;
+	v[1].t.u = texAtlGlyphPosX(charIn)+texAtlGlyphW;
+	v[1].t.v = texAtlGlyphPosY(charIn);
+	v[2].s.x = tlCorn.x;
+	v[2].s.y = tlCorn.y - texAtlGlyphH;
+	v[2].s.z = tlCorn.z;
+	v[2].t.u = texAtlGlyphPosX(charIn);
+	v[2].t.v = texAtlGlyphPosY(charIn)+texAtlGlyphH;
+	v[3].s.x = tlCorn.x + texAtlGlyphW;
+	v[3].s.y = tlCorn.y - texAtlGlyphH;
+	v[3].s.z = tlCorn.z;
+	v[3].t.u = texAtlGlyphPosX(charIn)+texAtlGlyphW;
+	v[3].t.v = texAtlGlyphPosY(charIn)+texAtlGlyphH;
+}
 
 
 const char delim = ' ';
@@ -120,39 +142,25 @@ int main(int argc, char **argv) {
 	vert verts[vertCount];
 	indx indxs[indxCount];
 	uint32_t visCharBeg = chamCharCount;
-	#define  visVertBeg (visCharBeg*4)
-	#define  visIndxBeg (visCharBeg*6)
+	#define  visVertBeg_ (visCharBeg*4)
+	#define  visIndxBeg_ (visCharBeg*6)
 	uint32_t visCharEnd = charCount;
-	#define  visVertEnd (visCharEnd*4)
-	#define  visIndxEnd (visCharEnd*6)
-	#define  visIndxCount (visIndxEnd-visIndxBeg)
+	#define  visVertEnd_ (visCharEnd*4)
+	#define  visIndxEnd_ (visCharEnd*6)
+	#define  visIndxCount_ (visIndxEnd_-visIndxBeg_)
 	
 	const scoord txtOrigin = {-halfVideoSize[0]/2, halfVideoSize[1]/2, 0};
 	for (
-		uint32_t cPos = visCharBeg, vPos = visVertBeg, row = 0, col = 0;
+		uint32_t cPos = visCharBeg, vPos = visVertBeg_, row = 0, col = 0;
 		vPos < vertCount;
 		cPos++, vPos+=4
 	) {
-		verts[vPos  ].s.x = txtOrigin.x + col*texAtlGlyphW;
-		verts[vPos  ].s.y = txtOrigin.y - row*texAtlGlyphH;
-		verts[vPos  ].s.z = 0;
-		verts[vPos  ].t.u = texAtlGlyphPosX(chars[cPos]);
-		verts[vPos  ].t.v = texAtlGlyphPosY(chars[cPos]);
-		verts[vPos+1].s.x = txtOrigin.x + (col+1)*texAtlGlyphW;
-		verts[vPos+1].s.y = txtOrigin.y - row*texAtlGlyphH;
-		verts[vPos+1].s.z = 0;
-		verts[vPos+1].t.u = texAtlGlyphPosX(chars[cPos])+texAtlGlyphW;
-		verts[vPos+1].t.v = texAtlGlyphPosY(chars[cPos]);
-		verts[vPos+2].s.x = txtOrigin.x + col*texAtlGlyphW;
-		verts[vPos+2].s.y = txtOrigin.y - (row+1)*texAtlGlyphH;
-		verts[vPos+2].s.z = 0;
-		verts[vPos+2].t.u = texAtlGlyphPosX(chars[cPos]);
-		verts[vPos+2].t.v = texAtlGlyphPosY(chars[cPos])+texAtlGlyphH;
-		verts[vPos+3].s.x = txtOrigin.x + (col+1)*texAtlGlyphW;
-		verts[vPos+3].s.y = txtOrigin.y - (row+1)*texAtlGlyphH;
-		verts[vPos+3].s.z = 0;
-		verts[vPos+3].t.u = texAtlGlyphPosX(chars[cPos])+texAtlGlyphW;
-		verts[vPos+3].t.v = texAtlGlyphPosY(chars[cPos])+texAtlGlyphH;
+		const scoord tlCorn = {
+			txtOrigin.x + col*texAtlGlyphW,
+			txtOrigin.y - row*texAtlGlyphH,
+			0
+		};
+		setCharVerts(&verts[vPos], tlCorn, chars[cPos]);
 		col++;
 		if (chars[cPos] == delim) {
 			row++;
@@ -238,9 +246,9 @@ int main(int argc, char **argv) {
 	glClear(GL_COLOR_BUFFER_BIT);
   glDrawElements(
 		GL_TRIANGLES,
-		visIndxCount,
+		visIndxCount_,
 		GL_UNSIGNED_SHORT,
-		(const GLvoid*)(visIndxBeg*sizeof(indx))
+		(const GLvoid*)(visIndxBeg_*sizeof(indx))
 	);_glec
 	SDL_StartTextInput();
 	while (running) {
@@ -292,33 +300,20 @@ int main(int argc, char **argv) {
 							goto exit;
 						}
 						redraw = true;
-						scoord tlCorn = verts[visVertBeg].s;
-						tlCorn.x -= texAtlGlyphW;
-						if (tlCorn.x < txtOrigin.x-texAtlGlyphW*chamCharCount) {
+						scoord tlCorn = verts[visVertBeg_].s;
+						//tlCorn.x -= texAtlGlyphW;
+						if (tlCorn.x <= txtOrigin.x-texAtlGlyphW*chamCharCount) {
 							running = false;
 						}
 						else {
 							chars[visCharBeg] = charIn;
-							verts[visVertBeg  ].s.x = tlCorn.x;
-							verts[visVertBeg  ].s.y = tlCorn.y;
-							verts[visVertBeg  ].s.z = tlCorn.z;
-							verts[visVertBeg  ].t.u = texAtlGlyphPosX(charIn);
-							verts[visVertBeg  ].t.v = texAtlGlyphPosY(charIn);
-							verts[visVertBeg+1].s.x = tlCorn.x + texAtlGlyphW;
-							verts[visVertBeg+1].s.y = tlCorn.y;
-							verts[visVertBeg+1].s.z = tlCorn.z;
-							verts[visVertBeg+1].t.u = texAtlGlyphPosX(charIn)+texAtlGlyphW;
-							verts[visVertBeg+1].t.v = texAtlGlyphPosY(charIn);
-							verts[visVertBeg+2].s.x = tlCorn.x;
-							verts[visVertBeg+2].s.y = tlCorn.y - texAtlGlyphH;
-							verts[visVertBeg+2].s.z = tlCorn.z;
-							verts[visVertBeg+2].t.u = texAtlGlyphPosX(charIn);
-							verts[visVertBeg+2].t.v = texAtlGlyphPosY(charIn)+texAtlGlyphH;
-							verts[visVertBeg+3].s.x = tlCorn.x + texAtlGlyphW;
-							verts[visVertBeg+3].s.y = tlCorn.y - texAtlGlyphH;
-							verts[visVertBeg+3].s.z = tlCorn.z;
-							verts[visVertBeg+3].t.u = texAtlGlyphPosX(charIn)+texAtlGlyphW;
-							verts[visVertBeg+3].t.v = texAtlGlyphPosY(charIn)+texAtlGlyphH;
+							setCharVerts(&verts[visVertBeg_], tlCorn, charIn);
+							glBufferSubData(
+								GL_ARRAY_BUFFER,                    // GLenum        target
+								visVertBeg_*sizeof(vert),           // GLintptr      offset​
+								4*sizeof(vert),                     // GLsizeiptr    size​
+								(const GLvoid*)&verts[visVertBeg_]  // const GLvoid *data
+							);
 						}
 					}
           break;
@@ -339,9 +334,9 @@ int main(int argc, char **argv) {
 			glClear(GL_COLOR_BUFFER_BIT);
       glDrawElements(
 				GL_TRIANGLES,
-				visIndxCount,
+				visIndxCount_,
 				GL_UNSIGNED_SHORT,
-				(const GLvoid*)(visIndxBeg*sizeof(indx))
+				(const GLvoid*)(visIndxBeg_*sizeof(indx))
 			);_glec
       redraw = false;
     }
