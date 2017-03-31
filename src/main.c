@@ -58,6 +58,41 @@ void setCharVerts(vert *v, const scoord tlCorn, const char charIn) {
 	v[3].t.u = texAtlGlyphPosX(charIn)+texAtlGlyphW;
 	v[3].t.v = texAtlGlyphPosY(charIn)+texAtlGlyphH;
 }
+#define _identMat_ 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1
+void setIdentMat(float mat[16]) {
+	mat[ 0] = 1; mat[ 1] = 0; mat[ 2] = 0; mat[ 3] = 0;
+	mat[ 4] = 0; mat[ 5] = 1; mat[ 6] = 0; mat[ 7] = 0;
+	mat[ 8] = 0; mat[ 9] = 0; mat[10] = 1; mat[11] = 0;
+	mat[12] = 0; mat[13] = 0; mat[14] = 0; mat[15] = 1;
+};
+void setScaleMat(float mat[16], float sx, float sy, float sz) {
+	mat[ 0] *= sx;
+	mat[ 5] *= sy;
+	mat[10] *= sz;
+}
+void setTransMat(float mat[16], float sx, float sy, float sz) {
+	mat[ 3] += sx;
+	mat[ 7] += sy;
+	mat[11] += sz;
+}
+void mulMat(float l[16], const float r[16]) {
+	l[ 0] = l[ 0]*r[ 0] + l[ 1]*r[ 4] + l[ 2]*r[ 8] + l[ 3]*r[12];
+	l[ 1] = l[ 0]*r[ 1] + l[ 1]*r[ 5] + l[ 2]*r[ 9] + l[ 3]*r[13];
+	l[ 2] = l[ 0]*r[ 2] + l[ 1]*r[ 6] + l[ 2]*r[10] + l[ 3]*r[14];
+	l[ 3] = l[ 0]*r[ 3] + l[ 1]*r[ 7] + l[ 2]*r[11] + l[ 3]*r[15];
+	l[ 4] = l[ 4]*r[ 0] + l[ 5]*r[ 4] + l[ 6]*r[ 8] + l[ 7]*r[12];
+	l[ 5] = l[ 4]*r[ 1] + l[ 5]*r[ 5] + l[ 6]*r[ 9] + l[ 7]*r[13];
+	l[ 6] = l[ 4]*r[ 2] + l[ 5]*r[ 6] + l[ 6]*r[10] + l[ 7]*r[14];
+	l[ 7] = l[ 4]*r[ 3] + l[ 5]*r[ 7] + l[ 6]*r[11] + l[ 7]*r[15];
+	l[ 8] = l[ 8]*r[ 0] + l[ 9]*r[ 4] + l[10]*r[ 8] + l[11]*r[12];
+	l[ 9] = l[ 8]*r[ 1] + l[ 9]*r[ 5] + l[10]*r[ 9] + l[11]*r[13];
+	l[10] = l[ 8]*r[ 2] + l[ 9]*r[ 6] + l[10]*r[10] + l[11]*r[14];
+	l[11] = l[ 8]*r[ 3] + l[ 9]*r[ 7] + l[10]*r[11] + l[11]*r[15];
+	l[12] = l[12]*r[ 0] + l[13]*r[ 4] + l[14]*r[ 8] + l[15]*r[12];
+	l[13] = l[12]*r[ 1] + l[13]*r[ 5] + l[14]*r[ 9] + l[15]*r[13];
+	l[14] = l[12]*r[ 2] + l[13]*r[ 6] + l[14]*r[10] + l[15]*r[14];
+	l[15] = l[12]*r[ 3] + l[13]*r[ 7] + l[14]*r[11] + l[15]*r[15];
+}
 
 
 const char delim = ' ';
@@ -156,7 +191,7 @@ int main(int argc, char **argv) {
 		const scoord tlCorn = {
 			txtOrigin.x + col*texAtlGlyphW,
 			txtOrigin.y - row*texAtlGlyphH,
-			0
+			1
 		};
 		setCharVerts(&verts[vPos], tlCorn, chars[cPos]);
 		col++;
@@ -181,12 +216,15 @@ int main(int argc, char **argv) {
 	printVerts(verts, vertCount);
 	printIndxs(indxs, indxCount);
 	#endif
-	float transform[16] = {
-		2, 0, 0, 0,
-		0, 2, 0, 0,
-		0, 0, 2, 0,
-		0, 0, 0, 1
-	};
+	uint32_t curWord = 0;
+	uint32_t frameWhenWordDropped = 0;
+	#define wordDropEnvCount 128
+	float wordDropEnv[wordDropEnvCount];
+	fr(i,wordDropEnvCount) {
+		wordDropEnv[i] = (float)texAtlGlyphH*((float)i/(float)wordDropEnvCount);
+	}
+	float transform[16] = {_identMat_};
+	setScaleMat(transform, 1.0/halfVideoSize[0], 1.0/halfVideoSize[1], 1.0);
 	
   GLuint vao;
   glEnable(GL_BLEND);
@@ -224,12 +262,10 @@ int main(int argc, char **argv) {
   glEnableVertexAttribArray(attr_texCoord);_glec
   glVertexAttribPointer(attr_pos,      3, GL_FLOAT, GL_FALSE, 16, (const GLvoid*)  0);_glec
   glVertexAttribPointer(attr_texCoord, 2, GL_SHORT, GL_FALSE, 16, (const GLvoid*) 12);_glec
-  GLint unif_halfVideoSize = glGetUniformLocation(shaderProgram, "halfVideoSize");
 	GLint unif_texAtlSize    = glGetUniformLocation(shaderProgram, "texAtlSize");
   GLint unif_transform     = glGetUniformLocation(shaderProgram, "transform");
-  glUniform2f(unif_halfVideoSize, halfVideoSize[0], halfVideoSize[1]);
   glUniform2f(unif_texAtlSize, texAtlW, texAtlH);
-	glUniformMatrix4fv(unif_transform, 1, 0, transform);
+	glUniformMatrix4fv(unif_transform, 1, 1, transform);
 	/*GLuint tex = */texFromBmp(texAtlPath);
   glUniform1i(glGetUniformLocation(shaderProgram, "tex"), 0);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);_glec
@@ -293,6 +329,10 @@ int main(int argc, char **argv) {
 					#endif
 					const char charIn = event.text.text[0];
 					if (charIn == chars[visCharBeg] && !stuckCharCount) {
+						if (charIn == delim) {
+							curWord++;
+							frameWhenWordDropped = curFrame;
+						}
 						visCharBeg++;
 						redraw = true;
 					}
@@ -301,7 +341,7 @@ int main(int argc, char **argv) {
 						stuckCharCount++;
 						if (visCharBeg < 0 || visCharBeg >= visCharEnd) {
 							running = false;
-							goto exit;
+							break;
 						}
 						redraw = true;
 						scoord tlCorn = verts[visVertBeg_+4].s;
@@ -334,6 +374,20 @@ int main(int argc, char **argv) {
       }
     }
 		if (!running) break;
+		if (wordDropEnvCount > curFrame-frameWhenWordDropped) {
+			float easing[16] = {_identMat_};
+			setScaleMat(easing, 1.0/halfVideoSize[0], 1.0/halfVideoSize[1], 1.0);
+			float transMat[16] = {_identMat_};
+			setTransMat(
+				transMat,
+				0,
+				curWord*texAtlGlyphH + wordDropEnv[curFrame-frameWhenWordDropped],
+				0
+			);
+			mulMat(easing, transMat);
+			glUniformMatrix4fv(unif_transform, 1, 1, easing);;
+			redraw = true;
+		}
     if (redraw) {
 			glClear(GL_COLOR_BUFFER_BIT);
       glDrawElements(
@@ -355,7 +409,6 @@ int main(int argc, char **argv) {
 		SDL_GL_SwapWindow(window);_sdlec
     curFrame++;
 	}
-	exit:
 	SDL_StopTextInput();
 	SDL_GL_DeleteContext(GLcontext);_sdlec
 	SDL_Quit();_sdlec
