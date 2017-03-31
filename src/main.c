@@ -127,7 +127,6 @@ int main(int argc, char **argv) {
     }
   }
   //printf("OpenGL version: %s\n\n", glGetString(GL_VERSION));_glec
-	
 	const char *txtPath = "testFile.txt";
 	const uint32_t chamCharCount = 5; // character widths between gun and word
 	const uint32_t fileCharCount = getFileSize(txtPath);
@@ -148,7 +147,6 @@ int main(int argc, char **argv) {
 	#define  visVertEnd_ (visCharEnd*4)
 	#define  visIndxEnd_ (visCharEnd*6)
 	#define  visIndxCount_ (visIndxEnd_-visIndxBeg_)
-	
 	const scoord txtOrigin = {-halfVideoSize[0]/2, halfVideoSize[1]/2, 0};
 	for (
 		uint32_t cPos = visCharBeg, vPos = visVertBeg_, row = 0, col = 0;
@@ -179,12 +177,16 @@ int main(int argc, char **argv) {
     indxs[e+4] = v+3;
     indxs[e+5] = v+2;
 	}
-	
 	#ifdef LOG_VERTEX_DATA_TO
 	printVerts(verts, vertCount);
 	printIndxs(indxs, indxCount);
 	#endif
-	
+	float transform[16] = {
+		2, 0, 0, 0,
+		0, 2, 0, 0,
+		0, 0, 2, 0,
+		0, 0, 0, 1
+	};
 	
   GLuint vao;
   glEnable(GL_BLEND);
@@ -223,10 +225,12 @@ int main(int argc, char **argv) {
   glVertexAttribPointer(attr_pos,      3, GL_FLOAT, GL_FALSE, 16, (const GLvoid*)  0);_glec
   glVertexAttribPointer(attr_texCoord, 2, GL_SHORT, GL_FALSE, 16, (const GLvoid*) 12);_glec
   GLint unif_halfVideoSize = glGetUniformLocation(shaderProgram, "halfVideoSize");
-  GLint unif_texAtlSize    = glGetUniformLocation(shaderProgram, "texAtlSize");
+	GLint unif_texAtlSize    = glGetUniformLocation(shaderProgram, "texAtlSize");
+  GLint unif_transform     = glGetUniformLocation(shaderProgram, "transform");
   glUniform2f(unif_halfVideoSize, halfVideoSize[0], halfVideoSize[1]);
   glUniform2f(unif_texAtlSize, texAtlW, texAtlH);
-  /*GLuint tex = */texFromBmp(texAtlPath);
+	glUniformMatrix4fv(unif_transform, 1, 0, transform);
+	/*GLuint tex = */texFromBmp(texAtlPath);
   glUniform1i(glGetUniformLocation(shaderProgram, "tex"), 0);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);_glec
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);_glec
