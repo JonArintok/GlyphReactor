@@ -101,11 +101,11 @@ uint32_t cleanTxtFile(
 	char       *chars,
 	uint32_t    writeLimit
 ) {
-	stringFromFile(txtPath, chars, writeLimit);
+	uint32_t readLimit = stringFromFile(txtPath, chars, writeLimit);
 	uint32_t readPos = 0;
 	uint32_t writPos = 0;
 	while(true) {
-		if (chars[readPos] == '\0') {
+		if (chars[readPos] == '\0' || readPos > readLimit) {
 			chars[writPos] = '\0';
 			break;
 		}
@@ -124,12 +124,6 @@ uint32_t cleanTxtFile(
 	}
 	return writPos;
 }
-
-//bool shiftIsDown(void) {
-//	const SDL_Keymod km = SDL_GetModState();
-//	return km&KMOD_LSHIFT || km&KMOD_RSHIFT || km&KMOD_CAPS;
-//}
-
 
 
 int main(int argc, char **argv) {
@@ -154,7 +148,7 @@ int main(int argc, char **argv) {
   glewExperimental = GL_TRUE;
   {
   	GLenum r = glewInit();//_glec
-		// flush GL_INVALID_ENUM persistent error...
+		// flush persistent GL_INVALID_ENUM error...
 		if (glGetError() == GL_INVALID_ENUM) {}_glec
     if (r != GLEW_OK) {
       printf("GLEW error: %s\n", glewGetErrorString(r));
@@ -218,11 +212,25 @@ int main(int argc, char **argv) {
 	#endif
 	uint32_t curWord = 0;
 	uint32_t frameWhenWordDropped = 0;
-	#define wordDropEnvCount 128
+	#define wordDropEnvCount 64
 	float wordDropEnv[wordDropEnvCount];
-	fr(i,wordDropEnvCount) {
-		wordDropEnv[i] = (float)texAtlGlyphH*((float)i/(float)wordDropEnvCount);
+	wordDropEnv[0] = texAtlGlyphH;
+	{
+		float vel = 0.8, accel = 0.12;
+		const float bounce = -0.5;
+		for (int i = 1; i < wordDropEnvCount; i++) {
+			float height = wordDropEnv[i-1];
+			height -= vel;
+			if (height < 0) {
+				height *= -1;
+				vel *= bounce;
+			}
+			vel += accel;
+			//printf("%3i: vel: %9.6f\n", i, vel);
+			wordDropEnv[i] = height;
+		}
 	}
+	wordDropEnv[wordDropEnvCount-1] = 0;
 	float transform[16] = {_identMat_};
 	setScaleMat(transform, 1.0/halfVideoSize[0], 1.0/halfVideoSize[1], 1.0);
 	
@@ -381,7 +389,7 @@ int main(int argc, char **argv) {
 			setTransMat(
 				transMat,
 				0,
-				curWord*texAtlGlyphH + wordDropEnv[curFrame-frameWhenWordDropped],
+				curWord*texAtlGlyphH - wordDropEnv[curFrame-frameWhenWordDropped],
 				0
 			);
 			mulMat(easing, transMat);
