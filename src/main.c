@@ -143,7 +143,8 @@ int main(int argc, char **argv) {
 		SDL_WINDOWPOS_UNDEFINED,   //int         y,
 		videoW,                    //int         w,
 		videoH,                    //int         h,
-		SDL_WINDOW_OPENGL          //Uint32      flags
+		SDL_WINDOW_OPENGL |        //Uint32      flags
+		SDL_WINDOW_RESIZABLE
 	);_sdlec
 	GLcontext = SDL_GL_CreateContext(window);_sdlec
   SDL_GL_SetSwapInterval(1);_sdlec
@@ -316,6 +317,23 @@ int main(int argc, char **argv) {
     while (SDL_PollEvent(&event)) {
       switch (event.type) {
         case SDL_QUIT: running = false; break;
+				case SDL_WINDOWEVENT:
+					switch (event.window.event) {
+						case SDL_WINDOWEVENT_RESIZED:
+							#ifdef LOG_EVENTS_TO
+							fprintf(LOG_EVENTS_TO,
+								"Window %d resized to %dx%d\n",
+                event.window.windowID,
+								event.window.data1,
+								event.window.data2
+							);
+							#endif
+							videoW = event.window.data1;
+							videoW = event.window.data2;
+							redraw = true;
+            break;
+					}
+					break;
         case SDL_KEYDOWN:
 					#ifdef LOG_EVENTS_TO
 					fprintf(LOG_EVENTS_TO,
