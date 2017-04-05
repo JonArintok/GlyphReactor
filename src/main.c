@@ -127,8 +127,10 @@ uint32_t cleanTxtFile(
 
 
 int main(int argc, char **argv) {
-  int16_t videoSize[2] = {800, 600};
-  int16_t halfVideoSize[2] = {videoSize[0]/2, videoSize[1]/2};
+	int16_t videoW = 800;
+  int16_t videoH = 600;
+	#define halfVideoW_ (videoW/2)
+  #define halfVideoH_ (videoH/2)
 	SDL_Window    *window    = NULL;
 	SDL_GLContext  GLcontext = NULL;
 	SDL_Init(SDL_INIT_VIDEO);_sdlec
@@ -139,8 +141,8 @@ int main(int argc, char **argv) {
 		"GlyphReactor",            //const char* title,
 		SDL_WINDOWPOS_UNDEFINED,   //int         x,
 		SDL_WINDOWPOS_UNDEFINED,   //int         y,
-		videoSize[0],              //int         w,
-		videoSize[1],              //int         h,
+		videoW,                    //int         w,
+		videoH,                    //int         h,
 		SDL_WINDOW_OPENGL          //Uint32      flags
 	);_sdlec
 	GLcontext = SDL_GL_CreateContext(window);_sdlec
@@ -176,7 +178,7 @@ int main(int argc, char **argv) {
 	#define  visVertEnd_ (visCharEnd*4)
 	#define  visIndxEnd_ (visCharEnd*6)
 	#define  visIndxCount_ (visIndxEnd_-visIndxBeg_)
-	const scoord txtOrigin = {-halfVideoSize[0]/2, halfVideoSize[1]/2, 0};
+	const scoord txtOrigin = {-halfVideoW_/2, halfVideoH_/2, 0};
 	for (
 		uint32_t cPos = visCharBeg, vPos = visVertBeg_, row = 0, col = 0;
 		vPos < vertCount;
@@ -232,7 +234,7 @@ int main(int argc, char **argv) {
 	}
 	wordDropEnv[wordDropEnvCount-1] = 0;
 	float transform[16] = {_identMat_};
-	setScaleMat(transform, 1.0/halfVideoSize[0], 1.0/halfVideoSize[1], 1.0);
+	setScaleMat(transform, 1.0/halfVideoW_, 1.0/halfVideoH_, 1.0);
 	
   GLuint vao;
   glEnable(GL_BLEND);
@@ -384,7 +386,7 @@ int main(int argc, char **argv) {
 		if (!running) break;
 		if (wordDropEnvCount > curFrame-frameWhenWordDropped) {
 			float easing[16] = {_identMat_};
-			setScaleMat(easing, 1.0/halfVideoSize[0], 1.0/halfVideoSize[1], 1.0);
+			setScaleMat(easing, 1.0/halfVideoW_, 1.0/halfVideoH_, 1.0);
 			float transMat[16] = {_identMat_};
 			setTransMat(
 				transMat,

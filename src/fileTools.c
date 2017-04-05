@@ -19,12 +19,10 @@ int stringFromFile(const char *restrict path, char *dest, uint32_t maxWrite) {
   int c, i = 0;
   for (; i < maxWrite; i++) {
     c = fgetc(fp);
-    if (c == EOF) {
-      dest[i] = '\0';
-      break;
-    }
+		if (c == EOF) break;
     dest[i] = c;
   }
+	dest[i] = '\0';
   fclose(fp);
   return i;
 }
