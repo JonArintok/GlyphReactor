@@ -274,8 +274,8 @@ int main(int argc, char **argv) {
   glEnableVertexAttribArray(attr_texCoord);_glec
   glVertexAttribPointer(attr_pos,      3, GL_FLOAT, GL_FALSE, 16, (const GLvoid*)  0);_glec
   glVertexAttribPointer(attr_texCoord, 2, GL_SHORT, GL_FALSE, 16, (const GLvoid*) 12);_glec
-	GLint unif_texAtlSize    = glGetUniformLocation(shaderProgram, "texAtlSize");
-  GLint unif_transform     = glGetUniformLocation(shaderProgram, "transform");
+	GLint unif_texAtlSize = glGetUniformLocation(shaderProgram, "texAtlSize");
+  GLint unif_transform  = glGetUniformLocation(shaderProgram, "transform");
   glUniform2f(unif_texAtlSize, texAtlW, texAtlH);
 	/*GLuint tex = */texFromBmp(texAtlPath);
   glUniform1i(glGetUniformLocation(shaderProgram, "tex"), 0);
@@ -369,7 +369,7 @@ int main(int argc, char **argv) {
 						redraw = true;
 						scoord tlCorn = verts[visVertBeg_+4].s;
 						tlCorn.x -= texAtlGlyphW;
-						if (tlCorn.x <=  -texAtlGlyphW*chamCharCount) {
+						if (tlCorn.x <=  0.0 - texAtlGlyphW*chamCharCount) {
 							running = false;
 						}
 						else {
