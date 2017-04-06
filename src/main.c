@@ -29,11 +29,11 @@ void printVert(vert v) {
 }
 void printVerts(vert *v, uint32_t count) {
 	fprintf(LOG_VERTEX_DATA_TO, "%i verts\n", count);
-	fr(i,count) {printf("%5i:  ", i); printVert(v[i]);}
+	fr(i,count) {printf("%5i:  ", i); fflush(stdout); printVert(v[i]);}
 }
 void printIndxs(indx *in, uint32_t count) {
 	fprintf(LOG_VERTEX_DATA_TO, "%i indxs\n", count);
-	fr(i,count) {printf("%5i:  ", i); printf("%5i\n", in[i]);}
+	fr(i,count) printf("%5i: %5i\n", i, in[i]);
 }
 #endif
 void setCharVerts(vert *v, const scoord tlCorn, const char charIn) {
@@ -75,23 +75,23 @@ void setTransMat(float mat[16], float sx, float sy, float sz) {
 	mat[ 7] += sy;
 	mat[11] += sz;
 }
-void mulMat(float l[16], const float r[16]) {
-	l[ 0] = l[ 0]*r[ 0] + l[ 1]*r[ 4] + l[ 2]*r[ 8] + l[ 3]*r[12];
-	l[ 1] = l[ 0]*r[ 1] + l[ 1]*r[ 5] + l[ 2]*r[ 9] + l[ 3]*r[13];
-	l[ 2] = l[ 0]*r[ 2] + l[ 1]*r[ 6] + l[ 2]*r[10] + l[ 3]*r[14];
-	l[ 3] = l[ 0]*r[ 3] + l[ 1]*r[ 7] + l[ 2]*r[11] + l[ 3]*r[15];
-	l[ 4] = l[ 4]*r[ 0] + l[ 5]*r[ 4] + l[ 6]*r[ 8] + l[ 7]*r[12];
-	l[ 5] = l[ 4]*r[ 1] + l[ 5]*r[ 5] + l[ 6]*r[ 9] + l[ 7]*r[13];
-	l[ 6] = l[ 4]*r[ 2] + l[ 5]*r[ 6] + l[ 6]*r[10] + l[ 7]*r[14];
-	l[ 7] = l[ 4]*r[ 3] + l[ 5]*r[ 7] + l[ 6]*r[11] + l[ 7]*r[15];
-	l[ 8] = l[ 8]*r[ 0] + l[ 9]*r[ 4] + l[10]*r[ 8] + l[11]*r[12];
-	l[ 9] = l[ 8]*r[ 1] + l[ 9]*r[ 5] + l[10]*r[ 9] + l[11]*r[13];
-	l[10] = l[ 8]*r[ 2] + l[ 9]*r[ 6] + l[10]*r[10] + l[11]*r[14];
-	l[11] = l[ 8]*r[ 3] + l[ 9]*r[ 7] + l[10]*r[11] + l[11]*r[15];
-	l[12] = l[12]*r[ 0] + l[13]*r[ 4] + l[14]*r[ 8] + l[15]*r[12];
-	l[13] = l[12]*r[ 1] + l[13]*r[ 5] + l[14]*r[ 9] + l[15]*r[13];
-	l[14] = l[12]*r[ 2] + l[13]*r[ 6] + l[14]*r[10] + l[15]*r[14];
-	l[15] = l[12]*r[ 3] + l[13]*r[ 7] + l[14]*r[11] + l[15]*r[15];
+void mulMat(float dest[16], const float l[16], const float r[16]) {
+	dest[ 0] = l[ 0]*r[ 0] + l[ 1]*r[ 4] + l[ 2]*r[ 8] + l[ 3]*r[12];
+	dest[ 1] = l[ 0]*r[ 1] + l[ 1]*r[ 5] + l[ 2]*r[ 9] + l[ 3]*r[13];
+	dest[ 2] = l[ 0]*r[ 2] + l[ 1]*r[ 6] + l[ 2]*r[10] + l[ 3]*r[14];
+	dest[ 3] = l[ 0]*r[ 3] + l[ 1]*r[ 7] + l[ 2]*r[11] + l[ 3]*r[15];
+	dest[ 4] = l[ 4]*r[ 0] + l[ 5]*r[ 4] + l[ 6]*r[ 8] + l[ 7]*r[12];
+	dest[ 5] = l[ 4]*r[ 1] + l[ 5]*r[ 5] + l[ 6]*r[ 9] + l[ 7]*r[13];
+	dest[ 6] = l[ 4]*r[ 2] + l[ 5]*r[ 6] + l[ 6]*r[10] + l[ 7]*r[14];
+	dest[ 7] = l[ 4]*r[ 3] + l[ 5]*r[ 7] + l[ 6]*r[11] + l[ 7]*r[15];
+	dest[ 8] = l[ 8]*r[ 0] + l[ 9]*r[ 4] + l[10]*r[ 8] + l[11]*r[12];
+	dest[ 9] = l[ 8]*r[ 1] + l[ 9]*r[ 5] + l[10]*r[ 9] + l[11]*r[13];
+	dest[10] = l[ 8]*r[ 2] + l[ 9]*r[ 6] + l[10]*r[10] + l[11]*r[14];
+	dest[11] = l[ 8]*r[ 3] + l[ 9]*r[ 7] + l[10]*r[11] + l[11]*r[15];
+	dest[12] = l[12]*r[ 0] + l[13]*r[ 4] + l[14]*r[ 8] + l[15]*r[12];
+	dest[13] = l[12]*r[ 1] + l[13]*r[ 5] + l[14]*r[ 9] + l[15]*r[13];
+	dest[14] = l[12]*r[ 2] + l[13]*r[ 6] + l[14]*r[10] + l[15]*r[14];
+	dest[15] = l[12]*r[ 3] + l[13]*r[ 7] + l[14]*r[11] + l[15]*r[15];
 }
 
 
@@ -127,10 +127,12 @@ uint32_t cleanTxtFile(
 
 
 int main(int argc, char **argv) {
-	int16_t videoW = 800;
-  int16_t videoH = 600;
+	int videoW = 800;
+  int videoH = 800;
 	#define halfVideoW_ (videoW/2)
   #define halfVideoH_ (videoH/2)
+	#define scaleX_ (1.0/halfVideoW_)
+	#define scaleY_ (1.0/halfVideoH_)
 	SDL_Window    *window    = NULL;
 	SDL_GLContext  GLcontext = NULL;
 	SDL_Init(SDL_INIT_VIDEO);_sdlec
@@ -179,15 +181,16 @@ int main(int argc, char **argv) {
 	#define  visVertEnd_ (visCharEnd*4)
 	#define  visIndxEnd_ (visCharEnd*6)
 	#define  visIndxCount_ (visIndxEnd_-visIndxBeg_)
-	const scoord txtOrigin = {-halfVideoW_/2, halfVideoH_/2, 0};
+	#define  txtOriginX_ (-halfVideoW_/2.0)
+	#define  txtOriginY_ (halfVideoH_/2.0)
 	for (
-		uint32_t cPos = visCharBeg, vPos = visVertBeg_, row = 0, col = 0;
+		int cPos = visCharBeg, vPos = visVertBeg_, row = 0, col = 0;
 		vPos < vertCount;
 		cPos++, vPos+=4
 	) {
 		const scoord tlCorn = {
-			txtOrigin.x + col*texAtlGlyphW,
-			txtOrigin.y - row*texAtlGlyphH,
+			0 + col*texAtlGlyphW,
+			0 - row*texAtlGlyphH,
 			1
 		};
 		setCharVerts(&verts[vPos], tlCorn, chars[cPos]);
@@ -234,8 +237,6 @@ int main(int argc, char **argv) {
 		}
 	}
 	wordDropEnv[wordDropEnvCount-1] = 0;
-	float transform[16] = {_identMat_};
-	setScaleMat(transform, 1.0/halfVideoW_, 1.0/halfVideoH_, 1.0);
 	
   GLuint vao;
   glEnable(GL_BLEND);
@@ -276,7 +277,6 @@ int main(int argc, char **argv) {
 	GLint unif_texAtlSize    = glGetUniformLocation(shaderProgram, "texAtlSize");
   GLint unif_transform     = glGetUniformLocation(shaderProgram, "transform");
   glUniform2f(unif_texAtlSize, texAtlW, texAtlH);
-	glUniformMatrix4fv(unif_transform, 1, 1, transform);
 	/*GLuint tex = */texFromBmp(texAtlPath);
   glUniform1i(glGetUniformLocation(shaderProgram, "tex"), 0);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);_glec
@@ -294,13 +294,8 @@ int main(int argc, char **argv) {
 	uint32_t misBkspCount = 0;
   uint32_t curFrame = 0;
   bool running = true;
+	bool redraw  = true;
 	glClear(GL_COLOR_BUFFER_BIT);
-  glDrawElements(
-		GL_TRIANGLES,
-		visIndxCount_,
-		GL_UNSIGNED_SHORT,
-		(const GLvoid*)(visIndxBeg_*sizeof(indx))
-	);_glec
 	SDL_StartTextInput();
 	while (running) {
     ts_oldFrameStart = ts_newFrameStart;
@@ -312,7 +307,6 @@ int main(int argc, char **argv) {
       ts_frameDelta.tv_sec, ts_frameDelta.tv_nsec
     );
     #endif
-    bool redraw = false;
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
       switch (event.type) {
@@ -329,7 +323,8 @@ int main(int argc, char **argv) {
 							);
 							#endif
 							videoW = event.window.data1;
-							videoW = event.window.data2;
+							videoH = event.window.data2;
+							glViewport(0, 0, videoW, videoH);
 							redraw = true;
             break;
 					}
@@ -374,7 +369,7 @@ int main(int argc, char **argv) {
 						redraw = true;
 						scoord tlCorn = verts[visVertBeg_+4].s;
 						tlCorn.x -= texAtlGlyphW;
-						if (tlCorn.x <= txtOrigin.x-texAtlGlyphW*chamCharCount) {
+						if (tlCorn.x <=  -texAtlGlyphW*chamCharCount) {
 							running = false;
 						}
 						else {
@@ -402,21 +397,30 @@ int main(int argc, char **argv) {
       }
     }
 		if (!running) break;
+		float scaleMat[16] = {_identMat_};
+		float transMat[16] = {_identMat_};
+		float finalMat[16] = {_identMat_};
+		setScaleMat(scaleMat, scaleX_, scaleY_, 1.0);
 		if (wordDropEnvCount > curFrame-frameWhenWordDropped) {
-			float easing[16] = {_identMat_};
-			setScaleMat(easing, 1.0/halfVideoW_, 1.0/halfVideoH_, 1.0);
-			float transMat[16] = {_identMat_};
 			setTransMat(
 				transMat,
-				0,
-				curWord*texAtlGlyphH - wordDropEnv[curFrame-frameWhenWordDropped],
+				txtOriginX_,
+				txtOriginY_ + curWord*texAtlGlyphH - wordDropEnv[curFrame-frameWhenWordDropped],
 				0
 			);
-			mulMat(easing, transMat);
-			glUniformMatrix4fv(unif_transform, 1, 1, easing);;
 			redraw = true;
 		}
+		else if (redraw) {
+			setTransMat(
+				transMat,
+				txtOriginX_,
+				txtOriginY_ + curWord*texAtlGlyphH,
+				0
+			);
+		}
     if (redraw) {
+			mulMat(finalMat, scaleMat, transMat);
+			glUniformMatrix4fv(unif_transform, 1, 1, finalMat);
 			glClear(GL_COLOR_BUFFER_BIT);
       glDrawElements(
 				GL_TRIANGLES,
