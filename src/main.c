@@ -162,7 +162,7 @@ int main(int argc, char **argv) {
   }
   //printf("OpenGL version: %s\n\n", glGetString(GL_VERSION));_glec
 	const char *txtPath = "testFile.txt";
-	const uint32_t chamCharCount = 5; // character widths between gun and word
+	const uint32_t chamCharCount = 10; // character widths between gun and word
 	const uint32_t fileCharCount = getFileSize(txtPath);
 	char chars[fileCharCount+chamCharCount];
 	const uint32_t charCount = chamCharCount + cleanTxtFile(
@@ -181,8 +181,8 @@ int main(int argc, char **argv) {
 	#define  visVertEnd_ (visCharEnd*4)
 	#define  visIndxEnd_ (visCharEnd*6)
 	#define  visIndxCount_ (visIndxEnd_-visIndxBeg_)
-	#define  txtOriginX_ (-halfVideoW_/2.0)
-	#define  txtOriginY_ (halfVideoH_/2.0)
+	#define  txtOriginX_ (-halfVideoW_/4.0)
+	#define  txtOriginY_ (halfVideoH_/4.0)
 	for (
 		int cPos = visCharBeg, vPos = visVertBeg_, row = 0, col = 0;
 		vPos < vertCount;
@@ -290,10 +290,13 @@ int main(int argc, char **argv) {
   timestamp ts_compTime = {0,0}, ts_now = {0,0};
   #endif
   clock_gettime(CLOCK_MONOTONIC, &ts_newFrameStart);
+	
+	char     charEntered = '\0';
 	uint32_t stuckCharCount = 0;
 	uint32_t misBkspCount = 0;
   uint32_t curFrame = 0;
-  bool running = true;
+  
+	bool running = true;
 	bool redraw  = true;
 	glClear(GL_COLOR_BUFFER_BIT);
 	SDL_StartTextInput();
@@ -338,51 +341,14 @@ int main(int argc, char **argv) {
           );
 					#endif
 					if (event.key.keysym.sym == SDLK_BACKSPACE) {
-						if (stuckCharCount) {
-							stuckCharCount--;
-							visCharBeg++;
-							redraw = true;
-						}
-						else misBkspCount++;
+						charEntered = SDLK_BACKSPACE;
 					}
 					break;
 				case SDL_TEXTINPUT: {
 					#ifdef LOG_EVENTS_TO
 					fprintf(LOG_EVENTS_TO, "text input event: %s\n", event.text.text);
 					#endif
-					const char charIn = event.text.text[0];
-					if (charIn == chars[visCharBeg] && !stuckCharCount) {
-						if (charIn == delim) {
-							curWord++;
-							frameWhenWordDropped = curFrame;
-						}
-						visCharBeg++;
-						redraw = true;
-					}
-					else {
-						visCharBeg--;
-						stuckCharCount++;
-						if (visCharBeg < 0 || visCharBeg >= visCharEnd) {
-							running = false;
-							break;
-						}
-						redraw = true;
-						scoord tlCorn = verts[visVertBeg_+4].s;
-						tlCorn.x -= texAtlGlyphW;
-						if (tlCorn.x <=  0.0 - texAtlGlyphW*chamCharCount) {
-							running = false;
-						}
-						else {
-							chars[visCharBeg] = charIn;
-							setCharVerts(&verts[visVertBeg_], tlCorn, charIn);
-							glBufferSubData(
-								GL_ARRAY_BUFFER,                    // GLenum        target
-								visVertBeg_*sizeof(vert),           // GLintptr      offset​
-								4*sizeof(vert),                     // GLsizeiptr    size​
-								(const GLvoid*)&verts[visVertBeg_]  // const GLvoid *data
-							);
-						}
-					}
+					charEntered = event.text.text[0];
           break;
 				}
         case SDL_KEYUP:
@@ -397,10 +363,52 @@ int main(int argc, char **argv) {
       }
     }
 		if (!running) break;
+		if (charEntered) {
+			if (charEntered == SDLK_BACKSPACE) {
+				if (stuckCharCount) {
+					stuckCharCount--;
+					visCharBeg++;
+					redraw = true;
+				}
+				else misBkspCount++;
+			}
+			else if (charEntered == chars[visCharBeg] && !stuckCharCount) {
+				if (charEntered == delim) {
+					curWord++;
+					frameWhenWordDropped = curFrame;
+				}
+				visCharBeg++;
+				redraw = true;
+			}
+			else {
+				visCharBeg--;
+				stuckCharCount++;
+				if (visCharBeg < 0 || visCharBeg >= visCharEnd) {
+					running = false;
+					break;
+				}
+				redraw = true;
+				scoord tlCorn = verts[visVertBeg_+4].s;
+				tlCorn.x -= texAtlGlyphW;
+				if (tlCorn.x <=  0.0 - texAtlGlyphW*chamCharCount) {
+					running = false;
+				}
+				else {
+					chars[visCharBeg] = charEntered;
+					setCharVerts(&verts[visVertBeg_], tlCorn, charEntered);
+					glBufferSubData(
+						GL_ARRAY_BUFFER,                    // GLenum        target
+						visVertBeg_*sizeof(vert),           // GLintptr      offset​
+						4*sizeof(vert),                     // GLsizeiptr    size​
+						(const GLvoid*)&verts[visVertBeg_]  // const GLvoid *data
+					);
+				}
+			}
+			charEntered = '\0';
+		}
 		float scaleMat[16] = {_identMat_};
 		float transMat[16] = {_identMat_};
 		float finalMat[16] = {_identMat_};
-		setScaleMat(scaleMat, scaleX_, scaleY_, 1.0);
 		if (wordDropEnvCount > curFrame-frameWhenWordDropped) {
 			setTransMat(
 				transMat,
@@ -419,6 +427,7 @@ int main(int argc, char **argv) {
 			);
 		}
     if (redraw) {
+			setScaleMat(scaleMat, scaleX_, scaleY_, 1.0);
 			mulMat(finalMat, scaleMat, transMat);
 			glUniformMatrix4fv(unif_transform, 1, 1, finalMat);
 			glClear(GL_COLOR_BUFFER_BIT);
