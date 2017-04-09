@@ -263,6 +263,9 @@ int main(int argc, char **argv) {
   );_glec
   GLuint shaderProgram = createShaderProgram(
     "src/shadeVert.glsl",
+		NULL,
+		NULL,
+		NULL,
     "src/shadeFrag.glsl",
     "shaderProgram"
   );
@@ -277,14 +280,17 @@ int main(int argc, char **argv) {
 	GLint unif_texAtlSize = glGetUniformLocation(shaderProgram, "texAtlSize");
   GLint unif_transform  = glGetUniformLocation(shaderProgram, "transform");
   glUniform2f(unif_texAtlSize, texAtlW, texAtlH);
-	/*GLuint tex = */texFromBmp(texAtlPath);
+	GLuint tex = 0;
+	texFromBmp(tex, texAtlPath);
   glUniform1i(glGetUniformLocation(shaderProgram, "tex"), 0);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);_glec
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);_glec
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	const uint32_t clearColor = 0x4488bbff; //rgba
+	const uint32_t clearColor = 0x4488bbff; // rgba
 	glClearColori(clearColor);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	
   timestamp ts_oldFrameStart={0,0},ts_newFrameStart={0,0},ts_frameDelta={0,0};
 	#ifdef LOG_TIMING_TO
   timestamp ts_compTime = {0,0}, ts_now = {0,0};

@@ -1,10 +1,14 @@
 
 void glClearColori(uint32_t c);
 
+
 GLuint createShaderProgram(
-  const char *vertPath,
-  const char *fragPath,
+	const char *vertPath,  // vertex shader
+	const char *tecoPath,  // tessellation control shader
+	const char *teevPath,  // tessellation evaluation shader
+  const char *geomPath,  // geometry shader
+  const char *fragPath,  // fragment shader
   const char *progName
 );
 
-GLuint texFromBmp(const char *bmpPath);
+void texFromBmp(GLuint tex, const char *bmpPath);

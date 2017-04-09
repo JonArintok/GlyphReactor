@@ -5,6 +5,7 @@
 
 #include "fileTools.h"
 #include "optionsAndErrors.h"
+#include "misc.h"
 
 void glClearColori(uint32_t rgba) {
 	glClearColor(
@@ -15,56 +16,57 @@ void glClearColori(uint32_t rgba) {
 	);
 }
 
+
 GLuint createShaderProgram(
-  const char *vertPath,
-  const char *fragPath,
+	const char *vertPath,  // vertex shader
+	const char *tecoPath,  // tessellation control shader
+	const char *teevPath,  // tessellation evaluation shader
+  const char *geomPath,  // geometry shader
+  const char *fragPath,  // fragment shader
   const char *progName
 ) {
-  int vertSourceSize, fragSourceSize, textBufSize = 1024;
-  
-  vertSourceSize = getFileSize(vertPath);
-  if (!vertSourceSize) {
-    printf("error: could not open file \"%s\"\n", vertPath);
+	if (!vertPath) {
+    printf("error: no path for mandatory vertex shader\n");
     return 0;
-  }
-  if (vertSourceSize > textBufSize) textBufSize = vertSourceSize + 1;
-  
-  fragSourceSize = getFileSize(fragPath);
-  if (!fragSourceSize) {
-    printf("error: could not open file \"%s\"\n", fragPath);
-    return 0;
-  }
-  if (fragSourceSize > textBufSize) textBufSize = fragSourceSize + 1;
-  
+	}
+  int textBufSize = 1024;
+	#define stageCount 5
+  const char *paths[stageCount] = {
+		vertPath, tecoPath, teevPath, geomPath, fragPath
+	};
+  GLenum shaderTypes[stageCount] = {
+		GL_VERTEX_SHADER,
+		GL_TESS_CONTROL_SHADER,
+		GL_TESS_EVALUATION_SHADER,
+		GL_GEOMETRY_SHADER,
+		GL_FRAGMENT_SHADER
+	};
+	fr (i, stageCount) {
+		if (!paths[i]) continue;
+		int sourceSize = getFileSize(paths[i]);
+	  if (!sourceSize) {
+	    printf("error: could not open file \"%s\"\n", paths[i]);
+	    return 0;
+	  }
+	  if (sourceSize > textBufSize) textBufSize = sourceSize + 1;
+	}
   char *textBuf = malloc(textBufSize);
-  GLint success;
-  const char *compileErrorString = "error compiling shader \"%s\":\n%s\n";
-  
-  GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);_glec
-  stringFromFile(vertPath, textBuf, textBufSize);
-  glShaderSource(vertShader, 1, (const GLchar * const*)&textBuf, NULL);_glec
-  glCompileShader(vertShader);_glec
-  glGetShaderiv(vertShader, GL_COMPILE_STATUS, &success);_glec
-  if (!success) {
-    glGetShaderInfoLog(vertShader, textBufSize, NULL, textBuf);_glec
-    printf(compileErrorString, vertPath, textBuf);
-    return 0;
-  }
-  
-  GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);_glec
-  stringFromFile(fragPath, textBuf, textBufSize);
-  glShaderSource(fragShader, 1, (const GLchar * const*)&textBuf, NULL);_glec
-  glCompileShader(fragShader);_glec
-  glGetShaderiv(fragShader, GL_COMPILE_STATUS, &success);_glec
-  if (!success) {
-    glGetShaderInfoLog(fragShader, textBufSize, NULL, textBuf);_glec
-    printf(compileErrorString, fragPath, textBuf);
-    return 0;
-  }
-  
-  GLuint shaderProgram = glCreateProgram();_glec
-  glAttachShader(shaderProgram, vertShader);_glec
-  glAttachShader(shaderProgram, fragShader);_glec
+	GLuint shaderProgram = glCreateProgram();_glec
+	GLint success = 0;
+	fr (i, stageCount) {
+		if (!paths[i]) continue;
+		GLuint shader = glCreateShader(shaderTypes[i]);_glec
+	  stringFromFile(paths[i], textBuf, textBufSize);
+	  glShaderSource(shader, 1, (const GLchar * const*)&textBuf, NULL);_glec
+	  glCompileShader(shader);_glec
+	  glGetShaderiv(shader, GL_COMPILE_STATUS, &success);_glec
+	  if (!success) {
+	    glGetShaderInfoLog(shader, textBufSize, NULL, textBuf);_glec
+	    printf("error compiling shader \"%s\":\n%s\n", paths[i], textBuf);
+	    return 0;
+	  }
+		glAttachShader(shaderProgram, shader);_glec
+	}
   glLinkProgram(shaderProgram);_glec
   glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);_glec
   if (!success) {
@@ -85,10 +87,8 @@ GLuint createShaderProgram(
 }
 
 #include <SDL2/SDL_surface.h>
-#include "misc.h"
 
-GLuint texFromBmp(const char *bmpPath) {
-  GLuint tex;
+void texFromBmp(GLuint tex, const char *bmpPath) {
   glGenTextures(1, &tex);_glec
   glBindTexture(GL_TEXTURE_2D, tex);_glec
   SDL_Surface *srfcRaw = SDL_LoadBMP(bmpPath);_sdlec
@@ -97,16 +97,15 @@ GLuint texFromBmp(const char *bmpPath) {
   );_sdlec
   SDL_FreeSurface(srfcRaw);_sdlec
   glTexImage2D(
-    GL_TEXTURE_2D,        // GLenum        target
-    0,                    // GLint         level
-    GL_RGBA,              // GLint         internalformat
-    srfc->w,              // GLsizei       width
-    srfc->h,              // GLsizei       height
-    0,                    // GLint         border
-    GL_RGBA,              // GLenum        format
-    GL_UNSIGNED_BYTE,     // GLenum        type
-    srfc->pixels          // const GLvoid *data
+    GL_TEXTURE_2D,     // GLenum        target
+    0,                 // GLint         level
+    GL_RGBA,           // GLint         internalformat
+    srfc->w,           // GLsizei       width
+    srfc->h,           // GLsizei       height
+    0,                 // GLint         border
+    GL_RGBA,           // GLenum        format
+    GL_UNSIGNED_BYTE,  // GLenum        type
+    srfc->pixels       // const GLvoid *data
   );_glec
   SDL_FreeSurface(srfc);_sdlec
-  return tex;
 }
