@@ -2,9 +2,10 @@
 #define LOG_SDL_ERRORS_TO  stderr
 #define LOG_GL_ERRORS_TO   stderr
 //#define LOG_EVENTS_TO      stderr
-//#define LOG_VERTEX_DATA_TO stderr
-//#define LOG_TIMING_TO      stderr
+#define LOG_VERTEX_DATA_TO stderr
+#define LOG_TIMING_TO      stderr
 
+#define enableVSync 0
 
 #ifdef LOG_SDL_ERRORS_TO
   void sdlec(int line, const char *file);
