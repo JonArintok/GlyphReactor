@@ -75,14 +75,14 @@ void mulMat(float dest[16], const float l[16], const float r[16]) {
 
 
 const char delim = ' ';
-uint32_t cleanTxtFile(
+int cleanTxtFile(
 	const char *txtPath,
 	char       *chars,
 	uint32_t    writeLimit
 ) {
-	uint32_t readLimit = stringFromFile(txtPath, chars, writeLimit);
-	uint32_t readPos = 0;
-	uint32_t writPos = 0;
+	int readLimit = stringFromFile(txtPath, chars, writeLimit);
+	int readPos = 0;
+	int writPos = 0;
 	while(true) {
 		if (chars[readPos] == '\0' || readPos > readLimit) {
 			chars[writPos] = '\0';
@@ -106,12 +106,12 @@ uint32_t cleanTxtFile(
 
 
 int main(int argc, char **argv) {
-	int videoW = 800;
-  int videoH = 800;
+	int videoW = 1280;
+  int videoH =  720;
 	#define halfVideoW_ (videoW/2)
   #define halfVideoH_ (videoH/2)
-	#define scaleX_ (1.0/halfVideoW_/2.0)
-	#define scaleY_ (1.0/halfVideoH_/2.0)
+	#define scaleX_ (1.0/halfVideoW_)
+	#define scaleY_ (1.0/halfVideoH_)
 	SDL_Window    *window    = NULL;
 	SDL_GLContext  GLcontext = NULL;
 	SDL_Init(SDL_INIT_VIDEO);_sdlec
@@ -139,23 +139,25 @@ int main(int argc, char **argv) {
       return 1;
     }
   }
-  printf("OpenGL version: %s\n\n", glGetString(GL_VERSION));_glec
+	#ifdef LOG_GL_ERRORS_TO
+  fprintf(LOG_GL_ERRORS_TO, "OpenGL version: %s\n", glGetString(GL_VERSION));_glec
+	#endif
 	
 	const char *txtPath = "testFile.txt";
-	const uint32_t chamCharCount = 1; // character widths between gun and word
-	const uint32_t fileCharCount = getFileSize(txtPath);
+	const int chamCharCount = 8; // character widths between gun and word
+	const int fileCharCount = getFileSize(txtPath);
 	char chars[fileCharCount+chamCharCount];
-	const uint32_t charCount = chamCharCount + cleanTxtFile(
+	const int charCount = chamCharCount + cleanTxtFile(
 		txtPath,
 		chars+chamCharCount,
 		fileCharCount
 	);
 	vert verts[charCount];
-	uint32_t visCharBeg = chamCharCount;
-	uint32_t visCharEnd = charCount;
+	int visCharBeg = chamCharCount;
+	int visCharEnd = charCount;
 	#define  visCharCount_ (visCharEnd-visCharBeg)
-	#define  txtOriginX_ (-videoW+20)
-	#define  txtOriginY_ (videoH-20)
+	#define  txtOriginX_ ((-halfVideoW_/2)+(chamCharCount*texAtlGlyphW)+64)
+	#define  txtOriginY_ (halfVideoH_/4)
 	for (int cPos = visCharBeg, row = 0, col = 0; cPos < charCount; cPos++) {
 		verts[cPos].s.x = 0.0 + col*texAtlGlyphW;
 		verts[cPos].s.y = 0.0 - row*texAtlGlyphH;
@@ -171,8 +173,8 @@ int main(int argc, char **argv) {
 	#ifdef LOG_VERTEX_DATA_TO
 	printVerts(verts, charCount);
 	#endif
-	uint32_t curWord = 0;
-	uint32_t frameWhenWordDropped = 0;
+	int curWord = 0;
+	int frameWhenWordDropped = 0;
 	#define wordDropEnvCount 64
 	float wordDropEnv[wordDropEnvCount];
 	wordDropEnv[0] = texAtlGlyphH;
@@ -200,7 +202,7 @@ int main(int argc, char **argv) {
   glBindVertexArray(vao);_glec
   GLuint vbo;
   glGenBuffers(1, &vbo);_glec
-  glBindBuffer(GL_ARRAY_BUFFER,         vbo);_glec
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);_glec
   glBufferData(
     GL_ARRAY_BUFFER,
     charCount*sizeof(vert),
@@ -229,9 +231,7 @@ int main(int argc, char **argv) {
   GLint unif_glyphSpaSize = glGetUniformLocation(shaderProgram, "glyphSpaSize");_glec
 	glUniform2f(unif_texAtlSize, texAtlW, texAtlH);_glec
 	glUniform2f(unif_glyphTexSize, (float)texAtlGlyphW/(float)texAtlW, (float)texAtlGlyphH/(float)texAtlH);_glec
-	printf("unif_glyphTexSize.x: %9.8f,  unif_glyphTexSize.y:%9.8f\n", (float)texAtlGlyphW/(float)texAtlW, (float)texAtlGlyphH/(float)texAtlH);
 	glUniform2f(unif_glyphSpaSize, (float)texAtlGlyphW*(float)scaleX_, (float)texAtlGlyphH*(float)scaleY_);_glec
-	printf("unif_glyphSpaSize.x: %9.8f,  unif_glyphTexSize.y:%9.8f\n", (float)texAtlGlyphW*(float)scaleX_, (float)texAtlGlyphH*(float)scaleY_);
 	GLuint tex = 0;
 	texFromBmp(tex, texAtlPath);
   glUniform1i(glGetUniformLocation(shaderProgram, "tex"), 0);_glec
@@ -241,7 +241,7 @@ int main(int argc, char **argv) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);_glec
 	const uint32_t clearColor = 0x4488bbff; // rgba
 	glClearColori(clearColor);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	if (drawWireFrame) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	
   timestamp ts_oldFrameStart={0,0},ts_newFrameStart={0,0},ts_frameDelta={0,0};
 	#ifdef LOG_TIMING_TO
@@ -249,10 +249,9 @@ int main(int argc, char **argv) {
   #endif
   clock_gettime(CLOCK_MONOTONIC, &ts_newFrameStart);
 	
-	uint32_t stuckCharCount = 0;
-	uint32_t misBkspCount = 0;
-	uint32_t curFrame = 0;
-  const uint32_t frameLogLimit = 1000;
+	int stuckCharCount = 0;
+	int misBkspCount = 0;
+	int curFrame = 0;
   
 	bool running = true;
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -262,12 +261,10 @@ int main(int argc, char **argv) {
     clock_gettime(CLOCK_MONOTONIC, &ts_newFrameStart);
     getTimeDelta(&ts_oldFrameStart, &ts_newFrameStart, &ts_frameDelta);
     #ifdef LOG_TIMING_TO
-		if (curFrame < frameLogLimit) {
-	    fprintf(LOG_TIMING_TO,
-	      "ts_frameDelta: %1ld s, %9ld ns\n",
-	      ts_frameDelta.tv_sec, ts_frameDelta.tv_nsec
-	    );
-		}
+    fprintf(LOG_TIMING_TO,
+      "ts_frameDelta: %1ld s, %9ld ns\n",
+      ts_frameDelta.tv_sec, ts_frameDelta.tv_nsec
+    );
     #endif
 		char charEntered = '\0';
     SDL_Event event;
@@ -299,8 +296,9 @@ int main(int argc, char **argv) {
             SDL_GetKeyName(event.key.keysym.sym)
           );
 					#endif
-					if (event.key.keysym.sym == SDLK_BACKSPACE) {
-						charEntered = SDLK_BACKSPACE;
+					switch (event.key.keysym.sym) {
+						case SDLK_BACKSPACE: charEntered = SDLK_BACKSPACE; break;
+						case SDLK_ESCAPE:    running = false; break;
 					}
 					break;
 				case SDL_TEXTINPUT: {
@@ -395,14 +393,12 @@ int main(int argc, char **argv) {
 		);_glec
 		
     #ifdef LOG_TIMING_TO
-		if (curFrame < frameLogLimit) {
-			clock_gettime(CLOCK_MONOTONIC, &ts_now);
-	    getTimeDelta(&ts_newFrameStart, &ts_now, &ts_compTime);
-	    fprintf(LOG_TIMING_TO,
-				"ts_compTime: %3ld s, %9ld ns\n",
-	      ts_compTime.tv_sec, ts_compTime.tv_nsec
-	    );
-		}
+		clock_gettime(CLOCK_MONOTONIC, &ts_now);
+    getTimeDelta(&ts_newFrameStart, &ts_now, &ts_compTime);
+    fprintf(LOG_TIMING_TO,
+			"ts_compTime: %3ld s, %9ld ns\n",
+      ts_compTime.tv_sec, ts_compTime.tv_nsec
+    );
     #endif
 		SDL_GL_SwapWindow(window);_sdlec
     curFrame++;
