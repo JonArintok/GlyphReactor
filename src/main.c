@@ -104,6 +104,7 @@ void glErrorCallback(
 	const GLchar *message,
 	const void   *userParam
 ) {
+	if (severity == 33387) return; // don't know what this is but it's persistent
 	fprintf(LOG_GL_ERRORS_TO,
 		"GL ERROR\n"
 		"\tsource  : %i: %s\n"
