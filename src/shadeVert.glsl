@@ -1,13 +1,15 @@
-#version 410
+#version 330
 
-uniform mat4 transform;
-uniform vec2 texAtlSize;
+uniform vec2 translate;
 
 in  vec3 pos;
 in  vec2 texCoord;
-out vec2 texCoordFromVert;
+
+out VS_OUT {
+	vec2 texCoord;
+} vs_out;
 
 void main() {
-  texCoordFromVert = texCoord/texAtlSize;
-  gl_Position = transform * vec4(pos, 1.0);
+  vs_out.texCoord = texCoord;
+	gl_Position = vec4(pos+vec3(translate, 0.0), 1.0);
 }
