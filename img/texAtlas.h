@@ -15,6 +15,7 @@
 #define texAtlGlyphsEndX (texAtlGlyphsStartX+texAtlGlyphsW)
 #define texAtlGlyphsEndY (texAtlGlyphsStartY+texAtlGlyphsH)
 #define texAtlGlyphsAsciiStart 32
+#define bkspChar 127
 
 // texel coordinates of top left corner of glyph
 #define texAtlGlyphPosX(glyphVal) \

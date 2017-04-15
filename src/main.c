@@ -320,7 +320,7 @@ int main(int argc, char **argv) {
           );
 					#endif
 					switch (event.key.keysym.sym) {
-						case SDLK_BACKSPACE: charEntered = SDLK_BACKSPACE; break;
+						case SDLK_BACKSPACE: charEntered = bkspChar; break;
 						case SDLK_ESCAPE:    running = false; break;
 					}
 					break;
@@ -344,7 +344,7 @@ int main(int argc, char **argv) {
     }
 		if (!running) break;
 		if (charEntered) {
-			if (charEntered == SDLK_BACKSPACE) {
+			if (charEntered == bkspChar) {
 				if (stuckCharCount) {
 					stuckCharCount--;
 					visCharBeg++;
