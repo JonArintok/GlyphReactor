@@ -296,14 +296,6 @@ int main(int argc, char **argv) {
 				case SDL_WINDOWEVENT:
 					switch (event.window.event) {
 						case SDL_WINDOWEVENT_RESIZED:
-							#ifdef LOG_EVENTS_TO
-							fprintf(LOG_EVENTS_TO,
-								"Window %d resized to %dx%d\n",
-                event.window.windowID,
-								event.window.data1,
-								event.window.data2
-							);
-							#endif
 							videoW = event.window.data1;
 							videoH = event.window.data2;
 							glViewport(0, 0, videoW, videoH);_glec
@@ -312,33 +304,16 @@ int main(int argc, char **argv) {
 					}
 					break;
         case SDL_KEYDOWN:
-					#ifdef LOG_EVENTS_TO
-					fprintf(LOG_EVENTS_TO,
-						"KEYDOWN:\n\tscancode   : %s\n\tsymbol     : %s\n",
-            SDL_GetScancodeName(event.key.keysym.scancode),
-            SDL_GetKeyName(event.key.keysym.sym)
-          );
-					#endif
 					switch (event.key.keysym.sym) {
 						case SDLK_BACKSPACE: charEntered = bkspChar; break;
 						case SDLK_ESCAPE:    running = false; break;
 					}
 					break;
 				case SDL_TEXTINPUT: {
-					#ifdef LOG_EVENTS_TO
-					fprintf(LOG_EVENTS_TO, "text input event: %s\n", event.text.text);
-					#endif
 					charEntered = event.text.text[0];
           break;
 				}
         case SDL_KEYUP:
-					#ifdef LOG_EVENTS_TO
-          fprintf(LOG_EVENTS_TO,
-						"KEYUP:\n\tscancode: %s\n\tsymbol  : %s\n",
-            SDL_GetScancodeName(event.key.keysym.scancode),
-            SDL_GetKeyName(event.key.keysym.sym)
-          );
-					#endif
           break;
       }
     }
