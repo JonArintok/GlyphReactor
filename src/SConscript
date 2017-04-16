@@ -8,4 +8,4 @@ src = [
 	"optionsAndErrors.c",
 	"timestamp.c"
 ]
-env.Program("GlyphReactor", src, LIBS = ["GL", "GLEW", "SDL2", "m"])
+env.Program("GlyphReactor", src, LIBS = ["GL", "GLEW", "SDL2", "m", "png"])

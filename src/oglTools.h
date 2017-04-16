@@ -12,3 +12,4 @@ GLuint createShaderProgram(
 );
 
 void texFromBmp(GLuint tex, const char *bmpPath);
+void texFromPng(GLuint tex, const char *pngPath);

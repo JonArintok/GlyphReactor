@@ -1,6 +1,6 @@
 // Origin is in top left corner
 
-#define texAtlPath "img/texAtlas.bmp"
+#define texAtlPath "img/texAtlas.png"
 
 #define texAtlW 256
 #define texAtlH 256

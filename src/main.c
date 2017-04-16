@@ -28,7 +28,11 @@ void printVert(vert v) {
 }
 void printVerts(vert *v, int count) {
 	fprintf(LOG_VERTEX_DATA_TO, "%i verts\n", count);
-	fr(i,count) {printf("%5i:  ", i); fflush(stdout); printVert(v[i]);}
+	fr(i,count) {
+		fprintf(LOG_VERTEX_DATA_TO, "%5i:  ", i);
+		fflush(LOG_VERTEX_DATA_TO);
+		printVert(v[i]);
+	}
 }
 #endif
 
@@ -194,13 +198,13 @@ int main(int argc, char **argv) {
 	glUniform2f(unif_scale, scaleX_, scaleY_);_glec
 	glUniform2f(unif_glyphTexSize, texAtlGlyphW, texAtlGlyphH);_glec
 	GLuint texAtl = 0;
-	texFromBmp(texAtl, texAtlPath);
+	texFromPng(texAtl, texAtlPath);
   glUniform1i(glGetUniformLocation(shaderProgram, "texAtl"), 0);_glec
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);_glec
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);_glec
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);_glec
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);_glec
-	const uint32_t clearColor = 0x4488bbff; // rgba
+	const uint32_t clearColor = 0x224455ff; // rgba
 	glClearColori(clearColor);
 	#if drawWireFrame
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
