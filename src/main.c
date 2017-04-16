@@ -198,7 +198,7 @@ int main(int argc, char **argv) {
 	glUniform2f(unif_scale, scaleX_, scaleY_);_glec
 	glUniform2f(unif_glyphTexSize, texAtlGlyphW, texAtlGlyphH);_glec
 	GLuint texAtl = 0;
-	texFromPng(texAtl, texAtlPath);
+	texFromPng(texAtl, texAtlPath, false);
   glUniform1i(glGetUniformLocation(shaderProgram, "texAtl"), 0);_glec
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);_glec
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);_glec

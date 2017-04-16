@@ -112,7 +112,7 @@ void texFromBmp(GLuint tex, const char *bmpPath) {
 
 #include <png.h>
 
-void texFromPng(GLuint tex, const char *pngPath) {
+void texFromPng(GLuint tex, const char *pngPath, bool mirrorY) {
   FILE *fp = fopen(pngPath, "r");
   png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
   if(!png) abort();
@@ -153,8 +153,13 @@ void texFromPng(GLuint tex, const char *pngPath) {
 	
 	png_byte  *imageData   = malloc(width*4*height);
 	png_byte **rowPointers = malloc(sizeof(png_bytep) * height);
-  fr (i, height) rowPointers[i] = &imageData[i*width*4];
+	if (mirrorY) {
+		fr (i, height) rowPointers[i] = &imageData[(height-i-1)*width*4];
+	} else {
+		fr (i, height) rowPointers[i] = &imageData[i*width*4];
+	}
   png_read_image(png, rowPointers);
+	png_destroy_read_struct(&png, &info, NULL);
 	free(rowPointers);
   fclose(fp);
 	

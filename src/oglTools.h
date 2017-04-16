@@ -1,6 +1,6 @@
+#include <stdbool.h>
 
 void glClearColori(uint32_t c);
-
 
 GLuint createShaderProgram(
 	const char *vertPath,  // vertex shader
@@ -12,4 +12,4 @@ GLuint createShaderProgram(
 );
 
 void texFromBmp(GLuint tex, const char *bmpPath);
-void texFromPng(GLuint tex, const char *pngPath);
+void texFromPng(GLuint tex, const char *pngPath, bool mirrorY);
