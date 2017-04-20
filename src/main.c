@@ -15,23 +15,60 @@
 #include "../img/texAtlas.h"
 
 
-typedef struct {float x; float y; float z;} scoord; // spacial coordinate
-typedef struct {int16_t u; int16_t v;} tcoord;      // texture coordinate
-typedef struct {scoord s; tcoord t;} vert;          // textured vertex
+typedef struct {
+	float    dstCX; // destination center X position
+	float    dstCY; // destination center Y position
+	float    dstHW; // destination half width,  set negative to mirror x
+	float    dstHH; // destination half height, set negative to mirror y
+	uint16_t srcX;  // source top left corner
+	uint16_t srcY;  // source top left corner
+	uint16_t srcW;  // source width
+	uint16_t srcH;  // source height
+	uint16_t mulR;  // normalized
+	uint16_t mulG;  // normalized
+	uint16_t mulB;  // normalized
+	uint16_t mulO;  // normalized
+} sprite;
 
 #ifdef LOG_VERTEX_DATA_TO
-void printVert(vert v) {
-	fprintf(LOG_VERTEX_DATA_TO,
-		"x: %7.2f  y: %7.2f  z: %7.2f   u: %5i  v: %5i\n",
-		v.s.x, v.s.y, v.s.z, v.t.u, v.t.v
-	);
-}
-void printVerts(vert *v, int count) {
-	fprintf(LOG_VERTEX_DATA_TO, "%i verts\n", count);
-	fr(i,count) {
-		fprintf(LOG_VERTEX_DATA_TO, "%5i:  ", i);
-		fflush(LOG_VERTEX_DATA_TO);
-		printVert(v[i]);
+void printSprites(sprite *sprites, int count, int line) {
+	if (!sprites) {
+		fprintf(LOG_VERTEX_DATA_TO,
+			"ERROR: sprites pointer given at line %i is NULL\n",
+			line
+		);
+		return;
+	}
+	fprintf(LOG_VERTEX_DATA_TO, "SPRITE DATA, %i count\n", count);
+	fr (i, count) {
+		fprintf(LOG_VERTEX_DATA_TO,
+			"# %i\n"
+			"\tdstCX:%9.2f\n"
+			"\tdstCY:%9.2f\n"
+			"\tdstHW:%9.2f\n"
+			"\tdstHH:%9.2f\n"
+			"\tsrcX:%6i\n"
+			"\tsrcY:%6i\n"
+			"\tsrcW:%6i\n"
+			"\tsrcH:%6i\n"
+			"\tmulR:%6i\n"
+			"\tmulG:%6i\n"
+			"\tmulB:%6i\n"
+			"\tmulO:%6i\n",
+			i,
+			sprites[i].dstCX,
+			sprites[i].dstCY,
+			sprites[i].dstHW,
+			sprites[i].dstHH,
+			sprites[i].srcX,
+			sprites[i].srcY,
+			sprites[i].srcW,
+			sprites[i].srcH,
+			sprites[i].mulR,
+			sprites[i].mulG,
+			sprites[i].mulB,
+			sprites[i].mulO
+		);
 	}
 }
 #endif
@@ -69,12 +106,13 @@ int cleanTxtFile(
 
 
 int main(int argc, char **argv) {
+	// init SDL and get an opengl window
 	int videoW = 1280;
   int videoH =  720;
-	#define halfVideoW_ (videoW/2)
-  #define halfVideoH_ (videoH/2)
-	#define scaleX_ (1.0/halfVideoW_)
-	#define scaleY_ (1.0/halfVideoH_)
+	#define videoHW_ (videoW/2)
+  #define videoHH_ (videoH/2)
+	#define scaleX_ (1.0/videoHW_)
+	#define scaleY_ (1.0/videoHH_)
 	SDL_Window    *window    = NULL;
 	SDL_GLContext  GLcontext = NULL;
 	SDL_Init(SDL_INIT_VIDEO);_sdlec
@@ -103,11 +141,15 @@ int main(int argc, char **argv) {
     }
   }
 	#ifdef LOG_GL_ERRORS_TO
-  fprintf(LOG_GL_ERRORS_TO, "OpenGL version: %s\n", glGetString(GL_VERSION));_glec
+  fprintf(LOG_GL_ERRORS_TO,
+		"OpenGL version: %s\n",
+		glGetString(GL_VERSION)
+	);_glec
 	glEnable(GL_DEBUG_OUTPUT);_glec
 	glDebugMessageCallback(glErrorCallback, NULL);_glec
 	#endif
 	
+	// init character array
 	const char *txtPath = "testFile.txt";
 	const int chamCharCount = 8; // character widths between gun and word
 	const int fileCharCount = getFileSize(txtPath);
@@ -117,18 +159,27 @@ int main(int argc, char **argv) {
 		chars+chamCharCount,
 		fileCharCount
 	);
-	vert verts[charCount];
+	
+	// init sprite data
+	sprite *sprites = malloc(sizeof(sprite)*charCount);
 	int visCharBeg = chamCharCount;
 	int visCharEnd = charCount;
-	#define  visCharCount_ (visCharEnd-visCharBeg)
-	#define  txtOriginX_ (-halfVideoW_+(chamCharCount*texAtlGlyphW)+64)
-	#define  txtOriginY_ (halfVideoH_/4)
+	#define visCharCount_ (visCharEnd-visCharBeg)
+	#define txtOriginX_ (-videoHW_+(chamCharCount*texAtlGlyphW)+64)
+	#define txtOriginY_ (videoHH_/4)
 	for (int cPos = visCharBeg, row = 0, col = 0; cPos < charCount; cPos++) {
-		verts[cPos].s.x = 0.0 + col*texAtlGlyphW;
-		verts[cPos].s.y = 0.0 - row*texAtlGlyphH;
-		verts[cPos].s.z = 0.0;
-		verts[cPos].t.u = texAtlGlyphPosX(chars[cPos]);
-		verts[cPos].t.v = texAtlGlyphPosY(chars[cPos]);
+		sprites[cPos].dstCX = 0.0 + col*texAtlGlyphW;
+		sprites[cPos].dstCY = 0.0 - row*texAtlGlyphH;
+		sprites[cPos].dstHW = texAtlGlyphW/2.0;
+		sprites[cPos].dstHH = texAtlGlyphH/2.0;
+		sprites[cPos].srcX  = texAtlGlyphPosX(chars[cPos]);
+		sprites[cPos].srcY  = texAtlGlyphPosY(chars[cPos]);
+		sprites[cPos].srcW  = texAtlGlyphW;
+		sprites[cPos].srcH  = texAtlGlyphH;
+		sprites[cPos].mulR  = UINT16_MAX;
+		sprites[cPos].mulG  = UINT16_MAX;
+		sprites[cPos].mulB  = UINT16_MAX;
+		sprites[cPos].mulO  = UINT16_MAX;
 		col++;
 		if (chars[cPos] == delim) {
 			row++;
@@ -136,10 +187,10 @@ int main(int argc, char **argv) {
 		}
 	}
 	#ifdef LOG_VERTEX_DATA_TO
-	printVerts(verts, charCount);
+	printSprites(sprites, charCount, __LINE__);
 	#endif
-	int curWord = 0;
-	int frameWhenWordDropped = 0;
+	
+	// build bounce envelope
 	#define wordDropEnvCount 64
 	float wordDropEnv[wordDropEnvCount];
 	wordDropEnv[0] = texAtlGlyphH;
@@ -160,6 +211,8 @@ int main(int argc, char **argv) {
 	}
 	wordDropEnv[wordDropEnvCount-1] = 0;
 	
+	// init opengl state
+	// buffers
   GLuint vao;
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -170,10 +223,11 @@ int main(int argc, char **argv) {
   glBindBuffer(GL_ARRAY_BUFFER, vbo);_glec
   glBufferData(
     GL_ARRAY_BUFFER,
-    charCount*sizeof(vert),
-    verts,
-    GL_STATIC_DRAW
+    charCount*sizeof(sprite),
+    sprites,
+    GL_DYNAMIC_DRAW
   );_glec
+	// shader program
   GLuint shaderProgram = createShaderProgram(
     "src/shadeVert.glsl",
 		NULL,
@@ -184,19 +238,30 @@ int main(int argc, char **argv) {
   );
   if (!shaderProgram) return __LINE__;
   glUseProgram(shaderProgram);_glec
-  GLint attr_pos      = glGetAttribLocation(shaderProgram, "pos"  );_glec
-	GLint attr_texCoord = glGetAttribLocation(shaderProgram, "texCoord");_glec
-  glEnableVertexAttribArray(attr_pos  );_glec
-  glEnableVertexAttribArray(attr_texCoord);_glec
-  glVertexAttribPointer(attr_pos,      3, GL_FLOAT, GL_FALSE, 16, (const GLvoid*)  0);_glec
-  glVertexAttribPointer(attr_texCoord, 2, GL_SHORT, GL_FALSE, 16, (const GLvoid*) 12);_glec
+	// attributes
+  GLint attr_dstPosCntr = glGetAttribLocation(shaderProgram, "dstPosCntr");_glec
+	GLint attr_dstHlfSize = glGetAttribLocation(shaderProgram, "dstHlfSize");_glec
+	GLint attr_srcPosTpLt = glGetAttribLocation(shaderProgram, "srcPosTpLt");_glec
+	GLint attr_srcSize    = glGetAttribLocation(shaderProgram, "srcSize"   );_glec
+	GLint attr_mulColor   = glGetAttribLocation(shaderProgram, "mulColor"  );_glec
+  glEnableVertexAttribArray(attr_dstPosCntr);_glec
+	glEnableVertexAttribArray(attr_dstHlfSize);_glec
+	glEnableVertexAttribArray(attr_srcPosTpLt);_glec
+	glEnableVertexAttribArray(attr_srcSize   );_glec
+  glEnableVertexAttribArray(attr_mulColor  );_glec
+	const GLsizei vertAttrStride = sizeof(sprite);
+	glVertexAttribPointer(attr_dstPosCntr, 2, GL_FLOAT,          GL_FALSE, vertAttrStride, (const GLvoid*) 0);_glec
+	glVertexAttribPointer(attr_dstHlfSize, 2, GL_FLOAT,          GL_FALSE, vertAttrStride, (const GLvoid*) 8);_glec
+  glVertexAttribPointer(attr_srcPosTpLt, 2, GL_UNSIGNED_SHORT, GL_FALSE, vertAttrStride, (const GLvoid*)16);_glec
+  glVertexAttribPointer(attr_srcSize,    2, GL_UNSIGNED_SHORT, GL_FALSE, vertAttrStride, (const GLvoid*)20);_glec
+  glVertexAttribPointer(attr_mulColor,   4, GL_UNSIGNED_SHORT, GL_TRUE,  vertAttrStride, (const GLvoid*)24);_glec
+	// uniforms
 	GLint unif_texAtlSize   = glGetUniformLocation(shaderProgram, "texAtlSize");_glec
 	GLint unif_scale        = glGetUniformLocation(shaderProgram, "scale");_glec
 	GLint unif_translate    = glGetUniformLocation(shaderProgram, "translate");_glec
-	GLint unif_glyphTexSize = glGetUniformLocation(shaderProgram, "glyphTexSize");_glec
 	glUniform2f(unif_texAtlSize, texAtlW, texAtlH);_glec
 	glUniform2f(unif_scale, scaleX_, scaleY_);_glec
-	glUniform2f(unif_glyphTexSize, texAtlGlyphW, texAtlGlyphH);_glec
+	// texture
 	GLuint texAtl = 0;
 	texFromPng(texAtl, texAtlPath, false);
   glUniform1i(glGetUniformLocation(shaderProgram, "texAtl"), 0);_glec
@@ -204,24 +269,28 @@ int main(int argc, char **argv) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);_glec
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);_glec
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);_glec
+	// other opengl
 	const uint32_t clearColor = 0x224455ff; // rgba
 	glClearColori(clearColor);
+	glClear(GL_COLOR_BUFFER_BIT);
 	#if drawWireFrame
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	#endif
 	
+	// init frame state
+	int stuckCharCount = 0;
+	int misBkspCount = 0;
+	int curWord = 0;
+	int frameWhenWordDropped = 0;
+	int curFrame = 0;
   timestamp ts_oldFrameStart={0,0},ts_newFrameStart={0,0},ts_frameDelta={0,0};
 	#ifdef LOG_TIMING_TO
   timestamp ts_compTime = {0,0}, ts_now = {0,0};
   #endif
   clock_gettime(CLOCK_MONOTONIC, &ts_newFrameStart);
-	
-	int stuckCharCount = 0;
-	int misBkspCount = 0;
-	int curFrame = 0;
-  
 	bool running = true;
-	glClear(GL_COLOR_BUFFER_BIT);
+	
+	// frame loop
 	SDL_StartTextInput();
 	while (running) {
     ts_oldFrameStart = ts_newFrameStart;
@@ -285,23 +354,27 @@ int main(int argc, char **argv) {
 					running = false;
 					break;
 				}
-				scoord tlCorn = verts[visCharBeg+1].s;
-				tlCorn.x -= texAtlGlyphW;
-				if (tlCorn.x <=  0.0 - texAtlGlyphW*chamCharCount) {
+				sprites[visCharBeg] = sprites[visCharBeg+1];
+				sprites[visCharBeg].dstCX -= texAtlGlyphW;
+				if (sprites[visCharBeg].dstCX <=  0.0 - texAtlGlyphW*chamCharCount) {
 					running = false;
+					break;
 				}
 				else {
 					chars[visCharBeg] = charEntered;
-					verts[visCharBeg].s.x = tlCorn.x;
-					verts[visCharBeg].s.y = tlCorn.y;
-					verts[visCharBeg].s.z = tlCorn.z;
-					verts[visCharBeg].t.u = texAtlGlyphPosX(charEntered);
-					verts[visCharBeg].t.v = texAtlGlyphPosY(charEntered);
+					sprites[visCharBeg].dstHW = -texAtlGlyphW/2.0;
+					sprites[visCharBeg].dstHH = -texAtlGlyphH/2.0;
+					sprites[visCharBeg].srcX  = texAtlGlyphPosX(charEntered);
+					sprites[visCharBeg].srcY  = texAtlGlyphPosY(charEntered);
+					sprites[visCharBeg].mulR  = UINT16_MAX;
+					sprites[visCharBeg].mulG  = 0;
+					sprites[visCharBeg].mulB  = 0;
+					sprites[visCharBeg].mulO  = UINT16_MAX;
 					glBufferSubData(
-						GL_ARRAY_BUFFER,                   // GLenum        target
-						visCharBeg*sizeof(vert),           // GLintptr      offset
-						sizeof(vert),                      // GLsizeiptr    size
-						(const GLvoid*)&verts[visCharBeg]  // const GLvoid *data
+						GL_ARRAY_BUFFER,                    // GLenum        target
+						visCharBeg*sizeof(sprite),          // GLintptr      offset
+						sizeof(sprite),                     // GLsizeiptr    size
+						(const GLvoid*)&sprites[visCharBeg] // const GLvoid *data
 					);
 				}
 			}
@@ -326,7 +399,6 @@ int main(int argc, char **argv) {
 			visCharBeg,
 			visCharCount_
 		);_glec
-		
     #ifdef LOG_TIMING_TO
 		clock_gettime(CLOCK_MONOTONIC, &ts_now);
     getTimeDelta(&ts_newFrameStart, &ts_now, &ts_compTime);
@@ -338,7 +410,9 @@ int main(int argc, char **argv) {
 		SDL_GL_SwapWindow(window);_sdlec
     curFrame++;
 	}
+	// cleanup
 	SDL_StopTextInput();
+	free(sprites);
 	SDL_GL_DeleteContext(GLcontext);_sdlec
 	SDL_Quit();_sdlec
 	return 0;
