@@ -17,19 +17,19 @@ void main() {
 	mulColorFromGeom = gs_in[0].mulColor;
 	
 	texCoordFromGeom = gs_in[0].srcPosTpLt;
-	gl_Position      = gl_in[0].gl_Position + vec4(-gs_in[0].dstHlfSize.x,  gs_in[0].dstHlfSize.y, 0.0, 0.0);
+	gl_Position = gl_in[0].gl_Position + vec4(-gs_in[0].dstHlfSize.x,  gs_in[0].dstHlfSize.y, 0.0, 0.0);
 	EmitVertex();
 	
 	texCoordFromGeom = gs_in[0].srcPosTpLt  + vec2(gs_in[0].srcSize.x, 0.0);
-	gl_Position      = gl_in[0].gl_Position + vec4( gs_in[0].dstHlfSize.x,  gs_in[0].dstHlfSize.y, 0.0, 0.0);
+	gl_Position = gl_in[0].gl_Position + vec4( gs_in[0].dstHlfSize.x,  gs_in[0].dstHlfSize.y, 0.0, 0.0);
 	EmitVertex();
 	
 	texCoordFromGeom = gs_in[0].srcPosTpLt  + vec2(0.0, gs_in[0].srcSize.y);
-	gl_Position      = gl_in[0].gl_Position + vec4(-gs_in[0].dstHlfSize.x, -gs_in[0].dstHlfSize.y, 0.0, 0.0);
+	gl_Position = gl_in[0].gl_Position + vec4(-gs_in[0].dstHlfSize.x, -gs_in[0].dstHlfSize.y, 0.0, 0.0);
 	EmitVertex();
 	
 	texCoordFromGeom = gs_in[0].srcPosTpLt  + vec2(gs_in[0].srcSize.x, gs_in[0].srcSize.y);
-	gl_Position      = gl_in[0].gl_Position + vec4( gs_in[0].dstHlfSize.x, -gs_in[0].dstHlfSize.y, 0.0, 0.0);
+	gl_Position = gl_in[0].gl_Position + vec4( gs_in[0].dstHlfSize.x, -gs_in[0].dstHlfSize.y, 0.0, 0.0);
 	EmitVertex();
 	
 	EndPrimitive();

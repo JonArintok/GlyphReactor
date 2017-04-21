@@ -153,21 +153,22 @@ int main(int argc, char **argv) {
 	const char *txtPath = "testFile.txt";
 	const int chamCharCount = 8; // character widths between gun and word
 	const int fileCharCount = getFileSize(txtPath);
-	char chars[fileCharCount+chamCharCount];
-	const int charCount = chamCharCount + cleanTxtFile(
+	int charsSize = fileCharCount+chamCharCount;
+	char *chars = malloc(sizeof(char)*charsSize);
+	const int charCount = cleanTxtFile(
 		txtPath,
-		chars+chamCharCount,
+		&chars[chamCharCount],
 		fileCharCount
 	);
+	int visCharBeg = chamCharCount;
+	int visCharEnd = chamCharCount+charCount;
+	#define visCharCount_ (visCharEnd-visCharBeg)
 	
 	// init sprite data
-	sprite *sprites = malloc(sizeof(sprite)*charCount);
-	int visCharBeg = chamCharCount;
-	int visCharEnd = charCount;
-	#define visCharCount_ (visCharEnd-visCharBeg)
+	sprite *sprites = malloc(sizeof(sprite)*charsSize);
 	#define txtOriginX_ (-videoHW_+(chamCharCount*texAtlGlyphW)+64)
 	#define txtOriginY_ (videoHH_/4)
-	for (int cPos = visCharBeg, row = 0, col = 0; cPos < charCount; cPos++) {
+	for (int cPos = visCharBeg, row = 0, col = 0; cPos < visCharEnd; cPos++) {
 		sprites[cPos].dstCX = 0.0 + col*texAtlGlyphW;
 		sprites[cPos].dstCY = 0.0 - row*texAtlGlyphH;
 		sprites[cPos].dstHW = texAtlGlyphW/2.0;
@@ -223,7 +224,7 @@ int main(int argc, char **argv) {
   glBindBuffer(GL_ARRAY_BUFFER, vbo);_glec
   glBufferData(
     GL_ARRAY_BUFFER,
-    charCount*sizeof(sprite),
+    charsSize*sizeof(sprite),
     sprites,
     GL_DYNAMIC_DRAW
   );_glec
@@ -412,6 +413,7 @@ int main(int argc, char **argv) {
 	}
 	// cleanup
 	SDL_StopTextInput();
+	free(chars);
 	free(sprites);
 	SDL_GL_DeleteContext(GLcontext);_sdlec
 	SDL_Quit();_sdlec
