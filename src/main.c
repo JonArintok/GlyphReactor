@@ -282,18 +282,21 @@ int main(int argc, char **argv) {
 	int stuckCharCount = 0;
 	int misBkspCount = 0;
 	int curWord = 0;
+	int curWordStarted = visCharBeg;
 	int frameWhenWordDropped = 0;
+	const int beamGlowTime = 60; // frames
+	int frameWhenCharEntered = -beamGlowTime;
+	int lastCharEntered = '\0';
 	int curFrame = 0;
   timestamp ts_oldFrameStart={0,0},ts_newFrameStart={0,0},ts_frameDelta={0,0};
 	#ifdef LOG_TIMING_TO
   timestamp ts_compTime = {0,0}, ts_now = {0,0};
   #endif
   clock_gettime(CLOCK_MONOTONIC, &ts_newFrameStart);
-	bool running = true;
 	
 	// frame loop
 	SDL_StartTextInput();
-	while (running) {
+	for (bool running = true; running; curFrame++) {
     ts_oldFrameStart = ts_newFrameStart;
     clock_gettime(CLOCK_MONOTONIC, &ts_newFrameStart);
     getTimeDelta(&ts_oldFrameStart, &ts_newFrameStart, &ts_frameDelta);
@@ -305,6 +308,7 @@ int main(int argc, char **argv) {
     #endif
 		char charEntered = '\0';
     SDL_Event event;
+		// event loop
     while (SDL_PollEvent(&event)) {
       switch (event.type) {
         case SDL_QUIT: running = false; break;
@@ -333,7 +337,10 @@ int main(int argc, char **argv) {
       }
     }
 		if (!running) break;
+		// respond to character entered
 		if (charEntered) {
+			lastCharEntered = charEntered;
+			frameWhenCharEntered = curFrame;
 			if (charEntered == bkspChar) {
 				if (stuckCharCount) {
 					stuckCharCount--;
@@ -342,11 +349,12 @@ int main(int argc, char **argv) {
 				else misBkspCount++;
 			}
 			else if (charEntered == chars[visCharBeg] && !stuckCharCount) {
+				visCharBeg++;
 				if (charEntered == delim) {
 					curWord++;
+					curWordStarted = visCharBeg;
 					frameWhenWordDropped = curFrame;
 				}
-				visCharBeg++;
 			}
 			else {
 				visCharBeg--;
@@ -380,6 +388,36 @@ int main(int argc, char **argv) {
 				}
 			}
 		}
+		// draw beam
+		const float beamPhase = (float)(curFrame-frameWhenCharEntered)/beamGlowTime;
+		if (beamPhase <= 1) {
+			const int beamLength = chamCharCount + (visCharBeg-curWordStarted);
+			const int beamStart = visCharBeg - beamLength;
+			fr (i, beamLength) {
+				const int sIndex = beamStart + i;
+				sprites[sIndex].dstCX = (-chamCharCount + i) * texAtlGlyphW;
+				sprites[sIndex].dstCY = 0;
+				sprites[sIndex].dstHW = texAtlGlyphW;
+				sprites[sIndex].dstHH = texAtlGlyphH/2.0;
+				sprites[sIndex].srcX  = texAtlGlyphPosX(lastCharEntered);
+				sprites[sIndex].srcY  = texAtlGlyphPosY(lastCharEntered);
+				sprites[sIndex].srcW  = texAtlGlyphW;
+				sprites[sIndex].srcH  = texAtlGlyphH;
+				sprites[sIndex].mulR  = 0;
+				sprites[sIndex].mulG  = UINT16_MAX;
+				sprites[sIndex].mulB  = UINT16_MAX;
+				sprites[sIndex].mulO  = UINT16_MAX * (1.0 - beamPhase);
+			}
+			glBufferSubData(
+				GL_ARRAY_BUFFER,                   // GLenum        target
+				beamStart*sizeof(sprite),          // GLintptr      offset
+				beamLength*sizeof(sprite),         // GLsizeiptr    size
+				(const GLvoid*)&sprites[beamStart] // const GLvoid *data
+			);
+			glUniform2f(unif_translate, txtOriginX_, txtOriginY_);
+			glDrawArrays(GL_POINTS, beamStart, beamLength);_glec
+		}
+		// draw word queue
 		if (wordDropEnvCount > curFrame-frameWhenWordDropped) {
 			glUniform2f(
 				unif_translate,
@@ -394,12 +432,8 @@ int main(int argc, char **argv) {
 				txtOriginY_ + curWord*texAtlGlyphH
 			);
 		}
-		glClear(GL_COLOR_BUFFER_BIT);
-    glDrawArrays(
-			GL_POINTS,
-			visCharBeg,
-			visCharCount_
-		);_glec
+    glDrawArrays(GL_POINTS, visCharBeg, visCharCount_);_glec
+		// finish frame
     #ifdef LOG_TIMING_TO
 		clock_gettime(CLOCK_MONOTONIC, &ts_now);
     getTimeDelta(&ts_newFrameStart, &ts_now, &ts_compTime);
@@ -409,7 +443,7 @@ int main(int argc, char **argv) {
     );
     #endif
 		SDL_GL_SwapWindow(window);_sdlec
-    curFrame++;
+		glClear(GL_COLOR_BUFFER_BIT);
 	}
 	// cleanup
 	SDL_StopTextInput();
