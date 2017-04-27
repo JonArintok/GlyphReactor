@@ -74,15 +74,13 @@ void printSprites(sprite *sprites, int count, int line) {
 #endif
 
 const char delim = ' ';
-int cleanTxtFile(
-	const char *txtPath,
-	char       *chars,
-	int         writeLimit
-) {
+const int  maxWordSize = 80;
+int cleanTxtFile(const char *txtPath, char *chars, int writeLimit) {
 	int readLimit = stringFromFile(txtPath, chars, writeLimit);
 	int readPos = 0;
 	int writPos = 0;
-	while(true) {
+	int writePosInWord = 0;
+	while (readPos < writeLimit) {
 		if (chars[readPos] == '\0' || readPos > readLimit) {
 			chars[writPos] = '\0';
 			break;
@@ -92,13 +90,20 @@ int cleanTxtFile(
 			if (chars[writPos-1] != delim) {
 				chars[writPos] = delim;
 				writPos++;
+				writePosInWord = 0;
 			}
 			continue;
 		}
 		chars[writPos] = chars[readPos];
 		readPos++;
 		writPos++;
-		if (readPos > writeLimit) _SHOULD_NOT_BE_HERE_;
+		writePosInWord++;
+		if (writePosInWord >= maxWordSize) {
+			// this overwrites a character, but it's just to prevent memory errors
+			chars[writPos] = delim;
+			writPos++;
+			writePosInWord = 0;
+		}
 	}
 	return writPos;
 }
@@ -151,22 +156,23 @@ int main(int argc, char **argv) {
 	
 	// init character array
 	const char *txtPath = "testFile.txt";
-	const int chamCharCount = 8; // character widths between gun and word
+	const int railLength = 8;       // character widths between gun and queue
+	const int beamCharPerWidth = 2; // affects kerning of beam glyphs
 	const int fileCharCount = getFileSize(txtPath);
-	int charsSize = fileCharCount+chamCharCount;
+	int visCharBeg = (railLength+maxWordSize) * beamCharPerWidth;
+	int charsSize = visCharBeg + fileCharCount;
 	char *chars = malloc(sizeof(char)*charsSize);
 	const int charCount = cleanTxtFile(
 		txtPath,
-		&chars[chamCharCount],
+		&chars[visCharBeg],
 		fileCharCount
 	);
-	int visCharBeg = chamCharCount;
-	int visCharEnd = chamCharCount+charCount;
+	int visCharEnd = visCharBeg + charCount;
 	#define visCharCount_ (visCharEnd-visCharBeg)
 	
 	// init sprite data
 	sprite *sprites = malloc(sizeof(sprite)*charsSize);
-	#define txtOriginX_ (-videoHW_+(chamCharCount*texAtlGlyphW)+64)
+	#define txtOriginX_ (-railLength*texAtlGlyphW - 64)
 	#define txtOriginY_ (videoHH_/4)
 	for (int cPos = visCharBeg, row = 0, col = 0; cPos < visCharEnd; cPos++) {
 		sprites[cPos].dstCX = 0.0 + col*texAtlGlyphW;
@@ -213,12 +219,13 @@ int main(int argc, char **argv) {
 	wordDropEnv[wordDropEnvCount-1] = 0;
 	
 	// init opengl state
-	// buffers
+	// vertex array object
   GLuint vao;
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glGenVertexArrays(1, &vao);_glec
   glBindVertexArray(vao);_glec
+	// vertex buffer object
   GLuint vbo;
   glGenBuffers(1, &vbo);_glec
   glBindBuffer(GL_ARRAY_BUFFER, vbo);_glec
@@ -282,7 +289,7 @@ int main(int argc, char **argv) {
 	int stuckCharCount = 0;
 	int misBkspCount = 0;
 	int curWord = 0;
-	int curWordStarted = visCharBeg;
+	int whereCurWordStarted = visCharBeg;
 	int frameWhenWordDropped = 0;
 	const int beamGlowTime = 60; // frames
 	int frameWhenCharEntered = -beamGlowTime;
@@ -352,7 +359,7 @@ int main(int argc, char **argv) {
 				visCharBeg++;
 				if (charEntered == delim) {
 					curWord++;
-					curWordStarted = visCharBeg;
+					whereCurWordStarted = visCharBeg;
 					frameWhenWordDropped = curFrame;
 				}
 			}
@@ -365,7 +372,7 @@ int main(int argc, char **argv) {
 				}
 				sprites[visCharBeg] = sprites[visCharBeg+1];
 				sprites[visCharBeg].dstCX -= texAtlGlyphW;
-				if (sprites[visCharBeg].dstCX <=  0.0 - texAtlGlyphW*chamCharCount) {
+				if (sprites[visCharBeg].dstCX <=  0.0 - texAtlGlyphW*railLength) {
 					running = false;
 					break;
 				}
@@ -391,13 +398,13 @@ int main(int argc, char **argv) {
 		// draw beam
 		const float beamPhase = (float)(curFrame-frameWhenCharEntered)/beamGlowTime;
 		if (beamPhase <= 1) {
-			const int beamLength = chamCharCount + (visCharBeg-curWordStarted);
-			const int beamStart = visCharBeg - beamLength;
-			fr (i, beamLength) {
+			const int beamSize  = (railLength + (visCharBeg-whereCurWordStarted))*beamCharPerWidth;
+			const int beamStart = visCharBeg - beamSize;
+			fr (i, beamSize) {
 				const int sIndex = beamStart + i;
-				sprites[sIndex].dstCX = (-chamCharCount + i) * texAtlGlyphW;
+				sprites[sIndex].dstCX = -railLength*texAtlGlyphW + i*texAtlGlyphW/beamCharPerWidth;
 				sprites[sIndex].dstCY = 0;
-				sprites[sIndex].dstHW = texAtlGlyphW;
+				sprites[sIndex].dstHW = texAtlGlyphW/2.0;
 				sprites[sIndex].dstHH = texAtlGlyphH/2.0;
 				sprites[sIndex].srcX  = texAtlGlyphPosX(lastCharEntered);
 				sprites[sIndex].srcY  = texAtlGlyphPosY(lastCharEntered);
@@ -411,11 +418,11 @@ int main(int argc, char **argv) {
 			glBufferSubData(
 				GL_ARRAY_BUFFER,                   // GLenum        target
 				beamStart*sizeof(sprite),          // GLintptr      offset
-				beamLength*sizeof(sprite),         // GLsizeiptr    size
+				beamSize*sizeof(sprite),           // GLsizeiptr    size
 				(const GLvoid*)&sprites[beamStart] // const GLvoid *data
-			);
-			glUniform2f(unif_translate, txtOriginX_, txtOriginY_);
-			glDrawArrays(GL_POINTS, beamStart, beamLength);_glec
+			);_glec
+			glUniform2f(unif_translate, txtOriginX_, txtOriginY_);_glec
+			glDrawArrays(GL_POINTS, beamStart, beamSize);_glec
 		}
 		// draw word queue
 		if (wordDropEnvCount > curFrame-frameWhenWordDropped) {

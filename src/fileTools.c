@@ -6,7 +6,7 @@
 int getFileSize(const char *path) {
   struct stat st;
   stat(path, &st);
-  return st.st_size;
+  return st.st_size + 1;
 }
 
 int stringFromFile(const char *restrict path, char *dest, uint32_t maxWrite) {
@@ -16,8 +16,8 @@ int stringFromFile(const char *restrict path, char *dest, uint32_t maxWrite) {
     printf("error: could not open file \"%s\"\n", path);
     return 0;
   }
-  int c, i = 0;
-  for (; i < maxWrite; i++) {
+  int i = 0;
+  for (char c; i < maxWrite; i++) {
     c = fgetc(fp);
 		if (c == EOF) break;
     dest[i] = c;
