@@ -3,7 +3,9 @@ env = Environment(CC = "gcc", CCFLAGS = flags)
 src = [
 	"main.c",
 	"oglTools.c",
+	"sprite.c",
 	"fileTools.c",
+	"cleanTxtFile.c",
 	"misc.c",
 	"optionsAndErrors.c",
 	"timestamp.c"

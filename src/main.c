@@ -1,113 +1,18 @@
 
 #include <stdio.h>
-#include <stdint.h>
 #include <math.h>
-
 #define  GLEW_STATIC
 #include <GL/glew.h>
 #include <SDL2/SDL.h>
 
 #include "optionsAndErrors.h"
 #include "fileTools.h"
+#include "cleanTxtFile.h"
 #include "oglTools.h"
+#include "sprite.h"
 #include "misc.h"
 #include "timestamp.h"
 #include "../img/texAtlas.h"
-
-
-typedef struct {
-	float    dstCX; // destination center X position
-	float    dstCY; // destination center Y position
-	float    dstHW; // destination half width,  set negative to mirror x
-	float    dstHH; // destination half height, set negative to mirror y
-	uint16_t srcX;  // source top left corner
-	uint16_t srcY;  // source top left corner
-	uint16_t srcW;  // source width
-	uint16_t srcH;  // source height
-	uint16_t mulR;  // normalized
-	uint16_t mulG;  // normalized
-	uint16_t mulB;  // normalized
-	uint16_t mulO;  // normalized
-} sprite;
-
-#ifdef LOG_VERTEX_DATA_TO
-void printSprites(sprite *sprites, int count, int line) {
-	if (!sprites) {
-		fprintf(LOG_VERTEX_DATA_TO,
-			"ERROR: sprites pointer given at line %i is NULL\n",
-			line
-		);
-		return;
-	}
-	fprintf(LOG_VERTEX_DATA_TO, "SPRITE DATA, %i count\n", count);
-	fr (i, count) {
-		fprintf(LOG_VERTEX_DATA_TO,
-			"# %i\n"
-			"\tdstCX:%9.2f\n"
-			"\tdstCY:%9.2f\n"
-			"\tdstHW:%9.2f\n"
-			"\tdstHH:%9.2f\n"
-			"\tsrcX:%6i\n"
-			"\tsrcY:%6i\n"
-			"\tsrcW:%6i\n"
-			"\tsrcH:%6i\n"
-			"\tmulR:%6i\n"
-			"\tmulG:%6i\n"
-			"\tmulB:%6i\n"
-			"\tmulO:%6i\n",
-			i,
-			sprites[i].dstCX,
-			sprites[i].dstCY,
-			sprites[i].dstHW,
-			sprites[i].dstHH,
-			sprites[i].srcX,
-			sprites[i].srcY,
-			sprites[i].srcW,
-			sprites[i].srcH,
-			sprites[i].mulR,
-			sprites[i].mulG,
-			sprites[i].mulB,
-			sprites[i].mulO
-		);
-	}
-}
-#endif
-
-const char delim = ' ';
-const int  maxWordSize = 80;
-int cleanTxtFile(const char *txtPath, char *chars, int writeLimit) {
-	int readLimit = stringFromFile(txtPath, chars, writeLimit);
-	int readPos = 0;
-	int writPos = 0;
-	int writePosInWord = 0;
-	while (readPos < writeLimit) {
-		if (chars[readPos] == '\0' || readPos > readLimit) {
-			chars[writPos] = '\0';
-			break;
-		}
-		if (chars[readPos] < '!' || chars[readPos] > '~') {
-			readPos++;
-			if (chars[writPos-1] != delim) {
-				chars[writPos] = delim;
-				writPos++;
-				writePosInWord = 0;
-			}
-			continue;
-		}
-		chars[writPos] = chars[readPos];
-		readPos++;
-		writPos++;
-		writePosInWord++;
-		if (writePosInWord >= maxWordSize) {
-			// this overwrites a character, but it's just to prevent memory errors
-			chars[writPos] = delim;
-			writPos++;
-			writePosInWord = 0;
-		}
-	}
-	return writPos;
-}
-
 
 
 int main(int argc, char **argv) {
@@ -194,7 +99,8 @@ int main(int argc, char **argv) {
 		}
 	}
 	#ifdef LOG_VERTEX_DATA_TO
-	printSprites(sprites, charCount, __LINE__);
+	fprintf(LOG_VERTEX_DATA_TO, "\nWORD QUEUE\n");
+	printSprites(&sprites[visCharBeg], charCount, __LINE__);
 	#endif
 	
 	// build bounce envelope
@@ -280,9 +186,9 @@ int main(int argc, char **argv) {
 	// other opengl
 	const uint32_t clearColor = 0x224455ff; // rgba
 	glClearColori(clearColor);
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT);_glec
 	#if drawWireFrame
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);_glec
 	#endif
 	
 	// init frame state
