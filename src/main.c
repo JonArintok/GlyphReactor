@@ -18,7 +18,7 @@
 int main(int argc, char **argv) {
 	// init SDL and get an opengl window
 	int videoW = 1280;
-  int videoH =  720;
+  int videoH =  800;
 	#define videoHW_ (videoW/2)
   #define videoHH_ (videoH/2)
 	#define scaleX_ (1.0/videoHW_)
@@ -27,8 +27,8 @@ int main(int argc, char **argv) {
 	SDL_GLContext  GLcontext = NULL;
 	SDL_Init(SDL_INIT_VIDEO);_sdlec
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 	window = SDL_CreateWindow(
 		"GlyphReactor",            //const char* title,
 		SDL_WINDOWPOS_UNDEFINED,   //int         x,
@@ -59,39 +59,45 @@ int main(int argc, char **argv) {
 	glDebugMessageCallback(glErrorCallback, NULL);_glec
 	#endif
 	
-	// init character array
-	const char *txtPath = "testFile.txt";
-	const int railLength = 8;       // character widths between gun and queue
-	const int beamCharPerWidth = 2; // affects kerning of beam glyphs
-	const int fileCharCount = getFileSize(txtPath);
-	int visCharBeg = (railLength+maxWordSize) * beamCharPerWidth;
-	int charsSize = visCharBeg + fileCharCount;
-	char *chars = malloc(sizeof(char)*charsSize);
-	const int charCount = cleanTxtFile(
-		txtPath,
-		&chars[visCharBeg],
-		fileCharCount
-	);
-	int visCharEnd = visCharBeg + charCount;
-	#define visCharCount_ (visCharEnd-visCharBeg)
+	// character data
+	const char *txtPath       = "testFile.txt";
+	const int   railLength    = 8; // character widths between gun and queue
+	const int   fileCharCount = getFileSize(txtPath);
+	int         visCharBeg    = railLength;
+	int         charsSize     = visCharBeg + fileCharCount;
+	char       *chars         = malloc(sizeof(char)*charsSize);
+	sprite     *charSprites   = malloc(sizeof(sprite)*charsSize);
+	const int   charCount     = cleanTxtFile(txtPath, &chars[visCharBeg], fileCharCount);
+	int         visCharEnd    = visCharBeg + charCount;
+	#define     visCharCount_ (visCharEnd-visCharBeg)
 	
-	// init sprite data
-	sprite *sprites = malloc(sizeof(sprite)*charsSize);
+	// beam data
+	const int beamCharPerWidth = 2; // affects kerning of beam glyphs
+	const int beamSpritesSize  = (railLength+maxWordSize) * beamCharPerWidth;
+	sprite   *beamSprites      = malloc(sizeof(sprite)*beamSpritesSize);
+	
+	// vert data spacing
+	const int beamVertBeg = 0;
+	const int charVertBeg = beamSpritesSize;
+	const int vertBufSize = charsSize + beamSpritesSize;
+	#define visCharVertBeg_ (charVertBeg+visCharBeg)
+	
+	// charSprites data
 	#define txtOriginX_ (-railLength*texAtlGlyphW - 64)
 	#define txtOriginY_ (videoHH_/4)
 	for (int cPos = visCharBeg, row = 0, col = 0; cPos < visCharEnd; cPos++) {
-		sprites[cPos].dstCX = 0.0 + col*texAtlGlyphW;
-		sprites[cPos].dstCY = 0.0 - row*texAtlGlyphH;
-		sprites[cPos].dstHW = texAtlGlyphW/2.0;
-		sprites[cPos].dstHH = texAtlGlyphH/2.0;
-		sprites[cPos].srcX  = texAtlGlyphPosX(chars[cPos]);
-		sprites[cPos].srcY  = texAtlGlyphPosY(chars[cPos]);
-		sprites[cPos].srcW  = texAtlGlyphW;
-		sprites[cPos].srcH  = texAtlGlyphH;
-		sprites[cPos].mulR  = UINT16_MAX;
-		sprites[cPos].mulG  = UINT16_MAX;
-		sprites[cPos].mulB  = UINT16_MAX;
-		sprites[cPos].mulO  = UINT16_MAX;
+		charSprites[cPos].dstCX = 0.0 + col*texAtlGlyphW;
+		charSprites[cPos].dstCY = 0.0 - row*texAtlGlyphH;
+		charSprites[cPos].dstHW = texAtlGlyphW/2.0;
+		charSprites[cPos].dstHH = texAtlGlyphH/2.0;
+		charSprites[cPos].srcX  = texAtlGlyphPosX(chars[cPos]);
+		charSprites[cPos].srcY  = texAtlGlyphPosY(chars[cPos]);
+		charSprites[cPos].srcW  = texAtlGlyphW;
+		charSprites[cPos].srcH  = texAtlGlyphH;
+		charSprites[cPos].mulR  = UINT16_MAX;
+		charSprites[cPos].mulG  = UINT16_MAX;
+		charSprites[cPos].mulB  = UINT16_MAX;
+		charSprites[cPos].mulO  = UINT16_MAX;
 		col++;
 		if (chars[cPos] == delim) {
 			row++;
@@ -100,7 +106,7 @@ int main(int argc, char **argv) {
 	}
 	#ifdef LOG_VERTEX_DATA_TO
 	fprintf(LOG_VERTEX_DATA_TO, "\nWORD QUEUE\n");
-	printSprites(&sprites[visCharBeg], charCount, __LINE__);
+	printSprites(&charSprites[visCharBeg], charCount, __LINE__);
 	#endif
 	
 	// build bounce envelope
@@ -137,10 +143,16 @@ int main(int argc, char **argv) {
   glBindBuffer(GL_ARRAY_BUFFER, vbo);_glec
   glBufferData(
     GL_ARRAY_BUFFER,
-    charsSize*sizeof(sprite),
-    sprites,
+    vertBufSize*sizeof(sprite),
+    NULL,
     GL_DYNAMIC_DRAW
   );_glec
+	glBufferSubData(
+		GL_ARRAY_BUFFER,                        // GLenum        target
+		visCharVertBeg_*sizeof(sprite),         // GLintptr      offset
+		visCharCount_*sizeof(sprite),               // GLsizeiptr    size
+		(const GLvoid*)&charSprites[visCharBeg] // const GLvoid *data
+	);
 	// shader program
   GLuint shaderProgram = createShaderProgram(
     "src/shadeVert.glsl",
@@ -276,27 +288,27 @@ int main(int argc, char **argv) {
 					running = false;
 					break;
 				}
-				sprites[visCharBeg] = sprites[visCharBeg+1];
-				sprites[visCharBeg].dstCX -= texAtlGlyphW;
-				if (sprites[visCharBeg].dstCX <=  0.0 - texAtlGlyphW*railLength) {
+				charSprites[visCharBeg] = charSprites[visCharBeg+1];
+				charSprites[visCharBeg].dstCX -= texAtlGlyphW;
+				if (charSprites[visCharBeg].dstCX <=  0.0 - texAtlGlyphW*railLength) {
 					running = false;
 					break;
 				}
 				else {
 					chars[visCharBeg] = charEntered;
-					sprites[visCharBeg].dstHW = -texAtlGlyphW/2.0;
-					sprites[visCharBeg].dstHH = -texAtlGlyphH/2.0;
-					sprites[visCharBeg].srcX  = texAtlGlyphPosX(charEntered);
-					sprites[visCharBeg].srcY  = texAtlGlyphPosY(charEntered);
-					sprites[visCharBeg].mulR  = UINT16_MAX;
-					sprites[visCharBeg].mulG  = 0;
-					sprites[visCharBeg].mulB  = 0;
-					sprites[visCharBeg].mulO  = UINT16_MAX;
+					charSprites[visCharBeg].dstHW = -texAtlGlyphW/2.0;
+					charSprites[visCharBeg].dstHH = -texAtlGlyphH/2.0;
+					charSprites[visCharBeg].srcX  = texAtlGlyphPosX(charEntered);
+					charSprites[visCharBeg].srcY  = texAtlGlyphPosY(charEntered);
+					charSprites[visCharBeg].mulR  = UINT16_MAX;
+					charSprites[visCharBeg].mulG  = 0;
+					charSprites[visCharBeg].mulB  = 0;
+					charSprites[visCharBeg].mulO  = UINT16_MAX;
 					glBufferSubData(
-						GL_ARRAY_BUFFER,                    // GLenum        target
-						visCharBeg*sizeof(sprite),          // GLintptr      offset
-						sizeof(sprite),                     // GLsizeiptr    size
-						(const GLvoid*)&sprites[visCharBeg] // const GLvoid *data
+						GL_ARRAY_BUFFER,                        // GLenum        target
+						visCharVertBeg_*sizeof(sprite),         // GLintptr      offset
+						sizeof(sprite),                         // GLsizeiptr    size
+						(const GLvoid*)&charSprites[visCharBeg] // const GLvoid *data
 					);
 				}
 			}
@@ -304,31 +316,33 @@ int main(int argc, char **argv) {
 		// draw beam
 		const float beamPhase = (float)(curFrame-frameWhenCharEntered)/beamGlowTime;
 		if (beamPhase <= 1) {
-			const int beamSize  = (railLength + (visCharBeg-whereCurWordStarted))*beamCharPerWidth;
-			const int beamStart = visCharBeg - beamSize;
+			const int beamSize = (railLength + (visCharBeg-whereCurWordStarted))*beamCharPerWidth;
 			fr (i, beamSize) {
-				const int sIndex = beamStart + i;
-				sprites[sIndex].dstCX = -railLength*texAtlGlyphW + i*texAtlGlyphW/beamCharPerWidth;
-				sprites[sIndex].dstCY = 0;
-				sprites[sIndex].dstHW = texAtlGlyphW/2.0;
-				sprites[sIndex].dstHH = texAtlGlyphH/2.0;
-				sprites[sIndex].srcX  = texAtlGlyphPosX(lastCharEntered);
-				sprites[sIndex].srcY  = texAtlGlyphPosY(lastCharEntered);
-				sprites[sIndex].srcW  = texAtlGlyphW;
-				sprites[sIndex].srcH  = texAtlGlyphH;
-				sprites[sIndex].mulR  = 0;
-				sprites[sIndex].mulG  = UINT16_MAX;
-				sprites[sIndex].mulB  = UINT16_MAX;
-				sprites[sIndex].mulO  = UINT16_MAX * (1.0 - beamPhase);
+				beamSprites[i].dstCX = -railLength*texAtlGlyphW + i*texAtlGlyphW/beamCharPerWidth;
+				beamSprites[i].dstCY = 0;
+				beamSprites[i].dstHW = texAtlGlyphW/2.0;
+				beamSprites[i].dstHH = texAtlGlyphH/2.0;
+				beamSprites[i].srcX  = texAtlGlyphPosX(lastCharEntered);
+				beamSprites[i].srcY  = texAtlGlyphPosY(lastCharEntered);
+				beamSprites[i].srcW  = texAtlGlyphW;
+				beamSprites[i].srcH  = texAtlGlyphH;
+				beamSprites[i].mulR  = 0;
+				beamSprites[i].mulG  = UINT16_MAX;
+				beamSprites[i].mulB  = UINT16_MAX;
+				beamSprites[i].mulO  = UINT16_MAX * (1.0 - beamPhase);
 			}
+			#ifdef LOG_VERTEX_DATA_TO
+			fprintf(LOG_VERTEX_DATA_TO, "\nBEAM\n");
+			printSprites(beamSprites, beamSize, __LINE__);
+			#endif
 			glBufferSubData(
-				GL_ARRAY_BUFFER,                   // GLenum        target
-				beamStart*sizeof(sprite),          // GLintptr      offset
-				beamSize*sizeof(sprite),           // GLsizeiptr    size
-				(const GLvoid*)&sprites[beamStart] // const GLvoid *data
-			);_glec
+				GL_ARRAY_BUFFER,             // GLenum        target
+				beamVertBeg*sizeof(sprite),  // GLintptr      offset
+				beamSize*sizeof(sprite),     // GLsizeiptr    size
+				(const GLvoid*)beamSprites   // const GLvoid *data
+			);
 			glUniform2f(unif_translate, txtOriginX_, txtOriginY_);_glec
-			glDrawArrays(GL_POINTS, beamStart, beamSize);_glec
+			glDrawArrays(GL_POINTS, 0, beamSize);_glec
 		}
 		// draw word queue
 		if (wordDropEnvCount > curFrame-frameWhenWordDropped) {
@@ -345,7 +359,7 @@ int main(int argc, char **argv) {
 				txtOriginY_ + curWord*texAtlGlyphH
 			);
 		}
-    glDrawArrays(GL_POINTS, visCharBeg, visCharCount_);_glec
+    glDrawArrays(GL_POINTS, visCharVertBeg_, visCharCount_);_glec
 		// finish frame
     #ifdef LOG_TIMING_TO
 		clock_gettime(CLOCK_MONOTONIC, &ts_now);
@@ -361,7 +375,8 @@ int main(int argc, char **argv) {
 	// cleanup
 	SDL_StopTextInput();
 	free(chars);
-	free(sprites);
+	free(charSprites);
+	free(beamSprites);
 	SDL_GL_DeleteContext(GLcontext);_sdlec
 	SDL_Quit();_sdlec
 	return 0;
