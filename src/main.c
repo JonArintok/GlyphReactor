@@ -14,6 +14,7 @@
 #include "timestamp.h"
 #include "../img/texAtlas.h"
 
+const double tau = 6.28318530717958647692528676655900576839433879875;
 
 int main(int argc, char **argv) {
 	// init SDL and get an opengl window
@@ -316,7 +317,7 @@ int main(int argc, char **argv) {
 		if (beamPhase <= 1) {
 			const int beamSize = (railLength + (visCharBeg-whereCurWordStarted))*beamCharPerWidth;
 			fr (i, beamSize) {
-				beamSprites[i].dstCX = -railLength*texAtlGlyphW + i*texAtlGlyphW/beamCharPerWidth;
+				beamSprites[i].dstCX = -railLength*texAtlGlyphW + i*texAtlGlyphW/beamCharPerWidth + sin(tau*(((curFrame-i)%12)/12.0))*1.8;
 				beamSprites[i].dstCY = 0;
 				beamSprites[i].dstHW = texAtlGlyphW/2.0;
 				beamSprites[i].dstHH = texAtlGlyphH/2.0;
