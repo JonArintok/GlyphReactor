@@ -51,33 +51,33 @@ GLuint createShaderProgram(
 	  if (sourceSize > textBufSize) textBufSize = sourceSize + 1;
 	}
   char *textBuf = malloc(textBufSize);
-	GLuint shaderProgram = glCreateProgram();_glec
+	GLuint shaderProgram = glCreateProgram();
 	GLint success = 0;
 	fr (i, stageCount) {
 		if (!paths[i]) continue;
-		GLuint shader = glCreateShader(shaderTypes[i]);_glec
+		GLuint shader = glCreateShader(shaderTypes[i]);
 	  stringFromFile(paths[i], textBuf, textBufSize);
-	  glShaderSource(shader, 1, (const GLchar * const*)&textBuf, NULL);_glec
-	  glCompileShader(shader);_glec
-	  glGetShaderiv(shader, GL_COMPILE_STATUS, &success);_glec
+	  glShaderSource(shader, 1, (const GLchar * const*)&textBuf, NULL);
+	  glCompileShader(shader);
+	  glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 	  if (!success) {
-	    glGetShaderInfoLog(shader, textBufSize, NULL, textBuf);_glec
+	    glGetShaderInfoLog(shader, textBufSize, NULL, textBuf);
 	    printf("error compiling shader \"%s\":\n%s\n", paths[i], textBuf);
 	    return 0;
 	  }
-		glAttachShader(shaderProgram, shader);_glec
+		glAttachShader(shaderProgram, shader);
 	}
-  glLinkProgram(shaderProgram);_glec
-  glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);_glec
+  glLinkProgram(shaderProgram);
+  glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
   if (!success) {
-    glGetShaderInfoLog(shaderProgram, textBufSize, NULL, textBuf);_glec
+    glGetShaderInfoLog(shaderProgram, textBufSize, NULL, textBuf);
     printf("error linking shader program \"%s\":\n%s\n", progName, textBuf);
     return 0;
   }
-  glValidateProgram(shaderProgram);_glec
-  glGetProgramiv(shaderProgram, GL_VALIDATE_STATUS, &success);_glec
+  glValidateProgram(shaderProgram);
+  glGetProgramiv(shaderProgram, GL_VALIDATE_STATUS, &success);
   if (!success) {
-    glGetShaderInfoLog(shaderProgram, textBufSize, NULL, textBuf);_glec
+    glGetShaderInfoLog(shaderProgram, textBufSize, NULL, textBuf);
     printf("error: invalid shader program \"%s\":\n%s\n", progName, textBuf);
     return 0;
   }
@@ -89,8 +89,8 @@ GLuint createShaderProgram(
 #include <SDL2/SDL_surface.h>
 
 void texFromBmp(GLuint tex, const char *bmpPath) {
-  glGenTextures(1, &tex);_glec
-  glBindTexture(GL_TEXTURE_2D, tex);_glec
+  glGenTextures(1, &tex);
+  glBindTexture(GL_TEXTURE_2D, tex);
   SDL_Surface *srfcRaw = SDL_LoadBMP(bmpPath);_sdlec
   SDL_Surface *srfc  = SDL_ConvertSurfaceFormat(
     srfcRaw, SDL_PIXELFORMAT_ABGR8888, 0
@@ -106,7 +106,7 @@ void texFromBmp(GLuint tex, const char *bmpPath) {
     GL_RGBA,           // GLenum        format
     GL_UNSIGNED_BYTE,  // GLenum        type
     srfc->pixels       // const GLvoid *data
-  );_glec
+  );
   SDL_FreeSurface(srfc);_sdlec
 }
 
@@ -163,8 +163,8 @@ void texFromPng(GLuint tex, const char *pngPath, bool mirrorY) {
 	free(rowPointers);
   fclose(fp);
 	
-  glGenTextures(1, &tex);_glec
-  glBindTexture(GL_TEXTURE_2D, tex);_glec
+  glGenTextures(1, &tex);
+  glBindTexture(GL_TEXTURE_2D, tex);
   glTexImage2D(
     GL_TEXTURE_2D,     // GLenum        target
     0,                 // GLint         level
@@ -175,6 +175,6 @@ void texFromPng(GLuint tex, const char *pngPath, bool mirrorY) {
     GL_RGBA,           // GLenum        format
     GL_UNSIGNED_BYTE,  // GLenum        type
     imageData          // const GLvoid *data
-  );_glec
+  );
 	free(imageData);
 }

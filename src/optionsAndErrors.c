@@ -15,15 +15,6 @@ void sdlec(int line, const char *file) {
 #endif
 
 #ifdef LOG_GL_ERRORS_TO
-void glec(const int line, const char *file) {
-  GLenum GLstatus;
-  while ((GLstatus = glGetError()) != GL_NO_ERROR) {
-		fprintf(LOG_GL_ERRORS_TO,
-			"OpenGL error: %i on line %i in %s\n",
-			GLstatus, line, file
-		);
-  }
-}
 static const char* Source(GLenum source) {
 	switch(source) {
     case GL_DEBUG_SOURCE_API_ARB             : return "API";

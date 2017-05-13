@@ -42,9 +42,7 @@ int main(int argc, char **argv) {
   SDL_GL_SetSwapInterval(enableVSync);_sdlec
   glewExperimental = GL_TRUE;
   {
-  	GLenum r = glewInit();//_glec
-		// flush persistent GL_INVALID_ENUM error...
-		if (glGetError() == GL_INVALID_ENUM) {}_glec
+  	GLenum r = glewInit();
     if (r != GLEW_OK) {
       printf("GLEW error: %s\n", glewGetErrorString(r));
       return 1;
@@ -54,9 +52,9 @@ int main(int argc, char **argv) {
   fprintf(LOG_GL_ERRORS_TO,
 		"OpenGL version: %s\n",
 		glGetString(GL_VERSION)
-	);_glec
-	glEnable(GL_DEBUG_OUTPUT);_glec
-	glDebugMessageCallback(glErrorCallback, NULL);_glec
+	);
+	glEnable(GL_DEBUG_OUTPUT);
+	glDebugMessageCallback(glErrorCallback, NULL);
 	#endif
 	
 	// character data
@@ -135,24 +133,24 @@ int main(int argc, char **argv) {
   GLuint vao;
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glGenVertexArrays(1, &vao);_glec
-  glBindVertexArray(vao);_glec
+  glGenVertexArrays(1, &vao);
+  glBindVertexArray(vao);
 	// vertex buffer object
   GLuint vbo;
-  glGenBuffers(1, &vbo);_glec
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);_glec
+  glGenBuffers(1, &vbo);
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glBufferData(
     GL_ARRAY_BUFFER,
     vertBufSize*sizeof(sprite),
     NULL,
     GL_DYNAMIC_DRAW
-  );_glec
+  );
 	glBufferSubData(
 		GL_ARRAY_BUFFER,                        // GLenum        target
 		visCharVertBeg_*sizeof(sprite),         // GLintptr      offset
-		visCharCount_*sizeof(sprite),               // GLsizeiptr    size
+		visCharCount_*sizeof(sprite),           // GLsizeiptr    size
 		(const GLvoid*)&charSprites[visCharBeg] // const GLvoid *data
-	);
+  );
 	// shader program
   GLuint shaderProgram = createShaderProgram(
     "src/shadeVert.glsl",
@@ -163,44 +161,44 @@ int main(int argc, char **argv) {
     "shaderProgram"
   );
   if (!shaderProgram) return __LINE__;
-  glUseProgram(shaderProgram);_glec
+  glUseProgram(shaderProgram);
 	// attributes
-  GLint attr_dstPosCntr = glGetAttribLocation(shaderProgram, "dstPosCntr");_glec
-	GLint attr_dstHlfSize = glGetAttribLocation(shaderProgram, "dstHlfSize");_glec
-	GLint attr_srcPosTpLt = glGetAttribLocation(shaderProgram, "srcPosTpLt");_glec
-	GLint attr_srcSize    = glGetAttribLocation(shaderProgram, "srcSize"   );_glec
-	GLint attr_mulColor   = glGetAttribLocation(shaderProgram, "mulColor"  );_glec
-  glEnableVertexAttribArray(attr_dstPosCntr);_glec
-	glEnableVertexAttribArray(attr_dstHlfSize);_glec
-	glEnableVertexAttribArray(attr_srcPosTpLt);_glec
-	glEnableVertexAttribArray(attr_srcSize   );_glec
-  glEnableVertexAttribArray(attr_mulColor  );_glec
+  GLint attr_dstPosCntr = glGetAttribLocation(shaderProgram, "dstPosCntr");
+	GLint attr_dstHlfSize = glGetAttribLocation(shaderProgram, "dstHlfSize");
+	GLint attr_srcPosTpLt = glGetAttribLocation(shaderProgram, "srcPosTpLt");
+	GLint attr_srcSize    = glGetAttribLocation(shaderProgram, "srcSize"   );
+	GLint attr_mulColor   = glGetAttribLocation(shaderProgram, "mulColor"  );
+  glEnableVertexAttribArray(attr_dstPosCntr);
+	glEnableVertexAttribArray(attr_dstHlfSize);
+	glEnableVertexAttribArray(attr_srcPosTpLt);
+	glEnableVertexAttribArray(attr_srcSize   );
+  glEnableVertexAttribArray(attr_mulColor  );
 	const GLsizei vertAttrStride = sizeof(sprite);
-	glVertexAttribPointer(attr_dstPosCntr, 2, GL_FLOAT,          GL_FALSE, vertAttrStride, (const GLvoid*) 0);_glec
-	glVertexAttribPointer(attr_dstHlfSize, 2, GL_FLOAT,          GL_FALSE, vertAttrStride, (const GLvoid*) 8);_glec
-  glVertexAttribPointer(attr_srcPosTpLt, 2, GL_UNSIGNED_SHORT, GL_FALSE, vertAttrStride, (const GLvoid*)16);_glec
-  glVertexAttribPointer(attr_srcSize,    2, GL_UNSIGNED_SHORT, GL_FALSE, vertAttrStride, (const GLvoid*)20);_glec
-  glVertexAttribPointer(attr_mulColor,   4, GL_UNSIGNED_SHORT, GL_TRUE,  vertAttrStride, (const GLvoid*)24);_glec
+	glVertexAttribPointer(attr_dstPosCntr, 2, GL_FLOAT,          GL_FALSE, vertAttrStride, (const GLvoid*) 0);
+	glVertexAttribPointer(attr_dstHlfSize, 2, GL_FLOAT,          GL_FALSE, vertAttrStride, (const GLvoid*) 8);
+  glVertexAttribPointer(attr_srcPosTpLt, 2, GL_UNSIGNED_SHORT, GL_FALSE, vertAttrStride, (const GLvoid*)16);
+  glVertexAttribPointer(attr_srcSize,    2, GL_UNSIGNED_SHORT, GL_FALSE, vertAttrStride, (const GLvoid*)20);
+  glVertexAttribPointer(attr_mulColor,   4, GL_UNSIGNED_SHORT, GL_TRUE,  vertAttrStride, (const GLvoid*)24);
 	// uniforms
-	GLint unif_texAtlSize   = glGetUniformLocation(shaderProgram, "texAtlSize");_glec
-	GLint unif_scale        = glGetUniformLocation(shaderProgram, "scale");_glec
-	GLint unif_translate    = glGetUniformLocation(shaderProgram, "translate");_glec
-	glUniform2f(unif_texAtlSize, texAtlW, texAtlH);_glec
-	glUniform2f(unif_scale, scaleX_, scaleY_);_glec
+	GLint unif_texAtlSize   = glGetUniformLocation(shaderProgram, "texAtlSize");
+	GLint unif_scale        = glGetUniformLocation(shaderProgram, "scale");
+	GLint unif_translate    = glGetUniformLocation(shaderProgram, "translate");
+	glUniform2f(unif_texAtlSize, texAtlW, texAtlH);
+	glUniform2f(unif_scale, scaleX_, scaleY_);
 	// texture
 	GLuint texAtl = 0;
 	texFromPng(texAtl, texAtlPath, false);
-  glUniform1i(glGetUniformLocation(shaderProgram, "texAtl"), 0);_glec
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);_glec
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);_glec
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);_glec
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);_glec
+  glUniform1i(glGetUniformLocation(shaderProgram, "texAtl"), 0);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	// other opengl
 	const uint32_t clearColor = 0x224455ff; // rgba
 	glClearColori(clearColor);
-	glClear(GL_COLOR_BUFFER_BIT);_glec
+	glClear(GL_COLOR_BUFFER_BIT);
 	#if drawWireFrame
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);_glec
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	#endif
 	
 	// init frame state
@@ -242,8 +240,8 @@ int main(int argc, char **argv) {
 						case SDL_WINDOWEVENT_RESIZED:
 							videoW = event.window.data1;
 							videoH = event.window.data2;
-							glViewport(0, 0, videoW, videoH);_glec
-							glUniform2f(unif_scale, scaleX_, scaleY_);_glec
+							glViewport(0, 0, videoW, videoH);
+							glUniform2f(unif_scale, scaleX_, scaleY_);
             break;
 					}
 					break;
@@ -341,8 +339,8 @@ int main(int argc, char **argv) {
 				beamSize*sizeof(sprite),     // GLsizeiptr    size
 				(const GLvoid*)beamSprites   // const GLvoid *data
 			);
-			glUniform2f(unif_translate, txtOriginX_, txtOriginY_);_glec
-			glDrawArrays(GL_POINTS, 0, beamSize);_glec
+			glUniform2f(unif_translate, txtOriginX_, txtOriginY_);
+			glDrawArrays(GL_POINTS, 0, beamSize);
 		}
 		// draw word queue
 		if (wordDropEnvCount > curFrame-frameWhenWordDropped) {
@@ -350,7 +348,7 @@ int main(int argc, char **argv) {
 				unif_translate,
 				txtOriginX_,
 				txtOriginY_ + curWord*texAtlGlyphH - wordDropEnv[curFrame-frameWhenWordDropped]
-			);_glec
+			);
 		}
 		else {
 			glUniform2f(
@@ -359,7 +357,7 @@ int main(int argc, char **argv) {
 				txtOriginY_ + curWord*texAtlGlyphH
 			);
 		}
-    glDrawArrays(GL_POINTS, visCharVertBeg_, visCharCount_);_glec
+    glDrawArrays(GL_POINTS, visCharVertBeg_, visCharCount_);
 		// finish frame
     #ifdef LOG_TIMING_TO
 		clock_gettime(CLOCK_MONOTONIC, &ts_now);
