@@ -15,6 +15,50 @@
 #include "../img/texAtlas.h"
 
 const double tau = 6.28318530717958647692528676655900576839433879875;
+double sinTau(double n) {return sin(tau*n);}
+
+double redFromHue(double hue) {
+	hue = fabs(hue - (long)hue); // extract fractional part
+	switch ((long)(hue*6.0)) {
+		case 0: return 1.0;
+		case 1: return 1.0 - (hue - 1.0/6.0)*6.0;
+		case 2: return 0.0;
+		case 3: return 0.0;
+		case 4: return (hue - 4.0/6.0)*6.0;
+		case 5: return 1.0;
+	}
+	_SHOULD_NOT_BE_HERE_;
+	return 0;
+}
+double grnFromHue(double hue) {
+	hue = fabs(hue - (long)hue); // extract fractional part
+	switch ((long)(hue*6.0)) {
+		case 0: return hue*6.0;
+		case 1: return 1.0;
+		case 2: return 1.0;
+		case 3: return 1.0 - (hue - 3.0/6.0)*6.0;
+		case 4: return 0.0;
+		case 5: return 0.0;
+	}
+	_SHOULD_NOT_BE_HERE_;
+	return 0;
+}
+double bluFromHue(double hue) {
+	hue = fabs(hue - (long)hue); // extract fractional part
+	switch ((long)(hue*6.0)) {
+		case 0: return 0.0;
+		case 1: return 0.0;
+		case 2: return (hue - 2.0/6.0)*6.0;
+		case 3: return 1.0;
+		case 4: return 1.0;
+		case 5: return 1.0 - (hue - 5.0/6.0)*6.0;
+	}
+	_SHOULD_NOT_BE_HERE_;
+	return 0;
+}
+
+
+
 
 int main(int argc, char **argv) {
 	// init SDL and get an opengl window
@@ -314,10 +358,10 @@ int main(int argc, char **argv) {
 		}
 		// draw beam
 		const float beamPhase = (float)(curFrame-frameWhenCharEntered)/beamGlowTime;
-		if (beamPhase <= 1) {
+		if (beamPhase < 1) {
 			const int beamSize = (railLength + (visCharBeg-whereCurWordStarted))*beamCharPerWidth;
 			fr (i, beamSize) {
-				beamSprites[i].dstCX = -railLength*texAtlGlyphW + i*texAtlGlyphW/beamCharPerWidth + sin(tau*(((curFrame-i)%12)/12.0))*1.8;
+				beamSprites[i].dstCX = -railLength*texAtlGlyphW + i*texAtlGlyphW/beamCharPerWidth + sinTau(((curFrame-i)%12)/12.0)*1.8;
 				beamSprites[i].dstCY = 0;
 				beamSprites[i].dstHW = texAtlGlyphW/2.0;
 				beamSprites[i].dstHH = texAtlGlyphH/2.0;
@@ -325,9 +369,10 @@ int main(int argc, char **argv) {
 				beamSprites[i].srcY  = texAtlGlyphPosY(lastCharEntered);
 				beamSprites[i].srcW  = texAtlGlyphW;
 				beamSprites[i].srcH  = texAtlGlyphH;
-				beamSprites[i].mulR  = 0;
-				beamSprites[i].mulG  = UINT16_MAX;
-				beamSprites[i].mulB  = UINT16_MAX;
+				const double huePhase = i/12.0 - beamPhase;
+				beamSprites[i].mulR  = UINT16_MAX * redFromHue(huePhase);
+				beamSprites[i].mulG  = UINT16_MAX * grnFromHue(huePhase);
+				beamSprites[i].mulB  = UINT16_MAX * bluFromHue(huePhase);
 				beamSprites[i].mulO  = UINT16_MAX * (1.0 - beamPhase);
 			}
 			#ifdef LOG_VERTEX_DATA_TO
