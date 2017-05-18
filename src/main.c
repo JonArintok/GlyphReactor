@@ -58,6 +58,35 @@ double bluFromHue(double hue) {
 }
 
 
+typedef struct {
+	struct memChainNode *nxt;
+	void                *mem;
+} memChainNode;
+void *chainMalloc(size_t memSize, memChainNode *chain) {
+	memChainNode *newNode = malloc(sizeof(memChainNode));
+	*newNode = *chain;
+	chain->nxt = (struct memChainNode*)newNode;
+	chain->mem  = malloc(memSize);
+	return chain->mem;
+}
+void chainFree(memChainNode *chain) {
+	memChainNode *curNode;
+	memChainNode *nxtNode = chain;
+	while (nxtNode) {
+		curNode = nxtNode;
+		nxtNode = (memChainNode*)curNode->nxt;
+		free(curNode->mem);
+		free(curNode);
+	}
+}
+memChainNode *initMemChain(void *initMem) {
+	memChainNode *m = malloc(sizeof(memChainNode));
+	m->nxt = NULL;
+	m->mem = initMem;
+	return m;
+}
+
+
 
 // SDL and opengl context
 int videoW = 1280;
@@ -103,6 +132,9 @@ int initWindow(void) {
 	return 0;
 }
 
+
+memChainNode *freeAfterLoop;
+
 // reactor character data
 char *const txtPath = "testFile.txt";
 const int   railLength = 8; // character widths between gun and queue
@@ -120,12 +152,13 @@ sprite   *beamSprites;
 #define txtOriginX_ (-railLength*texAtlGlyphW - 64)
 #define txtOriginY_ (videoHH_/4)
 void initSprites(void) {
+	freeAfterLoop = initMemChain(NULL);
 	// reactor character data
 	const int fileCharCount = getFileSize(txtPath);
 	visCharBeg  = railLength;
 	charsSize   = visCharBeg + fileCharCount;
-	chars       = malloc(sizeof(char)*charsSize);
-	charSprites = malloc(sizeof(sprite)*charsSize);
+	chars       = chainMalloc(sizeof(char)*charsSize, freeAfterLoop);
+	charSprites = chainMalloc(sizeof(sprite)*charsSize, freeAfterLoop);
 	charCount   = cleanTxtFile(txtPath, &chars[visCharBeg], fileCharCount);
 	visCharEnd  = visCharBeg + charCount;
 	for (int cPos = visCharBeg, row = 0, col = 0; cPos < visCharEnd; cPos++) {
@@ -153,7 +186,7 @@ void initSprites(void) {
 	#endif
 	// beam data
 	beamSpritesSize = (railLength+maxWordSize) * beamCharPerWidth;
-	beamSprites     = malloc(sizeof(sprite)*beamSpritesSize);
+	beamSprites     = chainMalloc(sizeof(sprite)*beamSpritesSize, freeAfterLoop);
 }
 
 // bounce envelope
@@ -319,7 +352,7 @@ void handleEvents(char *charEntered) {
 	}
 }
 
-// frame state
+// frame loop state
 int stuckCharCount = 0;
 int misBkspCount = 0;
 int curWord = 0;
@@ -478,12 +511,10 @@ void frameLoop(void) {
 		glClear(GL_COLOR_BUFFER_BIT);
 	}
 	SDL_StopTextInput();
+	chainFree(freeAfterLoop);
 }
 
 void cleanup(void) {
-	free(chars);
-	free(charSprites);
-	free(beamSprites);
 	SDL_GL_DeleteContext(GLcontext);_sdlec
 	SDL_Quit();_sdlec
 }
