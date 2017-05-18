@@ -58,35 +58,6 @@ double bluFromHue(double hue) {
 }
 
 
-typedef struct {
-	struct memChainNode *nxt;
-	void                *mem;
-} memChainNode;
-void *chainMalloc(size_t memSize, memChainNode *chain) {
-	memChainNode *newNode = malloc(sizeof(memChainNode));
-	*newNode = *chain;
-	chain->nxt = (struct memChainNode*)newNode;
-	chain->mem  = malloc(memSize);
-	return chain->mem;
-}
-void chainFree(memChainNode *chain) {
-	memChainNode *nxtNode = chain;
-	while (nxtNode) {
-		memChainNode *curNode = nxtNode;
-		nxtNode = (memChainNode*)curNode->nxt;
-		free(curNode->mem);
-		free(curNode);
-	}
-}
-memChainNode *initMemChain(size_t memSize) {
-	memChainNode *m = malloc(sizeof(memChainNode));
-	m->nxt = NULL;
-	m->mem = malloc(memSize);
-	return m;
-}
-
-
-
 // SDL and opengl context
 int videoW = 1280;
 int videoH =  800;
@@ -137,8 +108,8 @@ char *const txtPath = "testFile.txt";
 const int   railLength = 8; // character widths between gun and queue
 int         visCharBeg;
 int         charsSize;
-char       *chars;
-sprite     *charSprites;
+char       *chars = NULL;
+sprite     *charSprites = NULL;
 int         charCount;
 int         visCharEnd;
 #define     visCharCount_ (visCharEnd-visCharBeg)
@@ -146,16 +117,14 @@ int         visCharEnd;
 #define     txtOriginY_ (videoHH_/4)
 const int   beamCharPerWidth = 2; // affects kerning of beam glyphs
 int         beamSpritesSize;
-sprite     *beamSprites;
-memChainNode *freeAfterLoop;
+sprite     *beamSprites = NULL;
 void initSprites(void) {
-	freeAfterLoop = initMemChain(0);
 	// reactor character data
 	const int fileCharCount = getFileSize(txtPath);
 	visCharBeg  = railLength;
 	charsSize   = visCharBeg + fileCharCount;
-	chars       = chainMalloc(sizeof(char)*charsSize, freeAfterLoop);
-	charSprites = chainMalloc(sizeof(sprite)*charsSize, freeAfterLoop);
+	chars       = malloc(sizeof(char)*charsSize);
+	charSprites = malloc(sizeof(sprite)*charsSize);
 	charCount   = cleanTxtFile(txtPath, &chars[visCharBeg], fileCharCount);
 	visCharEnd  = visCharBeg + charCount;
 	for (int cPos = visCharBeg, row = 0, col = 0; cPos < visCharEnd; cPos++) {
@@ -183,7 +152,7 @@ void initSprites(void) {
 	#endif
 	// beam data
 	beamSpritesSize = (railLength+maxWordSize) * beamCharPerWidth;
-	beamSprites     = chainMalloc(sizeof(sprite)*beamSpritesSize, freeAfterLoop);
+	beamSprites     = malloc(sizeof(sprite)*beamSpritesSize);
 }
 
 // bounce envelope
@@ -508,7 +477,9 @@ void frameLoop(void) {
 		glClear(GL_COLOR_BUFFER_BIT);
 	}
 	SDL_StopTextInput();
-	chainFree(freeAfterLoop);
+	free(chars);
+	free(charSprites);
+	free(beamSprites);
 }
 
 void cleanup(void) {
