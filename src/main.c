@@ -70,19 +70,18 @@ void *chainMalloc(size_t memSize, memChainNode *chain) {
 	return chain->mem;
 }
 void chainFree(memChainNode *chain) {
-	memChainNode *curNode;
 	memChainNode *nxtNode = chain;
 	while (nxtNode) {
-		curNode = nxtNode;
+		memChainNode *curNode = nxtNode;
 		nxtNode = (memChainNode*)curNode->nxt;
 		free(curNode->mem);
 		free(curNode);
 	}
 }
-memChainNode *initMemChain(void *initMem) {
+memChainNode *initMemChain(size_t memSize) {
 	memChainNode *m = malloc(sizeof(memChainNode));
 	m->nxt = NULL;
-	m->mem = initMem;
+	m->mem = malloc(memSize);
 	return m;
 }
 
@@ -133,9 +132,7 @@ int initWindow(void) {
 }
 
 
-memChainNode *freeAfterLoop;
-
-// reactor character data
+// sprite data
 char *const txtPath = "testFile.txt";
 const int   railLength = 8; // character widths between gun and queue
 int         visCharBeg;
@@ -145,14 +142,14 @@ sprite     *charSprites;
 int         charCount;
 int         visCharEnd;
 #define     visCharCount_ (visCharEnd-visCharBeg)
-// beam data
-const int beamCharPerWidth = 2; // affects kerning of beam glyphs
-int       beamSpritesSize;
-sprite   *beamSprites;
-#define txtOriginX_ (-railLength*texAtlGlyphW - 64)
-#define txtOriginY_ (videoHH_/4)
+#define     txtOriginX_ (-railLength*texAtlGlyphW - 64)
+#define     txtOriginY_ (videoHH_/4)
+const int   beamCharPerWidth = 2; // affects kerning of beam glyphs
+int         beamSpritesSize;
+sprite     *beamSprites;
+memChainNode *freeAfterLoop;
 void initSprites(void) {
-	freeAfterLoop = initMemChain(NULL);
+	freeAfterLoop = initMemChain(0);
 	// reactor character data
 	const int fileCharCount = getFileSize(txtPath);
 	visCharBeg  = railLength;
