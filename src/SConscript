@@ -8,6 +8,17 @@ src = [
 	"cleanTxtFile.c",
 	"misc.c",
 	"optionsAndErrors.c",
-	"timestamp.c"
+	"timestamp.c",
+	"fromHue.c",
+	"initBounceEnv.c",
+	"initWindow.c",
+	"initSprites.c",
+	"initOpenGl.c",
+	"handleEvents.c",
+	"mainMenuLoop.c",
+	"glyphReactorLoop.c",
+	"spirographEditorLoop.c",
+	"frameLoop.c",
+	"cleanup.c"
 ]
 env.Program("GlyphReactor", src, LIBS = ["GL", "GLEW", "SDL2", "m", "png"])
