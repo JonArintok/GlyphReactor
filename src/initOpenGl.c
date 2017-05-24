@@ -1,7 +1,6 @@
 
 #include "initOpenGl.h"
 #include "../img/texAtlas.h"
-#include "sprite.h"
 #include "initSprites.h"
 #include "oglTools.h"
 #include "initWindow.h"

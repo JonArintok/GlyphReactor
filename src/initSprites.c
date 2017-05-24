@@ -4,7 +4,52 @@
 #include "initSprites.h"
 #include "fileTools.h"
 #include "cleanTxtFile.h"
+#include "misc.h"
 #include "../img/texAtlas.h"
+
+
+#ifdef LOG_VERTEX_DATA_TO
+void printSprites(sprite *sprites, int count, int line) {
+	if (!sprites) {
+		fprintf(LOG_VERTEX_DATA_TO,
+			"ERROR: sprites pointer given at line %i is NULL\n",
+			line
+		);
+		return;
+	}
+	fprintf(LOG_VERTEX_DATA_TO, "SPRITE DATA, %i count\n", count);
+	fr (i, count) {
+		fprintf(LOG_VERTEX_DATA_TO,
+			"# %i\n"
+			"\tdstCX:%9.2f\n"
+			"\tdstCY:%9.2f\n"
+			"\tdstHW:%9.2f\n"
+			"\tdstHH:%9.2f\n"
+			"\tsrcX:%6i\n"
+			"\tsrcY:%6i\n"
+			"\tsrcW:%6i\n"
+			"\tsrcH:%6i\n"
+			"\tmulR:%6i\n"
+			"\tmulG:%6i\n"
+			"\tmulB:%6i\n"
+			"\tmulO:%6i\n",
+			i,
+			sprites[i].dstCX,
+			sprites[i].dstCY,
+			sprites[i].dstHW,
+			sprites[i].dstHH,
+			sprites[i].srcX,
+			sprites[i].srcY,
+			sprites[i].srcW,
+			sprites[i].srcH,
+			sprites[i].mulR,
+			sprites[i].mulG,
+			sprites[i].mulB,
+			sprites[i].mulO
+		);
+	}
+}
+#endif
 
 char *const txtPath = "testFile.txt";
 const int   railLength = 8; // character widths between gun and queue
@@ -22,8 +67,8 @@ void initSprites(void) {
 	const int fileCharCount = getFileSize(txtPath);
 	visCharBeg  = railLength;
 	charsSize   = visCharBeg + fileCharCount;
-	chars       = malloc(sizeof(char)*charsSize);
-	charSprites = malloc(sizeof(sprite)*charsSize);
+	chars       = malloc(sizeof(char)*charsSize);   // free in "frameLoop.c"
+	charSprites = malloc(sizeof(sprite)*charsSize); // free in "frameLoop.c"
 	charCount   = cleanTxtFile(txtPath, &chars[visCharBeg], fileCharCount);
 	visCharEnd  = visCharBeg + charCount;
 	for (int cPos = visCharBeg, row = 0, col = 0; cPos < visCharEnd; cPos++) {
@@ -51,5 +96,5 @@ void initSprites(void) {
 	#endif
 	// beam data
 	beamSpritesSize = (railLength+maxWordSize) * beamCharPerWidth;
-	beamSprites     = malloc(sizeof(sprite)*beamSpritesSize);
+	beamSprites = malloc(sizeof(sprite)*beamSpritesSize); // free in "frameLoop.c"
 }

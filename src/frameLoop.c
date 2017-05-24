@@ -4,7 +4,7 @@
 #include "handleEvents.h"
 #include "mainMenuLoop.h"
 #include "glyphReactorLoop.h"
-#include "spirographEditorLoop.h"
+#include "spiroViewerLoop.h"
 #include "optionsAndErrors.h"
 #include "timestamp.h"
 
@@ -54,7 +54,9 @@ void frameLoop(void) {
 		glClear(GL_COLOR_BUFFER_BIT);
 	}
 	SDL_StopTextInput();
-	free(chars);
-	free(charSprites);
-	free(beamSprites);
+	free(chars);       // malloc in "initSprites.c"
+	free(charSprites); // malloc in "initSprites.c"
+	free(beamSprites); // malloc in "initSprites.c"
+	SDL_GL_DeleteContext(GLcontext);_sdlec // init int "initWindow.c"
+	SDL_Quit();_sdlec // init int "initWindow.c"
 }

@@ -3,7 +3,6 @@ env = Environment(CC = "gcc", CCFLAGS = flags)
 src = [
 	"main.c",
 	"oglTools.c",
-	"sprite.c",
 	"fileTools.c",
 	"cleanTxtFile.c",
 	"misc.c",
@@ -17,8 +16,7 @@ src = [
 	"handleEvents.c",
 	"mainMenuLoop.c",
 	"glyphReactorLoop.c",
-	"spirographEditorLoop.c",
-	"frameLoop.c",
-	"cleanup.c"
+	"spiroViewerLoop.c",
+	"frameLoop.c"
 ]
 env.Program("GlyphReactor", src, LIBS = ["GL", "GLEW", "SDL2", "m", "png"])
