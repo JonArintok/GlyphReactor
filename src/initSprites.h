@@ -22,6 +22,24 @@ typedef struct {
 void printSprites(sprite *sprites, int count, int line);
 #endif
 
+typedef struct {
+	float armLength;            // radius
+	float rotBetweenFrames;     // offset that results in animation
+	float revsWithinFrame;      // rotate arm   this/ticksPerFrame each tick
+	float glyphRevsWithinFrame; // rotate glyph this/ticksPerFrame each tick
+} spiroArm;
+
+#define spiroArmCount 6
+typedef struct {
+	spiroArm arms[spiroArmCount];
+	float    positions[spiroArmCount]; // moves between frames
+	float    exploPhase; // phase of "explosion"
+	uint16_t stampEnablePerArm; // 1 bit per arm
+	uint16_t ticksPerFrame;
+} spirograph;
+
+
+
 extern char *const txtPath;
 extern const int   railLength;
 extern int         visCharBeg;
@@ -30,11 +48,19 @@ extern char       *chars;
 extern sprite     *charSprites;
 //extern int         charCount;
 extern int         visCharEnd;
+#define visCharCount_ (visCharEnd-visCharBeg)
+
 extern const int   beamCharPerWidth;
 extern int         beamSpritesSize;
 extern sprite     *beamSprites;
 
-#define visCharCount_ (visCharEnd-visCharBeg)
+extern const int   spiroSpritesSize;
+extern sprite     *spiroSprites;
+extern const int   visSpirosSize;
+extern spirograph *visSpiros;
+extern const int   glyphSpirosSize;
+extern spirograph *glyphSpiros;
+
 #define txtOriginX_ (-railLength*texAtlGlyphW - 64)
 #define txtOriginY_ (videoHH_/4)
 

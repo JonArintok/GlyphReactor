@@ -7,14 +7,16 @@
 
 int beamVertBeg;
 int charVertBeg;
+int spiroVertBeg;
 int vertBufSize;
 GLint unif_texAtlSize;
 GLint unif_scale;
 GLint unif_translate;
 int initOpenGl(void) {
-	beamVertBeg = 0;
-	charVertBeg = beamSpritesSize;
-	vertBufSize = charsSize + beamSpritesSize;
+	beamVertBeg  = 0;
+	charVertBeg  = beamSpritesSize;
+	spiroVertBeg = charVertBeg + charsSize;
+	vertBufSize  = charsSize + beamSpritesSize + spiroSpritesSize;
 	// vertex array object
 	GLuint vao;
 	glEnable(GL_BLEND);

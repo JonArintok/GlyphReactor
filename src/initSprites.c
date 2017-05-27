@@ -59,11 +59,7 @@ char       *chars = NULL;
 sprite     *charSprites = NULL;
 int         charCount;
 int         visCharEnd;
-const int   beamCharPerWidth = 2; // affects kerning of beam glyphs
-int         beamSpritesSize;
-sprite     *beamSprites = NULL;
-void initSprites(void) {
-	// reactor character data
+void initCharSprites(void) {
 	const int fileCharCount = getFileSize(txtPath);
 	visCharBeg  = railLength;
 	charsSize   = visCharBeg + fileCharCount;
@@ -94,7 +90,43 @@ void initSprites(void) {
 	fprintf(LOG_VERTEX_DATA_TO, "\nWORD QUEUE\n");
 	printSprites(&charSprites[visCharBeg], charCount, __LINE__);
 	#endif
-	// beam data
+}
+
+const int beamCharPerWidth = 2; // affects density of beam
+int       beamSpritesSize;
+sprite   *beamSprites = NULL;
+void initBeamSprites(void) {
 	beamSpritesSize = (railLength+maxWordSize) * beamCharPerWidth;
 	beamSprites = malloc(sizeof(sprite)*beamSpritesSize); // free in "frameLoop.c"
+}
+
+const int   spiroSpritesSize = 512; // a guess, raise it if you hit it
+sprite     *spiroSprites;
+const int   visSpirosSize = 8; // arbitrary max simultaneous to display
+spirograph *visSpiros;
+const int   glyphSpirosSize = texAtlGlyphsCount;
+spirograph *glyphSpiros;
+void initSpiros(void) {
+	spiroSprites = malloc(sizeof(sprite)*spiroSpritesSize); // free in "cleanup.c"
+	visSpiros = malloc(sizeof(spirograph)*visSpirosSize); // free in "cleanup.c"
+	glyphSpiros = malloc(sizeof(spirograph)*glyphSpirosSize); // free in "cleanup.c"
+	fr (spiro, visSpirosSize) {
+		fr (arm, spiroArmCount) {
+			glyphSpiros[spiro].arms[arm].armLength = 10.0;
+			glyphSpiros[spiro].arms[arm].rotBetweenFrames = 1.0/120.0;
+			glyphSpiros[spiro].arms[arm].revsWithinFrame = 1.0;
+			glyphSpiros[spiro].arms[arm].glyphRevsWithinFrame = 1.0;
+		}
+		fr (arm, spiroArmCount) glyphSpiros[spiro].positions[arm] = 0.0;
+		glyphSpiros[spiro].exploPhase = 0.0;
+		glyphSpiros[spiro].stampEnablePerArm = UINT16_MAX;
+		glyphSpiros[spiro].ticksPerFrame = 120;
+	}
+}
+
+
+void initSprites(void) {
+	initCharSprites();
+	initBeamSprites();
+	initSpiros();
 }

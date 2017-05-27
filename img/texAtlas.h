@@ -8,6 +8,7 @@
 #define texAtlGlyphH 37
 #define texAtlGlyphsPerRow 16
 #define texAtlGlyphsRowCount 6
+#define texAtlGlyphsCount 96
 #define texAtlGlyphsW (texAtlGlyphW*texAtlGlyphsPerRow)
 #define texAtlGlyphsH (texAtlGlyphH*texAtlGlyphsRowCount)
 #define texAtlGlyphsStartX 0
