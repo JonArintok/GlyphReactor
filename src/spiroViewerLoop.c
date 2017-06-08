@@ -1,8 +1,11 @@
 
 #include <stdio.h>
 #include "spiroViewerLoop.h"
+#include "drawSpiro.h"
+
 
 bool spirographEditorLoop(char charEntered, int curFrame) {
-	puts("we're in the spirograph editor");
+	if (charEntered) triggerSpiro(charEntered);
+	drawSpiros();
 	return true;
 }

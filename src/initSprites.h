@@ -54,9 +54,10 @@ extern const int   beamCharPerWidth;
 extern int         beamSpritesSize;
 extern sprite     *beamSprites;
 
+extern float       spiroExploSpeed;
 extern const int   spiroSpritesSize;
 extern sprite     *spiroSprites;
-extern const int   visSpirosSize;
+#define            visSpirosSize 8
 extern spirograph *visSpiros;
 extern const int   glyphSpirosSize;
 extern spirograph *glyphSpiros;

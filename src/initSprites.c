@@ -17,7 +17,7 @@ void printSprites(sprite *sprites, int count, int line) {
 		);
 		return;
 	}
-	fprintf(LOG_VERTEX_DATA_TO, "SPRITE DATA, %i count\n", count);
+	fprintf(LOG_VERTEX_DATA_TO, "SPRITE DATA, %i count, line %i\n", count, line);
 	fr (i, count) {
 		fprintf(LOG_VERTEX_DATA_TO,
 			"# %i\n"
@@ -100,9 +100,9 @@ void initBeamSprites(void) {
 	beamSprites = malloc(sizeof(sprite)*beamSpritesSize); // free in "frameLoop.c"
 }
 
-const int   spiroSpritesSize = 512; // a guess, raise it if you hit it
+float       spiroExploSpeed = 1.0/240.0;
+const int   spiroSpritesSize = 2048; // a guess, raise it if you hit it
 sprite     *spiroSprites;
-const int   visSpirosSize = 8; // arbitrary max simultaneous to display
 spirograph *visSpiros;
 const int   glyphSpirosSize = texAtlGlyphsCount;
 spirograph *glyphSpiros;
@@ -110,17 +110,18 @@ void initSpiros(void) {
 	spiroSprites = malloc(sizeof(sprite)*spiroSpritesSize); // free in "cleanup.c"
 	visSpiros = malloc(sizeof(spirograph)*visSpirosSize); // free in "cleanup.c"
 	glyphSpiros = malloc(sizeof(spirograph)*glyphSpirosSize); // free in "cleanup.c"
-	fr (spiro, visSpirosSize) {
+	fr (i, visSpirosSize) visSpiros[i].exploPhase = -1.0;
+	fr (i, glyphSpirosSize) {
 		fr (arm, spiroArmCount) {
-			glyphSpiros[spiro].arms[arm].armLength = 10.0;
-			glyphSpiros[spiro].arms[arm].rotBetweenFrames = 1.0/120.0;
-			glyphSpiros[spiro].arms[arm].revsWithinFrame = 1.0;
-			glyphSpiros[spiro].arms[arm].glyphRevsWithinFrame = 1.0;
+			glyphSpiros[i].arms[arm].armLength = (spiroArmCount-arm) * 10 + 1;
+			glyphSpiros[i].arms[arm].rotBetweenFrames = arm*0.001;
+			glyphSpiros[i].arms[arm].revsWithinFrame = arm%2 ? 1.0 : -1.0;
+			glyphSpiros[i].arms[arm].glyphRevsWithinFrame = 1.0;
 		}
-		fr (arm, spiroArmCount) glyphSpiros[spiro].positions[arm] = 0.0;
-		glyphSpiros[spiro].exploPhase = 0.0;
-		glyphSpiros[spiro].stampEnablePerArm = UINT16_MAX;
-		glyphSpiros[spiro].ticksPerFrame = 120;
+		fr (arm, spiroArmCount) glyphSpiros[i].positions[arm] = 0.0;
+		glyphSpiros[i].exploPhase = -1.0;
+		glyphSpiros[i].stampEnablePerArm = UINT16_MAX;
+		glyphSpiros[i].ticksPerFrame = 120;
 	}
 }
 

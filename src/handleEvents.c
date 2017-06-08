@@ -4,7 +4,7 @@
 #include "initOpenGl.h"
 #include "../img/texAtlas.h"
 
-int whereAreWe = glyphReactor;
+int whereAreWe = spirographEditor;
 
 bool handleEvents(char *charEntered) {
 	SDL_Event event;
@@ -40,7 +40,10 @@ bool handleEvents(char *charEntered) {
 						break;
 					case SDLK_TAB:
 						switch (whereAreWe) {
-							case mainMenu: whereAreWe = spirographEditor; break;
+							case mainMenu:
+								whereAreWe = spirographEditor;
+								glUniform2f(unif_translate, 0, 0);
+								break;
 							case glyphReactor: break;
 							case spirographEditor: whereAreWe = mainMenu; break;
 						}

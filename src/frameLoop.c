@@ -16,7 +16,6 @@ timestamp ts_compTime = {0,0}, ts_now = {0,0};
 
 void frameLoop(void) {
 	initGlyphReactorLoop();
-	SDL_StartTextInput();
 	clock_gettime(CLOCK_MONOTONIC, &ts_newFrameStart);
 	for (bool running = true; running; curFrame++) {
 		ts_oldFrameStart = ts_newFrameStart;
@@ -53,7 +52,6 @@ void frameLoop(void) {
 		SDL_GL_SwapWindow(window);_sdlec
 		glClear(GL_COLOR_BUFFER_BIT);
 	}
-	SDL_StopTextInput();
 	free(chars);       // malloc in "initSprites.c"
 	free(charSprites); // malloc in "initSprites.c"
 	free(beamSprites); // malloc in "initSprites.c"
