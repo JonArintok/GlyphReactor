@@ -32,15 +32,17 @@ void drawSpiros(void) {
 		fr (tick, vs->ticksPerFrame) {
 			const double tickPhase = (double)tick/vs->ticksPerFrame;
 			fr (arm, spiroArmCount) {
+				vs->arms[arm].posX =
+					(arm ? vs->arms[arm-1].posX : 0) + vs->arms[arm].armLength
+					* sinTau(tickPhase*vs->arms[arm].revsWithinFrame + vs->offsets[arm])
+				;
+				vs->arms[arm].posY =
+					(arm ? vs->arms[arm-1].posY : 0) + vs->arms[arm].armLength
+					* sinTau(tickPhase*vs->arms[arm].revsWithinFrame + vs->offsets[arm] + 0.25)
+				;
 				if (vs->stampEnablePerArm & 1 << arm) {
-					spiroSprites[spriteIndex].dstCX =
-						(arm ? spiroSprites[spriteIndex-1].dstCX : 0) + vs->arms[arm].armLength
-						* sinTau(tickPhase*vs->arms[arm].revsWithinFrame + vs->positions[arm])
-					;
-					spiroSprites[spriteIndex].dstCY =
-						(arm ? spiroSprites[spriteIndex-1].dstCY : 0) + vs->arms[arm].armLength
-						* sinTau(tickPhase * vs->arms[arm].revsWithinFrame + vs->positions[arm] + 0.25)
-					;
+					spiroSprites[spriteIndex].dstCX = vs->arms[arm].posX;
+					spiroSprites[spriteIndex].dstCY = vs->arms[arm].posY;
 					spiroSprites[spriteIndex].dstHW = texAtlGlyphW/2.0;
 					spiroSprites[spriteIndex].dstHH = texAtlGlyphH/2.0;
 					spiroSprites[spriteIndex].srcX  = texAtlGlyphPosX(visSpiroGlyphs[i]);
@@ -61,7 +63,7 @@ void drawSpiros(void) {
 		}
 		vs->exploPhase += spiroExploSpeed;
 		fr (arm, spiroArmCount) {
-			vs->positions[arm] += vs->arms[arm].rotBetweenFrames;
+			vs->offsets[arm] += vs->offsetVelocs[arm];
 		}
 	}
 	draw:

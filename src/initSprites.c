@@ -114,14 +114,16 @@ void initSpiros(void) {
 	fr (i, glyphSpirosSize) {
 		fr (arm, spiroArmCount) {
 			glyphSpiros[i].arms[arm].armLength = (spiroArmCount-arm) * 10 + 1;
-			glyphSpiros[i].arms[arm].rotBetweenFrames = arm*0.001;
-			glyphSpiros[i].arms[arm].revsWithinFrame = arm%2 ? 1.0 : -1.0;
+			glyphSpiros[i].arms[arm].posX = 0.0;
+			glyphSpiros[i].arms[arm].posY = 0.0;
+			glyphSpiros[i].arms[arm].revsWithinFrame = arm%2 ? arm*3.0 : arm*-3.0;
 			glyphSpiros[i].arms[arm].glyphRevsWithinFrame = 1.0;
 		}
-		fr (arm, spiroArmCount) glyphSpiros[i].positions[arm] = 0.0;
+		fr (arm, spiroArmCount) glyphSpiros[i].offsets[arm] = 0.0;
+		fr (arm, spiroArmCount) glyphSpiros[i].offsetVelocs[arm] = arm*0.003;
 		glyphSpiros[i].exploPhase = -1.0;
-		glyphSpiros[i].stampEnablePerArm = UINT16_MAX;
-		glyphSpiros[i].ticksPerFrame = 120;
+		glyphSpiros[i].stampEnablePerArm = 0xfffc;
+		glyphSpiros[i].ticksPerFrame = 160;
 	}
 }
 
