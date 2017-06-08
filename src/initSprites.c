@@ -113,17 +113,25 @@ void initSpiros(void) {
 	fr (i, visSpirosSize) visSpiros[i].exploPhase = -1.0;
 	fr (i, glyphSpirosSize) {
 		fr (arm, spiroArmCount) {
-			glyphSpiros[i].arms[arm].armLength = (spiroArmCount-arm) * 10 + 1;
+			//glyphSpiros[i].arms[arm].armLength = (spiroArmCount-arm) * 10 + 1;
+			glyphSpiros[i].arms[arm].armLength = 0.0;
 			glyphSpiros[i].arms[arm].posX = 0.0;
 			glyphSpiros[i].arms[arm].posY = 0.0;
-			glyphSpiros[i].arms[arm].revsWithinFrame = arm%2 ? arm*3.0 : arm*-3.0;
+			//glyphSpiros[i].arms[arm].revsWithinFrame = arm%2 ? arm*3.0 : arm*-3.0;
 			glyphSpiros[i].arms[arm].glyphRevsWithinFrame = 1.0;
 		}
+		glyphSpiros[i].arms[0].armLength = 80.0;
+		glyphSpiros[i].arms[0].revsWithinFrame = 1.0;
+		glyphSpiros[i].arms[1].armLength = 40.0;
+		glyphSpiros[i].arms[1].revsWithinFrame = 4.0;
+		glyphSpiros[i].arms[2].armLength = 20.0;
+		glyphSpiros[i].arms[2].revsWithinFrame = 16.0;
+		
 		fr (arm, spiroArmCount) glyphSpiros[i].offsets[arm] = 0.0;
 		fr (arm, spiroArmCount) glyphSpiros[i].offsetVelocs[arm] = arm*0.003;
 		glyphSpiros[i].exploPhase = -1.0;
-		glyphSpiros[i].stampEnablePerArm = 0xfffc;
-		glyphSpiros[i].ticksPerFrame = 160;
+		glyphSpiros[i].stampEnablePerArm = 0x0004;
+		glyphSpiros[i].ticksPerFrame = 400;
 	}
 }
 

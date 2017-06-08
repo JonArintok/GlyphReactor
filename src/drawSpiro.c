@@ -32,6 +32,7 @@ void drawSpiros(void) {
 		fr (tick, vs->ticksPerFrame) {
 			const double tickPhase = (double)tick/vs->ticksPerFrame;
 			fr (arm, spiroArmCount) {
+				if (!vs->arms[arm].armLength) break;
 				vs->arms[arm].posX =
 					(arm ? vs->arms[arm-1].posX : 0) + vs->arms[arm].armLength
 					* sinTau(tickPhase*vs->arms[arm].revsWithinFrame + vs->offsets[arm])
