@@ -51,8 +51,15 @@ void printSprites(sprite *sprites, int count, int line) {
 }
 #endif
 
+const int gunDistance = 8; // character widths between gun and queue
+int       beamSize;
+sprite   *beamSprites = NULL;
+void initBeamSprites(void) {
+	beamSize = gunDistance*4;
+	beamSprites = malloc(sizeof(sprite)*beamSize); // free in "frameLoop.c"
+}
+
 char *const txtPath = "testFile.txt";
-const int   railLength = 8; // character widths between gun and queue
 int         visCharBeg;
 int         charsSize;
 char       *chars = NULL;
@@ -61,7 +68,7 @@ int         charCount;
 int         visCharEnd;
 void initCharSprites(void) {
 	const int fileCharCount = getFileSize(txtPath);
-	visCharBeg  = railLength;
+	visCharBeg  = beamSize;
 	charsSize   = visCharBeg + fileCharCount;
 	chars       = malloc(sizeof(char)*charsSize);   // free in "frameLoop.c"
 	charSprites = malloc(sizeof(sprite)*charsSize); // free in "frameLoop.c"
@@ -92,15 +99,7 @@ void initCharSprites(void) {
 	#endif
 }
 
-const int beamCharPerWidth = 2; // affects density of beam
-int       beamSpritesSize;
-sprite   *beamSprites = NULL;
-void initBeamSprites(void) {
-	beamSpritesSize = (railLength+maxWordSize) * beamCharPerWidth;
-	beamSprites = malloc(sizeof(sprite)*beamSpritesSize); // free in "frameLoop.c"
-}
-
-float       spiroExploSpeed = 1.0/240.0;
+double      spiroExploSpeed = 1.0/120.0;
 const int   spiroSpritesSize = 2048; // a guess, raise it if you hit it
 sprite     *spiroSprites;
 spirograph *visSpiros;
@@ -128,7 +127,7 @@ void initSpiros(void) {
 		glyphSpiros[i].arms[2].revsWithinFrame = 16.0;
 		
 		fr (arm, spiroArmCount) glyphSpiros[i].offsets[arm] = 0.0;
-		fr (arm, spiroArmCount) glyphSpiros[i].offsetVelocs[arm] = arm*0.003;
+		fr (arm, spiroArmCount) glyphSpiros[i].offsetVelocs[arm] = arm*0.02;
 		glyphSpiros[i].exploPhase = -1.0;
 		glyphSpiros[i].stampEnablePerArm = 0x0004;
 		glyphSpiros[i].ticksPerFrame = 400;
@@ -137,7 +136,7 @@ void initSpiros(void) {
 
 
 void initSprites(void) {
-	initCharSprites();
 	initBeamSprites();
+	initCharSprites();
 	initSpiros();
 }

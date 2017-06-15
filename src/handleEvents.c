@@ -4,7 +4,7 @@
 #include "initOpenGl.h"
 #include "../img/texAtlas.h"
 
-int whereAreWe = spirographEditor;
+int whereAreWe = glyphReactor;
 
 bool handleEvents(char *charEntered) {
 	SDL_Event event;

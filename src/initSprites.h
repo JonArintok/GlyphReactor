@@ -42,8 +42,11 @@ typedef struct {
 
 
 
+extern const int   gunDistance;
+extern int         beamSize;
+extern sprite     *beamSprites;
+
 extern char *const txtPath;
-extern const int   railLength;
 extern int         visCharBeg;
 extern int         charsSize;
 extern char       *chars;
@@ -52,11 +55,7 @@ extern sprite     *charSprites;
 extern int         visCharEnd;
 #define visCharCount_ (visCharEnd-visCharBeg)
 
-extern const int   beamCharPerWidth;
-extern int         beamSpritesSize;
-extern sprite     *beamSprites;
-
-extern float       spiroExploSpeed;
+extern double      spiroExploSpeed;
 extern const int   spiroSpritesSize;
 extern sprite     *spiroSprites;
 #define            visSpirosSize 8
@@ -64,7 +63,7 @@ extern spirograph *visSpiros;
 extern const int   glyphSpirosSize;
 extern spirograph *glyphSpiros;
 
-#define txtOriginX_ (-railLength*texAtlGlyphW - 64)
+#define txtOriginX_ (-videoHW_/4)
 #define txtOriginY_ (videoHH_/4)
 
 void initSprites(void);

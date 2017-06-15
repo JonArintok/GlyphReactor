@@ -14,9 +14,9 @@ GLint unif_scale;
 GLint unif_translate;
 int initOpenGl(void) {
 	beamVertBeg  = 0;
-	charVertBeg  = beamSpritesSize;
+	charVertBeg  = beamSize;
 	spiroVertBeg = charVertBeg + charsSize;
-	vertBufSize  = charsSize + beamSpritesSize + spiroSpritesSize;
+	vertBufSize  = charsSize + beamSize + spiroSpritesSize;
 	// vertex array object
 	GLuint vao;
 	glEnable(GL_BLEND);

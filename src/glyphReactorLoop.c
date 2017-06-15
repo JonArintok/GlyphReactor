@@ -10,6 +10,8 @@
 #include "initBounceEnv.h"
 #include "../img/texAtlas.h"
 
+double lerp(double l, double r, double n) {return l + (r-l)*n;}
+
 int stuckCharCount = 0;
 int misBkspCount = 0;
 int curWord = 0;
@@ -29,22 +31,36 @@ bool glyphReactorLoop(char charEntered, int curFrame) {
 	if (charEntered) {
 		lastCharEntered = charEntered;
 		frameWhenCharEntered = curFrame;
-		if (charEntered == bkspChar) {
+		if (charEntered == bkspChar) { // backspace
 			if (stuckCharCount) {
 				stuckCharCount--;
 				visCharBeg++;
 			}
 			else misBkspCount++;
 		}
-		else if (charEntered == chars[visCharBeg] && !stuckCharCount) {
+		else if (charEntered == chars[visCharBeg] && !stuckCharCount) { // correct
 			visCharBeg++;
 			if (charEntered == delim) {
 				curWord++;
 				whereCurWordStarted = visCharBeg;
 				frameWhenWordDropped = curFrame;
 			}
+			else {
+				int count = 0;
+				for (int i = visCharBeg; i < charsSize; i++) {
+					charSprites[i].dstCX -= texAtlGlyphW;
+					count++;
+					if (chars[i] == delim) break;
+				}
+				glBufferSubData(
+					GL_ARRAY_BUFFER,                        // GLenum        target
+					visCharVertBeg_*sizeof(sprite),         // GLintptr      offset
+					count*sizeof(sprite),                   // GLsizeiptr    size
+					(const GLvoid*)&charSprites[visCharBeg] // const GLvoid *data
+				);
+			}
 		}
-		else {
+		else { // incorrect
 			visCharBeg--;
 			stuckCharCount++;
 			if (visCharBeg < 0 || visCharBeg >= visCharEnd) {
@@ -52,7 +68,7 @@ bool glyphReactorLoop(char charEntered, int curFrame) {
 			}
 			charSprites[visCharBeg] = charSprites[visCharBeg+1];
 			charSprites[visCharBeg].dstCX -= texAtlGlyphW;
-			if (charSprites[visCharBeg].dstCX <=  0.0 - texAtlGlyphW*railLength) {
+			if (charSprites[visCharBeg].dstCX <=  0.0 - texAtlGlyphW*gunDistance) {
 				return false;
 			}
 			else {
@@ -73,30 +89,43 @@ bool glyphReactorLoop(char charEntered, int curFrame) {
 				);
 			}
 		}
-	}
-	// draw beam
-	const float beamPhase = (float)(curFrame-frameWhenCharEntered)/beamGlowTime;
-	if (beamPhase < 1) {
-		const int beamSize = (railLength + (visCharBeg-whereCurWordStarted))*beamCharPerWidth;
+		// init beam
+		const int boltCornerCount = gunDistance;
+		const int boltDeviation = 32; // plus or minus
+		int boltCorners[boltCornerCount];
+		fr (i, boltCornerCount) boltCorners[i] = rand()%(boltDeviation*2 + 1) - boltDeviation;
+		boltCorners[0] = 0;
+		boltCorners[boltCornerCount-1] = 0;
 		fr (i, beamSize) {
-			beamSprites[i].dstCX = -railLength*texAtlGlyphW + i*texAtlGlyphW/beamCharPerWidth + sinTau(((curFrame-i)%12)/12.0)*1.8;
-			beamSprites[i].dstCY = 0;
+			const double phaseInBeam = (double)i/(beamSize-1);
+			const double phaseInCorners = phaseInBeam*(boltCornerCount-1.0001); // get close to last element, but don't touch it
+			beamSprites[i].dstCX = -gunDistance*texAtlGlyphW + (gunDistance-stuckCharCount)*phaseInBeam*texAtlGlyphW;
+			beamSprites[i].dstCY = lerp(
+				boltCorners[(int)phaseInCorners],
+				boltCorners[(int)phaseInCorners+1],
+				fractionalPart(phaseInCorners)
+			);
 			beamSprites[i].dstHW = texAtlGlyphW/2.0;
 			beamSprites[i].dstHH = texAtlGlyphH/2.0;
-			beamSprites[i].srcX  = texAtlGlyphPosX(lastCharEntered);
-			beamSprites[i].srcY  = texAtlGlyphPosY(lastCharEntered);
+			beamSprites[i].srcX  = texAtlGlyphPosX(charEntered);
+			beamSprites[i].srcY  = texAtlGlyphPosY(charEntered);
 			beamSprites[i].srcW  = texAtlGlyphW;
 			beamSprites[i].srcH  = texAtlGlyphH;
-			const double huePhase = i/12.0 - beamPhase;
-			beamSprites[i].mulR  = UINT16_MAX * redFromHue(huePhase);
-			beamSprites[i].mulG  = UINT16_MAX * grnFromHue(huePhase);
-			beamSprites[i].mulB  = UINT16_MAX * bluFromHue(huePhase);
-			beamSprites[i].mulO  = UINT16_MAX * (1.0 - beamPhase);
+			const double charHue = (double)(charEntered-texAtlGlyphsAsciiStart)/texAtlGlyphsCount;
+			beamSprites[i].mulR  = UINT16_MAX * redFromHue(charHue);
+			beamSprites[i].mulG  = UINT16_MAX * grnFromHue(charHue);
+			beamSprites[i].mulB  = UINT16_MAX * bluFromHue(charHue);
+			beamSprites[i].mulO  = UINT16_MAX;
 		}
 		#ifdef LOG_VERTEX_DATA_TO
 		fprintf(LOG_VERTEX_DATA_TO, "\nBEAM\n");
 		printSprites(beamSprites, beamSize, __LINE__);
 		#endif
+	}
+	// draw beam
+	const float beamPhase = (float)(curFrame-frameWhenCharEntered)/beamGlowTime;
+	if (beamPhase < 1) {
+		fr (i, beamSize) beamSprites[i].mulO  = UINT16_MAX * (1.0 - beamPhase);
 		glBufferSubData(
 			GL_ARRAY_BUFFER,             // GLenum        target
 			beamVertBeg*sizeof(sprite),  // GLintptr      offset

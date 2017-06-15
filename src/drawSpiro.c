@@ -33,14 +33,8 @@ void drawSpiros(void) {
 			const double tickPhase = (double)tick/vs->ticksPerFrame;
 			fr (arm, spiroArmCount) {
 				if (!vs->arms[arm].armLength) break;
-				vs->arms[arm].posX =
-					(arm ? vs->arms[arm-1].posX : 0) + vs->arms[arm].armLength
-					* sinTau(tickPhase*vs->arms[arm].revsWithinFrame + vs->offsets[arm])
-				;
-				vs->arms[arm].posY =
-					(arm ? vs->arms[arm-1].posY : 0) + vs->arms[arm].armLength
-					* sinTau(tickPhase*vs->arms[arm].revsWithinFrame + vs->offsets[arm] + 0.25)
-				;
+				vs->arms[arm].posX = pow(vs->exploPhase, 0.5) * ( (arm ? vs->arms[arm-1].posX : 0) + vs->arms[arm].armLength * sinTau(tickPhase*vs->arms[arm].revsWithinFrame + vs->offsets[arm]) );
+				vs->arms[arm].posY = pow(vs->exploPhase, 0.5) * ( (arm ? vs->arms[arm-1].posY : 0) + vs->arms[arm].armLength * sinTau(tickPhase*vs->arms[arm].revsWithinFrame + vs->offsets[arm] + 0.25) );
 				if (vs->stampEnablePerArm & 1 << arm) {
 					spiroSprites[spriteIndex].dstCX = vs->arms[arm].posX;
 					spiroSprites[spriteIndex].dstCY = vs->arms[arm].posY;
