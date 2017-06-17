@@ -4,6 +4,7 @@
 #include "initSprites.h"
 #include "fileTools.h"
 #include "cleanTxtFile.h"
+#include "initWindow.h"
 #include "misc.h"
 #include "../img/texAtlas.h"
 
@@ -51,7 +52,7 @@ void printSprites(sprite *sprites, int count, int line) {
 }
 #endif
 
-const int gunDistance = 8; // character widths between gun and queue
+const int gunDistance = 12; // character widths between gun and queue
 int       beamSize;
 sprite   *beamSprites = NULL;
 void initBeamSprites(void) {
@@ -99,8 +100,8 @@ void initCharSprites(void) {
 	#endif
 }
 
-double      spiroExploSpeed = 1.0/120.0;
-const int   spiroSpritesSize = 2048; // a guess, raise it if you hit it
+double      spiroExploSpeed = 0.004;
+const int   spiroSpritesSize = 4096; // a guess, raise it if you hit it
 sprite     *spiroSprites;
 spirograph *visSpiros;
 const int   glyphSpirosSize = texAtlGlyphsCount;
@@ -109,7 +110,7 @@ void initSpiros(void) {
 	spiroSprites = malloc(sizeof(sprite)*spiroSpritesSize); // free in "cleanup.c"
 	visSpiros = malloc(sizeof(spirograph)*visSpirosSize); // free in "cleanup.c"
 	glyphSpiros = malloc(sizeof(spirograph)*glyphSpirosSize); // free in "cleanup.c"
-	fr (i, visSpirosSize) visSpiros[i].exploPhase = -1.0;
+	fr (i, visSpirosSize) visSpiros[i].exploPhase = 1.0;
 	fr (i, glyphSpirosSize) {
 		fr (arm, spiroArmCount) {
 			//glyphSpiros[i].arms[arm].armLength = (spiroArmCount-arm) * 10 + 1;
@@ -119,16 +120,16 @@ void initSpiros(void) {
 			//glyphSpiros[i].arms[arm].revsWithinFrame = arm%2 ? arm*3.0 : arm*-3.0;
 			glyphSpiros[i].arms[arm].glyphRevsWithinFrame = 1.0;
 		}
-		glyphSpiros[i].arms[0].armLength = 80.0;
+		glyphSpiros[i].arms[0].armLength = 1.6*videoH;
 		glyphSpiros[i].arms[0].revsWithinFrame = 1.0;
-		glyphSpiros[i].arms[1].armLength = 40.0;
+		glyphSpiros[i].arms[1].armLength = 0.2*videoH;
 		glyphSpiros[i].arms[1].revsWithinFrame = 4.0;
-		glyphSpiros[i].arms[2].armLength = 20.0;
+		glyphSpiros[i].arms[2].armLength = 0.2*videoH;
 		glyphSpiros[i].arms[2].revsWithinFrame = 16.0;
 		
 		fr (arm, spiroArmCount) glyphSpiros[i].offsets[arm] = 0.0;
 		fr (arm, spiroArmCount) glyphSpiros[i].offsetVelocs[arm] = arm*0.02;
-		glyphSpiros[i].exploPhase = -1.0;
+		glyphSpiros[i].exploPhase = 1.0;
 		glyphSpiros[i].stampEnablePerArm = 0x0004;
 		glyphSpiros[i].ticksPerFrame = 400;
 	}

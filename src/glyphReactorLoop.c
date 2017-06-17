@@ -5,6 +5,7 @@
 #include "initWindow.h"
 #include "initSprites.h"
 #include "initOpenGl.h"
+#include "drawSpiro.h"
 #include "cleanTxtFile.h"
 #include "fromHue.h"
 #include "initBounceEnv.h"
@@ -93,7 +94,9 @@ bool glyphReactorLoop(char charEntered, int curFrame) {
 		const int boltCornerCount = gunDistance;
 		const int boltDeviation = 32; // plus or minus
 		int boltCorners[boltCornerCount];
-		fr (i, boltCornerCount) boltCorners[i] = rand()%(boltDeviation*2 + 1) - boltDeviation;
+		fr (i, boltCornerCount) {
+			boltCorners[i] = rand()%(boltDeviation*2 + 1) - boltDeviation;
+		}
 		boltCorners[0] = 0;
 		boltCorners[boltCornerCount-1] = 0;
 		fr (i, beamSize) {
@@ -112,20 +115,22 @@ bool glyphReactorLoop(char charEntered, int curFrame) {
 			beamSprites[i].srcW  = texAtlGlyphW;
 			beamSprites[i].srcH  = texAtlGlyphH;
 			const double charHue = (double)(charEntered-texAtlGlyphsAsciiStart)/texAtlGlyphsCount;
-			beamSprites[i].mulR  = UINT16_MAX * redFromHue(charHue);
-			beamSprites[i].mulG  = UINT16_MAX * grnFromHue(charHue);
-			beamSprites[i].mulB  = UINT16_MAX * bluFromHue(charHue);
+			beamSprites[i].mulR  = UINT16_MAX * (0.4 + 0.6*redFromHue(charHue));
+			beamSprites[i].mulG  = UINT16_MAX * (0.4 + 0.6*grnFromHue(charHue));
+			beamSprites[i].mulB  = UINT16_MAX * (0.4 + 0.6*bluFromHue(charHue));
 			beamSprites[i].mulO  = UINT16_MAX;
 		}
 		#ifdef LOG_VERTEX_DATA_TO
 		fprintf(LOG_VERTEX_DATA_TO, "\nBEAM\n");
 		printSprites(beamSprites, beamSize, __LINE__);
 		#endif
+		// add spirographic explosion
+		triggerSpiro(charEntered);
 	}
 	// draw beam
 	const float beamPhase = (float)(curFrame-frameWhenCharEntered)/beamGlowTime;
 	if (beamPhase < 1) {
-		fr (i, beamSize) beamSprites[i].mulO  = UINT16_MAX * (1.0 - beamPhase);
+		fr (i, beamSize) beamSprites[i].mulO  = UINT16_MAX * (1.0 - pow(beamPhase, 0.5));
 		glBufferSubData(
 			GL_ARRAY_BUFFER,             // GLenum        target
 			beamVertBeg*sizeof(sprite),  // GLintptr      offset
@@ -135,6 +140,9 @@ bool glyphReactorLoop(char charEntered, int curFrame) {
 		glUniform2f(unif_translate, txtOriginX_, txtOriginY_);
 		glDrawArrays(GL_POINTS, 0, beamSize);
 	}
+	// draw spirographs
+	glUniform2f(unif_translate, txtOriginX_, txtOriginY_);
+	drawSpiros();
 	// draw word queue
 	glUniform2f(
 		unif_translate,

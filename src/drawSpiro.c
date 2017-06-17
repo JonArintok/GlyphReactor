@@ -9,18 +9,32 @@
 
 char visSpiroGlyphs[visSpirosSize];
 
-// returns -1 if no rool in visSpiroGlyphs
+void addSpiro(int i, char glyph) {
+	visSpiroGlyphs[i] = glyph;
+	visSpiros[i] = glyphSpiros[glyph-texAtlGlyphsAsciiStart];
+	visSpiros[i].exploPhase = 0;
+}
+
+// new takes spot of either first with exploPhase >= 1, or oldest
 int triggerSpiro(char glyph) {
 	int i = 0;
+	float oldestPhase = 0.0;
+	int   oldestIndex = 0;
 	for (; i < visSpirosSize; i++) {
-		if (visSpiros[i].exploPhase < 0) {
-			visSpiroGlyphs[i] = glyph;
-			visSpiros[i] = glyphSpiros[glyph-texAtlGlyphsAsciiStart];
-			visSpiros[i].exploPhase = 0;
+		if (visSpiros[i].exploPhase >= 1.0) {
+			addSpiro(i, glyph);
 			break;
 		}
+		if (visSpiros[i].exploPhase > oldestPhase) {
+			oldestPhase = visSpiros[i].exploPhase;
+			oldestIndex = i;
+		}
 	}
-	return i == visSpirosSize ? -1 : i;
+	if (i == visSpirosSize) {
+		i = oldestIndex;
+		addSpiro(i, glyph);
+	}
+	return i;
 }
 
 
@@ -28,13 +42,13 @@ void drawSpiros(void) {
 	int spriteIndex = 0;
 	fr (i, visSpirosSize) {
 		spirograph *const vs = &visSpiros[i];
-		if (vs->exploPhase < 0) continue;
+		if (vs->exploPhase >= 1) continue;
 		fr (tick, vs->ticksPerFrame) {
 			const double tickPhase = (double)tick/vs->ticksPerFrame;
 			fr (arm, spiroArmCount) {
 				if (!vs->arms[arm].armLength) break;
-				vs->arms[arm].posX = pow(vs->exploPhase, 0.5) * ( (arm ? vs->arms[arm-1].posX : 0) + vs->arms[arm].armLength * sinTau(tickPhase*vs->arms[arm].revsWithinFrame + vs->offsets[arm]) );
-				vs->arms[arm].posY = pow(vs->exploPhase, 0.5) * ( (arm ? vs->arms[arm-1].posY : 0) + vs->arms[arm].armLength * sinTau(tickPhase*vs->arms[arm].revsWithinFrame + vs->offsets[arm] + 0.25) );
+				vs->arms[arm].posX = pow(vs->exploPhase, 0.2) * ( (arm ? vs->arms[arm-1].posX : 0) + vs->arms[arm].armLength * sinTau(tickPhase*vs->arms[arm].revsWithinFrame + vs->offsets[arm]) );
+				vs->arms[arm].posY = pow(vs->exploPhase, 0.2) * ( (arm ? vs->arms[arm-1].posY : 0) + vs->arms[arm].armLength * sinTau(tickPhase*vs->arms[arm].revsWithinFrame + vs->offsets[arm] + 0.25) );
 				if (vs->stampEnablePerArm & 1 << arm) {
 					spiroSprites[spriteIndex].dstCX = vs->arms[arm].posX;
 					spiroSprites[spriteIndex].dstCY = vs->arms[arm].posY;
@@ -44,9 +58,10 @@ void drawSpiros(void) {
 					spiroSprites[spriteIndex].srcY  = texAtlGlyphPosY(visSpiroGlyphs[i]);
 					spiroSprites[spriteIndex].srcW  = texAtlGlyphW;
 					spiroSprites[spriteIndex].srcH  = texAtlGlyphH;
-					spiroSprites[spriteIndex].mulR  = UINT16_MAX * redFromHue((double)arm/spiroArmCount);
-					spiroSprites[spriteIndex].mulG  = UINT16_MAX * grnFromHue((double)arm/spiroArmCount);
-					spiroSprites[spriteIndex].mulB  = UINT16_MAX * bluFromHue((double)arm/spiroArmCount);
+					const double charHue = (double)(visSpiroGlyphs[i]-texAtlGlyphsAsciiStart)/texAtlGlyphsCount;
+					spiroSprites[spriteIndex].mulR  = UINT16_MAX * (0.4 + 0.6*redFromHue(charHue));
+					spiroSprites[spriteIndex].mulG  = UINT16_MAX * (0.4 + 0.6*grnFromHue(charHue));
+					spiroSprites[spriteIndex].mulB  = UINT16_MAX * (0.4 + 0.6*bluFromHue(charHue));
 					spiroSprites[spriteIndex].mulO  = UINT16_MAX;
 					spriteIndex++;
 					if (spriteIndex == spiroSpritesSize) {
