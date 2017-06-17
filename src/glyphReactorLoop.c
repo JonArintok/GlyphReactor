@@ -60,6 +60,7 @@ bool glyphReactorLoop(char charEntered, int curFrame) {
 					(const GLvoid*)&charSprites[visCharBeg] // const GLvoid *data
 				);
 			}
+			triggerSpiro(charEntered);
 		}
 		else { // incorrect
 			visCharBeg--;
@@ -124,10 +125,9 @@ bool glyphReactorLoop(char charEntered, int curFrame) {
 		fprintf(LOG_VERTEX_DATA_TO, "\nBEAM\n");
 		printSprites(beamSprites, beamSize, __LINE__);
 		#endif
-		// add spirographic explosion
-		triggerSpiro(charEntered);
 	}
 	// draw beam
+	glUniform2f(unif_translate, txtOriginX_, txtOriginY_);
 	const float beamPhase = (float)(curFrame-frameWhenCharEntered)/beamGlowTime;
 	if (beamPhase < 1) {
 		fr (i, beamSize) beamSprites[i].mulO  = UINT16_MAX * (1.0 - pow(beamPhase, 0.5));
@@ -137,9 +137,10 @@ bool glyphReactorLoop(char charEntered, int curFrame) {
 			beamSize*sizeof(sprite),     // GLsizeiptr    size
 			(const GLvoid*)beamSprites   // const GLvoid *data
 		);
-		glUniform2f(unif_translate, txtOriginX_, txtOriginY_);
 		glDrawArrays(GL_POINTS, 0, beamSize);
 	}
+	// draw gun
+	glDrawArrays(GL_POINTS, gunVertBeg, gunSpritesSize);
 	// draw spirographs
 	glUniform2f(unif_translate, txtOriginX_, txtOriginY_);
 	drawSpiros();

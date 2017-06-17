@@ -2,8 +2,8 @@
 
 #define texAtlPath "img/texAtlas.png"
 
-#define texAtlW 256
-#define texAtlH 256
+#define texAtlW 512
+#define texAtlH 512
 #define texAtlGlyphW 16
 #define texAtlGlyphH 37
 #define texAtlGlyphsPerRow 16
@@ -17,6 +17,12 @@
 #define texAtlGlyphsEndY (texAtlGlyphsStartY+texAtlGlyphsH)
 #define texAtlGlyphsAsciiStart 32
 #define bkspChar 127
+
+#define texAtlGunX 280 // left edge
+#define texAtlGunY  30 // top edge
+#define texAtlGunW 206
+#define texAtlGunH 162
+#define texAtlGunYoffset texAtlGlyphH/2
 
 // texel coordinates of top left corner of glyph
 #define texAtlGlyphPosX(glyphVal) \

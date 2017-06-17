@@ -55,9 +55,24 @@ void printSprites(sprite *sprites, int count, int line) {
 const int gunDistance = 12; // character widths between gun and queue
 int       beamSize;
 sprite   *beamSprites = NULL;
+const int gunSpritesSize = 1;
+sprite   *gunSprites;
 void initBeamSprites(void) {
 	beamSize = gunDistance*4;
 	beamSprites = malloc(sizeof(sprite)*beamSize); // free in "frameLoop.c"
+	gunSprites = malloc(sizeof(sprite)*gunSpritesSize); // free in "frameLoop.c"
+	gunSprites[0].dstCX = -gunDistance*texAtlGlyphW - texAtlGunW/2;
+	gunSprites[0].dstCY = txtOriginY_ - texAtlGunYoffset;
+	gunSprites[0].dstHW = texAtlGunW/2.0;
+	gunSprites[0].dstHH = texAtlGunH/2.0;
+	gunSprites[0].srcX  = texAtlGunX;
+	gunSprites[0].srcY  = texAtlGunY;
+	gunSprites[0].srcW  = texAtlGunW;
+	gunSprites[0].srcH  = texAtlGunH;
+	gunSprites[0].mulR  = UINT16_MAX;
+	gunSprites[0].mulG  = UINT16_MAX;
+	gunSprites[0].mulB  = UINT16_MAX;
+	gunSprites[0].mulO  = UINT16_MAX;
 }
 
 char *const txtPath = "testFile.txt";

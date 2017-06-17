@@ -45,6 +45,8 @@ typedef struct {
 extern const int   gunDistance;
 extern int         beamSize;
 extern sprite     *beamSprites;
+extern const int   gunSpritesSize;
+extern sprite     *gunSprites;
 
 extern char *const txtPath;
 extern int         visCharBeg;

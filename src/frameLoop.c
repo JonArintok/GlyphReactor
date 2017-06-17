@@ -53,6 +53,7 @@ void frameLoop(void) {
 		glClear(GL_COLOR_BUFFER_BIT);
 	}
 	free(chars);       // malloc in "initSprites.c"
+	free(gunSprites);  // malloc in "initSprites.c"
 	free(charSprites); // malloc in "initSprites.c"
 	free(beamSprites); // malloc in "initSprites.c"
 	SDL_GL_DeleteContext(GLcontext);_sdlec // init int "initWindow.c"

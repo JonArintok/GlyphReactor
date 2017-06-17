@@ -4,6 +4,7 @@
 
 extern int beamVertBeg;
 extern int charVertBeg;
+extern int gunVertBeg;
 extern int spiroVertBeg;
 extern GLint unif_texAtlSize;
 extern GLint unif_scale;
