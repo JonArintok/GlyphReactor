@@ -123,9 +123,9 @@ void initSpiros(void) {
 		glyphSpiros[i].arms[0].armLength = 1.6*videoH;
 		glyphSpiros[i].arms[0].revsWithinFrame = 1.0;
 		glyphSpiros[i].arms[1].armLength = 0.2*videoH;
-		glyphSpiros[i].arms[1].revsWithinFrame = 4.0;
+		glyphSpiros[i].arms[1].revsWithinFrame = (1 + i%2)*2 + 1;
 		glyphSpiros[i].arms[2].armLength = 0.2*videoH;
-		glyphSpiros[i].arms[2].revsWithinFrame = 16.0;
+		glyphSpiros[i].arms[2].revsWithinFrame = (1 + i%4)*2 + 1;
 		
 		fr (arm, spiroArmCount) glyphSpiros[i].offsets[arm] = 0.0;
 		fr (arm, spiroArmCount) glyphSpiros[i].offsetVelocs[arm] = arm*0.02;

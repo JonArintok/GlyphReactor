@@ -30,7 +30,7 @@ typedef struct {
 	float glyphRevsWithinFrame; // rotate glyph this/ticksPerFrame each tick
 } spiroArm;
 
-#define spiroArmCount 6
+#define spiroArmCount 3
 typedef struct {
 	spiroArm arms[spiroArmCount];
 	float    offsets[spiroArmCount]; // moves between frames
@@ -63,7 +63,7 @@ extern spirograph *visSpiros;
 extern const int   glyphSpirosSize;
 extern spirograph *glyphSpiros;
 
-#define txtOriginX_ (-videoHW_/4)
-#define txtOriginY_ (videoHH_/4)
+#define txtOriginX_ 0 //(-videoHW_/4)
+#define txtOriginY_ 0 //(videoHH_/4)
 
 void initSprites(void);
