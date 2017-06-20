@@ -72,7 +72,7 @@ extern spirograph *visSpiros;
 extern const int   glyphSpirosSize;
 extern spirograph *glyphSpiros;
 
-#define txtOriginX_ 0 //(-videoHW_/4)
-#define txtOriginY_ 0 //(videoHH_/4)
+#define txtOriginX_ 0
+#define txtOriginY_ 0
 
 void initSprites(void);

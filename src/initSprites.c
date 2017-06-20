@@ -75,7 +75,7 @@ void initBeamSprites(void) {
 	gunSprites[0].mulG  = 0xff;
 	gunSprites[0].mulB  = 0xff;
 	gunSprites[0].mulO  = 0xff;
-	gunSprites[0].rot   = 0.25;
+	gunSprites[0].rot   = 0.0;
 }
 
 char *const txtPath = "testFile.txt";
@@ -106,7 +106,7 @@ void initCharSprites(void) {
 		charSprites[cPos].mulG  = 0xff;
 		charSprites[cPos].mulB  = 0xff;
 		charSprites[cPos].mulO  = 0xff;
-		charSprites[cPos].rot   = 0.25;
+		charSprites[cPos].rot   = 0.0;
 		col++;
 		if (chars[cPos] == delim) {
 			row++;
@@ -119,7 +119,7 @@ void initCharSprites(void) {
 	#endif
 }
 
-double      spiroExploSpeed = 0.004;
+double      spiroExploSpeed = 0.003;
 const int   spiroSpritesSize = 4096; // a guess, raise it if you hit it
 sprite     *spiroSprites;
 spirograph *visSpiros;
@@ -137,14 +137,18 @@ void initSpiros(void) {
 			glyphSpiros[i].arms[arm].posX = 0.0;
 			glyphSpiros[i].arms[arm].posY = 0.0;
 			//glyphSpiros[i].arms[arm].revsWithinFrame = arm%2 ? arm*3.0 : arm*-3.0;
-			glyphSpiros[i].arms[arm].glyphRevsWithinFrame = 1.0;
+			//glyphSpiros[i].arms[arm].glyphRevsWithinFrame = 1.0;
 		}
 		glyphSpiros[i].arms[0].armLength = 1.6*videoH;
 		glyphSpiros[i].arms[0].revsWithinFrame = 1.0;
+		
 		glyphSpiros[i].arms[1].armLength = 0.2*videoH;
 		glyphSpiros[i].arms[1].revsWithinFrame = (1 + i%2)*2 + 1;
+		
 		glyphSpiros[i].arms[2].armLength = 0.2*videoH;
 		glyphSpiros[i].arms[2].revsWithinFrame = (1 + i%4)*2 + 1;
+		glyphSpiros[i].arms[2].glyphRevsWithinFrame = 1.0;
+		
 		
 		fr (arm, spiroArmCount) glyphSpiros[i].offsets[arm] = 0.0;
 		fr (arm, spiroArmCount) glyphSpiros[i].offsetVelocs[arm] = arm*0.02;

@@ -4,6 +4,8 @@ layout(points) in;
 layout(triangle_strip) out;
 layout(max_vertices = 4) out;
 
+uniform vec2 scale;
+
 in VS_OUT {
 	vec2  dstHlfSize;
 	vec2  srcPosTpLt;
@@ -21,26 +23,26 @@ void main() {
 	
 	float rotateRad = gs_in[0].rotate * tau;
 	mat4 rotateZ = mat4(
-		cos(rotateRad), -sin(rotateRad), 0, 0,
-		sin(rotateRad),  cos(rotateRad), 0, 0,
+		cos(rotateRad),  sin(rotateRad), 0, 0, // left column
+		-sin(rotateRad), cos(rotateRad), 0, 0,
 		0,               0,              1, 0,
-		0,               0,              0, 1
+		0,               0,              0, 1  // right column
 	);
 	
 	texCoordFromGeom = gs_in[0].srcPosTpLt;
-	gl_Position = rotateZ*(gl_in[0].gl_Position + vec4(-gs_in[0].dstHlfSize.x,  gs_in[0].dstHlfSize.y, 0.0, 0.0));
+	gl_Position = gl_in[0].gl_Position + vec4(scale, 1.0, 0.0)*(rotateZ*vec4(-gs_in[0].dstHlfSize.x,  gs_in[0].dstHlfSize.y, 0.0, 0.0));
 	EmitVertex();
 	
 	texCoordFromGeom = gs_in[0].srcPosTpLt + vec2(gs_in[0].srcSize.x, 0.0);
-	gl_Position = rotateZ*(gl_in[0].gl_Position + vec4( gs_in[0].dstHlfSize.x,  gs_in[0].dstHlfSize.y, 0.0, 0.0));
+	gl_Position = gl_in[0].gl_Position + vec4(scale, 1.0, 0.0)*(rotateZ*vec4( gs_in[0].dstHlfSize.x,  gs_in[0].dstHlfSize.y, 0.0, 0.0));
 	EmitVertex();
 	
 	texCoordFromGeom = gs_in[0].srcPosTpLt + vec2(0.0, gs_in[0].srcSize.y);
-	gl_Position = rotateZ*(gl_in[0].gl_Position + vec4(-gs_in[0].dstHlfSize.x, -gs_in[0].dstHlfSize.y, 0.0, 0.0));
+	gl_Position = gl_in[0].gl_Position + vec4(scale, 1.0, 0.0)*(rotateZ*vec4(-gs_in[0].dstHlfSize.x, -gs_in[0].dstHlfSize.y, 0.0, 0.0));
 	EmitVertex();
 	
 	texCoordFromGeom = gs_in[0].srcPosTpLt + vec2(gs_in[0].srcSize.x, gs_in[0].srcSize.y);
-	gl_Position = rotateZ*(gl_in[0].gl_Position + vec4( gs_in[0].dstHlfSize.x, -gs_in[0].dstHlfSize.y, 0.0, 0.0));
+	gl_Position = gl_in[0].gl_Position + vec4(scale, 1.0, 0.0)*(rotateZ*vec4( gs_in[0].dstHlfSize.x, -gs_in[0].dstHlfSize.y, 0.0, 0.0));
 	EmitVertex();
 	
 	EndPrimitive();

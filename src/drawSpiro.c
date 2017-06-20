@@ -63,7 +63,7 @@ void drawSpiros(void) {
 					spiroSprites[spriteIndex].mulG  = 0xff * (0.4 + 0.6*grnFromHue(charHue));
 					spiroSprites[spriteIndex].mulB  = 0xff * (0.4 + 0.6*bluFromHue(charHue));
 					spiroSprites[spriteIndex].mulO  = 0xff;
-					spiroSprites[spriteIndex].rot   = 0.25;
+					spiroSprites[spriteIndex].rot   = tickPhase*vs->arms[arm].glyphRevsWithinFrame;
 					spriteIndex++;
 					if (spriteIndex == spiroSpritesSize) {
 						printf("WARNING: spriteIndex has hit spiroSpritesSize(%i)\n", spiroSpritesSize);

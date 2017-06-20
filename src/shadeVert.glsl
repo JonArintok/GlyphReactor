@@ -21,7 +21,7 @@ out VS_OUT {
 
 void main() {
 	gl_Position       = vec4((dstPosCntr+translate)*scale, 0.0, 1.0);
-	vs_out.dstHlfSize = dstHlfSize*scale;
+	vs_out.dstHlfSize = dstHlfSize;
 	vs_out.srcPosTpLt = srcPosTpLt/texAtlSize;
 	vs_out.srcSize    = srcSize/texAtlSize;
 	vs_out.mulColor   = mulColor;
