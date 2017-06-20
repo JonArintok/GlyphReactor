@@ -33,7 +33,8 @@ void printSprites(sprite *sprites, int count, int line) {
 			"\tmulR:%6i\n"
 			"\tmulG:%6i\n"
 			"\tmulB:%6i\n"
-			"\tmulO:%6i\n",
+			"\tmulO:%6i\n"
+			"\trot:%9.2f\n",
 			i,
 			sprites[i].dstCX,
 			sprites[i].dstCY,
@@ -47,6 +48,7 @@ void printSprites(sprite *sprites, int count, int line) {
 			sprites[i].mulG,
 			sprites[i].mulB,
 			sprites[i].mulO
+			sprites[i].rot
 		);
 	}
 }
@@ -69,10 +71,11 @@ void initBeamSprites(void) {
 	gunSprites[0].srcY  = texAtlGunY;
 	gunSprites[0].srcW  = texAtlGunW;
 	gunSprites[0].srcH  = texAtlGunH;
-	gunSprites[0].mulR  = UINT16_MAX;
-	gunSprites[0].mulG  = UINT16_MAX;
-	gunSprites[0].mulB  = UINT16_MAX;
-	gunSprites[0].mulO  = UINT16_MAX;
+	gunSprites[0].mulR  = 0xff;
+	gunSprites[0].mulG  = 0xff;
+	gunSprites[0].mulB  = 0xff;
+	gunSprites[0].mulO  = 0xff;
+	gunSprites[0].rot   = 0.25;
 }
 
 char *const txtPath = "testFile.txt";
@@ -99,10 +102,11 @@ void initCharSprites(void) {
 		charSprites[cPos].srcY  = texAtlGlyphPosY(chars[cPos]);
 		charSprites[cPos].srcW  = texAtlGlyphW;
 		charSprites[cPos].srcH  = texAtlGlyphH;
-		charSprites[cPos].mulR  = UINT16_MAX;
-		charSprites[cPos].mulG  = UINT16_MAX;
-		charSprites[cPos].mulB  = UINT16_MAX;
-		charSprites[cPos].mulO  = UINT16_MAX;
+		charSprites[cPos].mulR  = 0xff;
+		charSprites[cPos].mulG  = 0xff;
+		charSprites[cPos].mulB  = 0xff;
+		charSprites[cPos].mulO  = 0xff;
+		charSprites[cPos].rot   = 0.25;
 		col++;
 		if (chars[cPos] == delim) {
 			row++;

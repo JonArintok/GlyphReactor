@@ -79,10 +79,10 @@ bool glyphReactorLoop(char charEntered, int curFrame) {
 				charSprites[visCharBeg].dstHH = -texAtlGlyphH/2.0;
 				charSprites[visCharBeg].srcX  = texAtlGlyphPosX(charEntered);
 				charSprites[visCharBeg].srcY  = texAtlGlyphPosY(charEntered);
-				charSprites[visCharBeg].mulR  = UINT16_MAX;
+				charSprites[visCharBeg].mulR  = 0xff;
 				charSprites[visCharBeg].mulG  = 0;
 				charSprites[visCharBeg].mulB  = 0;
-				charSprites[visCharBeg].mulO  = UINT16_MAX;
+				charSprites[visCharBeg].mulO  = 0xff;
 				glBufferSubData(
 					GL_ARRAY_BUFFER,                        // GLenum        target
 					visCharVertBeg_*sizeof(sprite),         // GLintptr      offset
@@ -116,10 +116,10 @@ bool glyphReactorLoop(char charEntered, int curFrame) {
 			beamSprites[i].srcW  = texAtlGlyphW;
 			beamSprites[i].srcH  = texAtlGlyphH;
 			const double charHue = (double)(charEntered-texAtlGlyphsAsciiStart)/texAtlGlyphsCount;
-			beamSprites[i].mulR  = UINT16_MAX * (0.4 + 0.6*redFromHue(charHue));
-			beamSprites[i].mulG  = UINT16_MAX * (0.4 + 0.6*grnFromHue(charHue));
-			beamSprites[i].mulB  = UINT16_MAX * (0.4 + 0.6*bluFromHue(charHue));
-			beamSprites[i].mulO  = UINT16_MAX;
+			beamSprites[i].mulR  = 0xff * (0.4 + 0.6*redFromHue(charHue));
+			beamSprites[i].mulG  = 0xff * (0.4 + 0.6*grnFromHue(charHue));
+			beamSprites[i].mulB  = 0xff * (0.4 + 0.6*bluFromHue(charHue));
+			beamSprites[i].mulO  = 0xff;
 		}
 		#ifdef LOG_VERTEX_DATA_TO
 		fprintf(LOG_VERTEX_DATA_TO, "\nBEAM\n");
@@ -130,7 +130,7 @@ bool glyphReactorLoop(char charEntered, int curFrame) {
 	glUniform2f(unif_translate, txtOriginX_, txtOriginY_);
 	const float beamPhase = (float)(curFrame-frameWhenCharEntered)/beamGlowTime;
 	if (beamPhase < 1) {
-		fr (i, beamSize) beamSprites[i].mulO  = UINT16_MAX * (1.0 - pow(beamPhase, 0.5));
+		fr (i, beamSize) beamSprites[i].mulO  = 0xff * (1.0 - pow(beamPhase, 0.5));
 		glBufferSubData(
 			GL_ARRAY_BUFFER,             // GLenum        target
 			beamVertBeg*sizeof(sprite),  // GLintptr      offset

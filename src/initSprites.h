@@ -6,16 +6,23 @@
 typedef struct {
 	float    dstCX; // destination center X position
 	float    dstCY; // destination center Y position
+	// 8 bytes
 	float    dstHW; // destination half width,  set negative to mirror x
 	float    dstHH; // destination half height, set negative to mirror y
+	// 16 bytes
 	uint16_t srcX;  // source top left corner
 	uint16_t srcY;  // source top left corner
+	// 20 bytes
 	uint16_t srcW;  // source width
 	uint16_t srcH;  // source height
-	uint16_t mulR;  // normalized
-	uint16_t mulG;  // normalized
-	uint16_t mulB;  // normalized
-	uint16_t mulO;  // normalized
+	// 24 bytes
+	uint8_t  mulR;  // normalized
+	uint8_t  mulG;  // normalized
+	uint8_t  mulB;  // normalized
+	uint8_t  mulO;  // normalized
+	// 28 bytes
+	float    rot;   // 0 to 1 => 1 whole clockwise rotation
+	// 32 bytes
 } sprite;
 
 #ifdef LOG_VERTEX_DATA_TO

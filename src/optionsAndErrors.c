@@ -23,7 +23,7 @@ static const char* Source(GLenum source) {
     case GL_DEBUG_SOURCE_THIRD_PARTY_ARB     : return "THIRD_PARTY";
     case GL_DEBUG_SOURCE_APPLICATION_ARB     : return "APPLICATION";
     case GL_DEBUG_SOURCE_OTHER_ARB           : return "OTHER";
-    default                                  : return "not recognized";
+    default                                  : return "not enumerated";
   }
 }
 static const char* Type(GLenum type) {
@@ -34,7 +34,7 @@ static const char* Type(GLenum type) {
 	  case GL_DEBUG_TYPE_PORTABILITY_ARB         : return "PORTABILITY";
 	  case GL_DEBUG_TYPE_PERFORMANCE_ARB         : return "PERFORMANCE";
 	  case GL_DEBUG_TYPE_OTHER_ARB               : return "OTHER";
-	  default                                    : return "not recognized";
+	  default                                    : return "not enumerated";
   }
 }
 static const char* Severity(GLenum severity) {
@@ -42,7 +42,7 @@ static const char* Severity(GLenum severity) {
     case GL_DEBUG_SEVERITY_HIGH_ARB   : return "HIGH";
     case GL_DEBUG_SEVERITY_MEDIUM_ARB : return "MEDIUM";
     case GL_DEBUG_SEVERITY_LOW_ARB    : return "LOW";
-		default                           : return "not recognized";
+		default                           : return "not enumerated";
 	}
 }
 void glErrorCallback(
