@@ -132,12 +132,9 @@ void initSpiros(void) {
 	fr (i, visSpirosSize) visSpiros[i].exploPhase = 1.0;
 	fr (i, glyphSpirosSize) {
 		fr (arm, spiroArmCount) {
-			//glyphSpiros[i].arms[arm].armLength = (spiroArmCount-arm) * 10 + 1;
 			glyphSpiros[i].arms[arm].armLength = 0.0;
 			glyphSpiros[i].arms[arm].posX = 0.0;
 			glyphSpiros[i].arms[arm].posY = 0.0;
-			//glyphSpiros[i].arms[arm].revsWithinFrame = arm%2 ? arm*3.0 : arm*-3.0;
-			//glyphSpiros[i].arms[arm].glyphRevsWithinFrame = 1.0;
 		}
 		glyphSpiros[i].arms[0].armLength = 1.6*videoH;
 		glyphSpiros[i].arms[0].revsWithinFrame = 1.0;
@@ -148,7 +145,6 @@ void initSpiros(void) {
 		glyphSpiros[i].arms[2].armLength = 0.2*videoH;
 		glyphSpiros[i].arms[2].revsWithinFrame = (1 + i%4)*2 + 1;
 		glyphSpiros[i].arms[2].glyphRevsWithinFrame = 1.0;
-		
 		
 		fr (arm, spiroArmCount) glyphSpiros[i].offsets[arm] = 0.0;
 		fr (arm, spiroArmCount) glyphSpiros[i].offsetVelocs[arm] = arm*0.02;
