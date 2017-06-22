@@ -119,10 +119,6 @@ bool glyphReactorLoop(char charEntered, int curFrame) {
 			beamSprites[i].srcW  = texAtlGlyphW;
 			beamSprites[i].srcH  = texAtlGlyphH;
 			setColorFromPhase(&beamSprites[i], 0, charHue);
-			//beamSprites[i].mulR  = 0xff * (0.4 + 0.6*redFromHue(charHue));
-			//beamSprites[i].mulG  = 0xff * (0.4 + 0.6*grnFromHue(charHue));
-			//beamSprites[i].mulB  = 0xff * (0.4 + 0.6*bluFromHue(charHue));
-			//beamSprites[i].mulO  = 0xff;
 		}
 		#ifdef LOG_VERTEX_DATA_TO
 		fprintf(LOG_VERTEX_DATA_TO, "\nBEAM\n");
