@@ -37,7 +37,7 @@ typedef struct {
 	float glyphRevsWithinFrame; // rotate glyph this/ticksPerFrame each tick
 } spiroArm;
 
-#define spiroArmCount 3
+#define spiroArmCount 4
 typedef struct {
 	spiroArm arms[spiroArmCount];
 	float    offsets[spiroArmCount]; // moves between frames
@@ -47,6 +47,9 @@ typedef struct {
 	uint16_t ticksPerFrame;
 } spirograph;
 
+
+double hueFromChar(char c);
+void setColorFromPhase(sprite *s, double phase, double hue);
 
 
 extern const int   gunDistance;

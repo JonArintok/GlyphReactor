@@ -21,6 +21,8 @@ int frameWhenWordDropped = 0;
 const int beamGlowTime = 60; // frames
 int frameWhenCharEntered;
 int lastCharEntered = '\0';
+double charHue;
+
 
 void initGlyphReactorLoop(void) {
 	frameWhenCharEntered = -beamGlowTime;
@@ -32,6 +34,7 @@ bool glyphReactorLoop(char charEntered, int curFrame) {
 	if (charEntered) {
 		lastCharEntered = charEntered;
 		frameWhenCharEntered = curFrame;
+		charHue = hueFromChar(charEntered);
 		if (charEntered == bkspChar) { // backspace
 			if (stuckCharCount) {
 				stuckCharCount--;
@@ -115,11 +118,11 @@ bool glyphReactorLoop(char charEntered, int curFrame) {
 			beamSprites[i].srcY  = texAtlGlyphPosY(charEntered);
 			beamSprites[i].srcW  = texAtlGlyphW;
 			beamSprites[i].srcH  = texAtlGlyphH;
-			const double charHue = (double)(charEntered-texAtlGlyphsAsciiStart)/texAtlGlyphsCount;
-			beamSprites[i].mulR  = 0xff * (0.4 + 0.6*redFromHue(charHue));
-			beamSprites[i].mulG  = 0xff * (0.4 + 0.6*grnFromHue(charHue));
-			beamSprites[i].mulB  = 0xff * (0.4 + 0.6*bluFromHue(charHue));
-			beamSprites[i].mulO  = 0xff;
+			setColorFromPhase(&beamSprites[i], 0, charHue);
+			//beamSprites[i].mulR  = 0xff * (0.4 + 0.6*redFromHue(charHue));
+			//beamSprites[i].mulG  = 0xff * (0.4 + 0.6*grnFromHue(charHue));
+			//beamSprites[i].mulB  = 0xff * (0.4 + 0.6*bluFromHue(charHue));
+			//beamSprites[i].mulO  = 0xff;
 		}
 		#ifdef LOG_VERTEX_DATA_TO
 		fprintf(LOG_VERTEX_DATA_TO, "\nBEAM\n");
@@ -130,7 +133,10 @@ bool glyphReactorLoop(char charEntered, int curFrame) {
 	glUniform2f(unif_translate, txtOriginX_, txtOriginY_);
 	const float beamPhase = (float)(curFrame-frameWhenCharEntered)/beamGlowTime;
 	if (beamPhase < 1) {
-		fr (i, beamSize) beamSprites[i].mulO  = 0xff * (1.0 - pow(beamPhase, 0.5));
+		fr (i, beamSize) {
+			setColorFromPhase(&beamSprites[i], beamPhase, charHue);
+			beamSprites[i].mulO  = 0xff * (1.0 - pow(beamPhase, 0.5));
+		}
 		glBufferSubData(
 			GL_ARRAY_BUFFER,             // GLenum        target
 			beamVertBeg*sizeof(sprite),  // GLintptr      offset

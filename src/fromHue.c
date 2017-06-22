@@ -4,7 +4,7 @@
 #include "optionsAndErrors.h"
 
 double redFromHue(double hue) {
-	hue = fabs(fractionalPart(hue)); // extract fractional part
+	hue = fabs(fractionalPart(hue));
 	switch ((long)(hue*6.0)) {
 		case 0: return 1.0;
 		case 1: return 1.0 - (hue - 1.0/6.0)*6.0;
@@ -17,7 +17,7 @@ double redFromHue(double hue) {
 	return 0;
 }
 double grnFromHue(double hue) {
-	hue = fabs(fractionalPart(hue)); // extract fractional part
+	hue = fabs(fractionalPart(hue));
 	switch ((long)(hue*6.0)) {
 		case 0: return hue*6.0;
 		case 1: return 1.0;
@@ -30,7 +30,7 @@ double grnFromHue(double hue) {
 	return 0;
 }
 double bluFromHue(double hue) {
-	hue = fabs(fractionalPart(hue)); // extract fractional part
+	hue = fabs(fractionalPart(hue));
 	switch ((long)(hue*6.0)) {
 		case 0: return 0.0;
 		case 1: return 0.0;

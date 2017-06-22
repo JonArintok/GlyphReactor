@@ -5,6 +5,7 @@
 #include "fileTools.h"
 #include "cleanTxtFile.h"
 #include "initWindow.h"
+#include "fromHue.h"
 #include "misc.h"
 #include "../img/texAtlas.h"
 
@@ -53,6 +54,19 @@ void printSprites(sprite *sprites, int count, int line) {
 	}
 }
 #endif
+
+double hueFromChar(char c) {
+	return fractionalPart(7.0*(double)(c-texAtlGlyphsAsciiStart)/texAtlGlyphsCount);
+}
+void setColorFromPhase(sprite *s, double phase, double hue) {
+	const double diff  = pow(phase, 0.3);
+	const double start = 1.0 - diff;
+	s->mulR  = 0xff * (start + diff*redFromHue(hue));
+	s->mulG  = 0xff * (start + diff*grnFromHue(hue));
+	s->mulB  = 0xff * (start + diff*bluFromHue(hue));
+	s->mulO  = 0xff;
+}
+
 
 const int gunDistance = 12; // character widths between gun and queue
 int       beamSize;
@@ -136,20 +150,23 @@ void initSpiros(void) {
 			glyphSpiros[i].arms[arm].posX = 0.0;
 			glyphSpiros[i].arms[arm].posY = 0.0;
 		}
-		glyphSpiros[i].arms[0].armLength = 1.6*videoH;
+		glyphSpiros[i].arms[0].armLength = 1.2*videoH;
 		glyphSpiros[i].arms[0].revsWithinFrame = 1.0;
 		
 		glyphSpiros[i].arms[1].armLength = 0.2*videoH;
 		glyphSpiros[i].arms[1].revsWithinFrame = (1 + i%2)*2 + 1;
 		
-		glyphSpiros[i].arms[2].armLength = 0.2*videoH;
-		glyphSpiros[i].arms[2].revsWithinFrame = (1 + i%4)*2 + 1;
-		glyphSpiros[i].arms[2].glyphRevsWithinFrame = 1.0;
+		glyphSpiros[i].arms[2].armLength = 0.1*videoH;
+		glyphSpiros[i].arms[2].revsWithinFrame = (1 + i%4)*4 + 1;
+		
+		glyphSpiros[i].arms[3].armLength = 0.1*videoH;
+		glyphSpiros[i].arms[3].revsWithinFrame = (1 + i%4)*2 + 1;
+		glyphSpiros[i].arms[3].glyphRevsWithinFrame = 4.0;
 		
 		fr (arm, spiroArmCount) glyphSpiros[i].offsets[arm] = 0.0;
-		fr (arm, spiroArmCount) glyphSpiros[i].offsetVelocs[arm] = arm*0.02;
+		fr (arm, spiroArmCount) glyphSpiros[i].offsetVelocs[arm] = arm*0.005*(1 - 2*(arm%2));
 		glyphSpiros[i].exploPhase = 1.0;
-		glyphSpiros[i].stampEnablePerArm = 0x0004;
+		glyphSpiros[i].stampEnablePerArm = 0x0008;
 		glyphSpiros[i].ticksPerFrame = 400;
 	}
 }

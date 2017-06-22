@@ -42,7 +42,7 @@ void drawSpiros(void) {
 	int spriteIndex = 0;
 	fr (i, visSpirosSize) {
 		spirograph *const vs = &visSpiros[i];
-		const double charHue = (double)(visSpiroGlyphs[i]-texAtlGlyphsAsciiStart)/texAtlGlyphsCount;
+		const double charHue = hueFromChar(visSpiroGlyphs[i]);
 		if (vs->exploPhase >= 1) continue;
 		fr (tick, vs->ticksPerFrame) {
 			const double tickPhase = (double)tick/vs->ticksPerFrame;
@@ -59,10 +59,13 @@ void drawSpiros(void) {
 					spiroSprites[spriteIndex].srcY  = texAtlGlyphPosY(visSpiroGlyphs[i]);
 					spiroSprites[spriteIndex].srcW  = texAtlGlyphW;
 					spiroSprites[spriteIndex].srcH  = texAtlGlyphH;
-					spiroSprites[spriteIndex].mulR  = 0xff * (0.4 + 0.6*redFromHue(charHue));
-					spiroSprites[spriteIndex].mulG  = 0xff * (0.4 + 0.6*grnFromHue(charHue));
-					spiroSprites[spriteIndex].mulB  = 0xff * (0.4 + 0.6*bluFromHue(charHue));
-					spiroSprites[spriteIndex].mulO  = 0xff;
+					setColorFromPhase(&spiroSprites[spriteIndex], vs->exploPhase, charHue);
+					//const double diff  = pow(vs->exploPhase, 0.3);
+					//const double start = 1.0 - diff;
+					//spiroSprites[spriteIndex].mulR  = 0xff * (start + diff*redFromHue(charHue));
+					//spiroSprites[spriteIndex].mulG  = 0xff * (start + diff*grnFromHue(charHue));
+					//spiroSprites[spriteIndex].mulB  = 0xff * (start + diff*bluFromHue(charHue));
+					//spiroSprites[spriteIndex].mulO  = 0xff;
 					spiroSprites[spriteIndex].rot   = tickPhase*vs->arms[arm].glyphRevsWithinFrame;
 					spriteIndex++;
 					if (spriteIndex == spiroSpritesSize) {
