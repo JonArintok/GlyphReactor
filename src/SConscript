@@ -14,11 +14,9 @@ src = [
 	"initSprites.c",
 	"initOpenGl.c",
 	"drawSpiro.c",
-	"handleEvents.c",
 	"mainMenuLoop.c",
 	"glyphReactorLoop.c",
 	"spiroViewerLoop.c",
-	"cleanup.c",
 	"frameLoop.c"
 ]
 env.Program("GlyphReactor", src, LIBS = ["GL", "GLEW", "SDL2", "m", "png"])

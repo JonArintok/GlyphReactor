@@ -58,7 +58,6 @@ extern sprite     *beamSprites;
 extern const int   gunSpritesSize;
 extern sprite     *gunSprites;
 
-extern char *const txtPath;
 extern int         visCharBeg;
 extern int         charsSize;
 extern char       *chars;
@@ -66,6 +65,7 @@ extern sprite     *charSprites;
 //extern int         charCount;
 extern int         visCharEnd;
 #define visCharCount_ (visCharEnd-visCharBeg)
+extern char       *fileNames;
 
 extern double      spiroExploSpeed;
 extern const int   spiroSpritesSize;
@@ -78,4 +78,11 @@ extern spirograph *glyphSpiros;
 #define txtOriginX_ 0
 #define txtOriginY_ 0
 
+
 void initSprites(void);
+void initMainMenuSprites(void);
+void initWordQueueSprites(const char* path);
+
+
+enum {quitGame, mainMenu, glyphReactor, spiroViewer};
+extern int whereAreWe;

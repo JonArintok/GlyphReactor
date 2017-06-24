@@ -29,9 +29,13 @@ void initGlyphReactorLoop(void) {
 	whereCurWordStarted = visCharBeg;
 }
 
-bool glyphReactorLoop(char charEntered, int curFrame) {
+int glyphReactorLoop(char charEntered, int curFrame) {
 	// respond to character entered
 	if (charEntered) {
+		if (charEntered == SDLK_ESCAPE) {
+			initMainMenuSprites();
+			return mainMenu;
+		}
 		lastCharEntered = charEntered;
 		frameWhenCharEntered = curFrame;
 		charHue = hueFromChar(charEntered);
@@ -153,5 +157,5 @@ bool glyphReactorLoop(char charEntered, int curFrame) {
 		txtOriginY_ + curWord*texAtlGlyphH - bouncePos((double)(curFrame-frameWhenWordDropped)/beamGlowTime)
 	);
 	glDrawArrays(GL_POINTS, visCharVertBeg_, visCharCount_);
-	return true;
+	return glyphReactor;
 }

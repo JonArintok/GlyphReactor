@@ -1,5 +1,6 @@
 
 #include <stdlib.h>
+#include <dirent.h>
 
 #include "initSprites.h"
 #include "fileTools.h"
@@ -92,21 +93,90 @@ void initBeamSprites(void) {
 	gunSprites[0].rot   = 0.0;
 }
 
-char *const txtPath = "testFile.txt";
+#define coursesFolderName "courses"
 int         visCharBeg;
-int         charsSize;
 char       *chars = NULL;
 sprite     *charSprites = NULL;
+int         charsSize;
 int         charCount;
 int         visCharEnd;
-void initCharSprites(void) {
-	const int fileCharCount = getFileSize(txtPath);
+char       *fileNames = NULL;
+int         fileNamesSize = 0;
+const char  fileNameDelim = '\n';
+const int   maxFileSize = 0x7fff;
+int whereAreWe = mainMenu;
+void initChars(void) {
 	visCharBeg  = beamSize;
-	charsSize   = visCharBeg + fileCharCount;
-	chars       = malloc(sizeof(char)*charsSize);   // free in "frameLoop.c"
-	charSprites = malloc(sizeof(sprite)*charsSize); // free in "frameLoop.c"
-	charCount   = cleanTxtFile(txtPath, &chars[visCharBeg], fileCharCount);
-	visCharEnd  = visCharBeg + charCount;
+	// load courses
+	DIR *dir;
+	struct dirent *ent;
+	int largestFileSize = 0;
+	// path is relative to where you run the program
+	if ((dir = opendir(coursesFolderName)) != NULL) {
+		// get file sizes
+		for (int i = 0; (ent = readdir(dir)) != NULL; i++) {
+			if (ent->d_name[0] == '.') continue;
+			int fSize = getFileSize(ent->d_name);
+			if (fSize > largestFileSize) largestFileSize = fSize;
+			for (int j = 0; ent->d_name[j]; fileNamesSize++, j++);
+		}
+		charsSize = largestFileSize > maxFileSize ? maxFileSize : largestFileSize;
+		fileNames = malloc(sizeof(char)*fileNamesSize); // free in "frameLoop.c"
+		chars = malloc(sizeof(char)*charsSize); // free in "frameLoop.c"
+		charSprites = malloc(sizeof(sprite)*charsSize); // free in "frameLoop.c"
+		// store file names
+		dir = opendir(coursesFolderName);
+		int fni = 0;
+		for (int i = 0; (ent = readdir(dir)) != NULL; i++) {
+			if (ent->d_name[0] == '.') continue;
+			for (int j = 0;; j++, fni++) {
+				if (!ent->d_name[j]) {
+					fileNames[fni] = fileNameDelim;
+					fni++;
+					break;
+				}
+				fileNames[fni] = ent->d_name[j];
+			}
+		}
+		fileNames[fni] = '\0';
+		closedir(dir);
+	}
+	initMainMenuSprites();
+}
+void initMainMenuSprites(void) {
+	charCount = fileNamesSize;
+	visCharEnd = visCharBeg + charCount;
+	for (int cPos = visCharBeg, row = 0, col = 0; cPos < visCharEnd;) {
+		charSprites[cPos].dstCX = 0.0 + col*texAtlGlyphW;
+		charSprites[cPos].dstCY = 0.0 - row*texAtlGlyphH;
+		charSprites[cPos].dstHW = texAtlGlyphW/2.0;
+		charSprites[cPos].dstHH = texAtlGlyphH/2.0;
+		charSprites[cPos].srcX  = texAtlGlyphPosX(fileNames[cPos]);
+		charSprites[cPos].srcY  = texAtlGlyphPosY(fileNames[cPos]);
+		charSprites[cPos].srcW  = texAtlGlyphW;
+		charSprites[cPos].srcH  = texAtlGlyphH;
+		charSprites[cPos].mulR  = 0xff;
+		charSprites[cPos].mulG  = 0xff;
+		charSprites[cPos].mulB  = 0xff;
+		charSprites[cPos].mulO  = 0xff;
+		charSprites[cPos].rot   = 0.0;
+		col++;
+		cPos++;
+		if (chars[cPos] == fileNameDelim) {
+			row++;
+			cPos++;
+			col = 0;
+		}
+	}
+	#ifdef LOG_VERTEX_DATA_TO
+	fprintf(LOG_VERTEX_DATA_TO, "\nCOURSE LIST\n");
+	printSprites(&charSprites[visCharBeg], charCount, __LINE__);
+	#endif
+}
+void initWordQueueSprites(const char* path) {
+	const int fileCharCount = getFileSize(path);
+	charCount = cleanTxtFile(path, &chars[visCharBeg], fileCharCount);
+	visCharEnd = visCharBeg + charCount;
 	for (int cPos = visCharBeg, row = 0, col = 0; cPos < visCharEnd; cPos++) {
 		charSprites[cPos].dstCX = 0.0 + col*texAtlGlyphW;
 		charSprites[cPos].dstCY = 0.0 - row*texAtlGlyphH;
@@ -174,6 +244,6 @@ void initSpiros(void) {
 
 void initSprites(void) {
 	initBeamSprites();
-	initCharSprites();
+	initChars();
 	initSpiros();
 }

@@ -1,4 +1,3 @@
 
-#include <stdbool.h>
 
-bool mainMenuLoop(char charEntered, int curFrame);
+int mainMenuLoop(char charEntered, int curFrame);

@@ -1,4 +1,2 @@
 
-#include <stdbool.h>
-
-bool spirographEditorLoop(char charEntered, int curFrame);
+int spiroViewerLoop(char charEntered, int curFrame);
