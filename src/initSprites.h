@@ -52,6 +52,13 @@ double hueFromChar(char c);
 void setColorFromPhase(sprite *s, double phase, double hue);
 
 
+extern int beamVertBeg;
+extern int charVertBeg;
+extern int gunVertBeg;
+extern int spiroVertBeg;
+extern int vertBufSize;
+
+
 extern const int   gunDistance;
 extern int         beamSize;
 extern sprite     *beamSprites;
@@ -64,8 +71,10 @@ extern char       *chars;
 extern sprite     *charSprites;
 //extern int         charCount;
 extern int         visCharEnd;
-#define visCharCount_ (visCharEnd-visCharBeg)
+#define            visCharCount_ (visCharEnd-visCharBeg)
+#define            visCharVertBeg_ (charVertBeg+visCharBeg)
 extern char       *fileNames;
+
 
 extern double      spiroExploSpeed;
 extern const int   spiroSpritesSize;

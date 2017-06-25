@@ -15,6 +15,10 @@ void addSpiro(int i, char glyph) {
 	visSpiros[i].exploPhase = 0;
 }
 
+void clearSpiros(void) {
+	fr (i, visSpirosSize) visSpiros[i].exploPhase = 1.0;
+}
+
 // new takes spot of either first with exploPhase >= 1, or oldest
 int triggerSpiro(char glyph) {
 	int i = 0;
@@ -60,7 +64,7 @@ void drawSpiros(void) {
 					spiroSprites[spriteIndex].srcW  = texAtlGlyphW;
 					spiroSprites[spriteIndex].srcH  = texAtlGlyphH;
 					setColorFromPhase(&spiroSprites[spriteIndex], vs->exploPhase, charHue);
-					spiroSprites[spriteIndex].rot   = tickPhase*vs->arms[arm].glyphRevsWithinFrame;
+					spiroSprites[spriteIndex].rot = tickPhase*vs->arms[arm].glyphRevsWithinFrame;
 					spriteIndex++;
 					if (spriteIndex == spiroSpritesSize) {
 						printf("WARNING: spriteIndex has hit spiroSpritesSize(%i)\n", spiroSpritesSize);
@@ -76,8 +80,8 @@ void drawSpiros(void) {
 	}
 	draw:
 	#ifdef LOG_VERTEX_DATA_TO
-	fprintf(LOG_VERTEX_DATA_TO, "\nvisSpiros\n");
-	printSprites(spiroSprites, spriteIndex, __LINE__);
+	//fprintf(LOG_VERTEX_DATA_TO, "\nvisSpiros\n");
+	//printSprites(spiroSprites, spriteIndex, __LINE__);
 	#endif
 	glBufferSubData(
 		GL_ARRAY_BUFFER,             // GLenum        target

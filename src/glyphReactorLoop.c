@@ -13,18 +13,22 @@
 
 double lerp(double l, double r, double n) {return l + (r-l)*n;}
 
-int stuckCharCount = 0;
-int misBkspCount = 0;
-int curWord = 0;
-int whereCurWordStarted;
-int frameWhenWordDropped = 0;
-const int beamGlowTime = 60; // frames
+int stuckCharCount;
+int misBkspCount;
+int curWord;
+int frameWhenWordDropped;
 int frameWhenCharEntered;
+int whereCurWordStarted;
 int lastCharEntered = '\0';
 double charHue;
+const int beamGlowTime = 60; // frames
 
 
 void initGlyphReactorLoop(void) {
+	stuckCharCount = 0;
+	misBkspCount = 0;
+	curWord = 0;
+	frameWhenWordDropped = 0;
 	frameWhenCharEntered = -beamGlowTime;
 	whereCurWordStarted = visCharBeg;
 }
@@ -34,6 +38,7 @@ int glyphReactorLoop(char charEntered, int curFrame) {
 	if (charEntered) {
 		if (charEntered == SDLK_ESCAPE) {
 			initMainMenuSprites();
+			clearSpiros();
 			return mainMenu;
 		}
 		lastCharEntered = charEntered;

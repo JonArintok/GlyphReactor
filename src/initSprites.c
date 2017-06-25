@@ -3,6 +3,8 @@
 #include <dirent.h>
 
 #include "initSprites.h"
+#include "initBounceEnv.h"
+#include "initOpenGl.h"
 #include "fileTools.h"
 #include "cleanTxtFile.h"
 #include "initWindow.h"
@@ -49,7 +51,7 @@ void printSprites(sprite *sprites, int count, int line) {
 			sprites[i].mulR,
 			sprites[i].mulG,
 			sprites[i].mulB,
-			sprites[i].mulO
+			sprites[i].mulO,
 			sprites[i].rot
 		);
 	}
@@ -69,14 +71,35 @@ void setColorFromPhase(sprite *s, double phase, double hue) {
 }
 
 
+int beamVertBeg = 0;
+int charVertBeg;
+int gunVertBeg;
+int spiroVertBeg;
+int vertBufSize;
+
 const int gunDistance = 12; // character widths between gun and queue
 int       beamSize;
 sprite   *beamSprites = NULL;
 const int gunSpritesSize = 1;
 sprite   *gunSprites;
-void initBeamSprites(void) {
+
+#define coursesFolderName "courses"
+int         visCharBeg;
+char       *chars = NULL;
+sprite     *charSprites = NULL;
+int         charsSize;
+int         charCount;
+int         visCharEnd;
+char       *fileNames = NULL;
+int         fileNamesSize = 0;
+const char  fileNameDelim = '\n';
+const int   maxFileSize = 0x7fff;
+int whereAreWe = mainMenu;
+void init(void) {
+	// init sprites
 	beamSize = gunDistance*4;
 	beamSprites = malloc(sizeof(sprite)*beamSize); // free in "frameLoop.c"
+	// init gun sprites
 	gunSprites = malloc(sizeof(sprite)*gunSpritesSize); // free in "frameLoop.c"
 	gunSprites[0].dstCX = -gunDistance*texAtlGlyphW - texAtlGunW/2;
 	gunSprites[0].dstCY = txtOriginY_ - texAtlGunYoffset;
@@ -91,22 +114,6 @@ void initBeamSprites(void) {
 	gunSprites[0].mulB  = 0xff;
 	gunSprites[0].mulO  = 0xff;
 	gunSprites[0].rot   = 0.0;
-}
-
-#define coursesFolderName "courses"
-int         visCharBeg;
-char       *chars = NULL;
-sprite     *charSprites = NULL;
-int         charsSize;
-int         charCount;
-int         visCharEnd;
-char       *fileNames = NULL;
-int         fileNamesSize = 0;
-const char  fileNameDelim = '\n';
-const int   maxFileSize = 0x7fff;
-int whereAreWe = mainMenu;
-void initChars(void) {
-	visCharBeg  = beamSize;
 	// load courses
 	DIR *dir;
 	struct dirent *ent;
@@ -119,6 +126,7 @@ void initChars(void) {
 			int fSize = getFileSize(ent->d_name);
 			if (fSize > largestFileSize) largestFileSize = fSize;
 			for (int j = 0; ent->d_name[j]; fileNamesSize++, j++);
+			fileNamesSize++; // one more for delim
 		}
 		charsSize = largestFileSize > maxFileSize ? maxFileSize : largestFileSize;
 		fileNames = malloc(sizeof(char)*fileNamesSize); // free in "frameLoop.c"
@@ -141,18 +149,53 @@ void initChars(void) {
 		fileNames[fni] = '\0';
 		closedir(dir);
 	}
-	initMainMenuSprites();
+	// init opengl
+	gunVertBeg   = beamSize;
+	charVertBeg  = gunVertBeg + gunSpritesSize;
+	spiroVertBeg = charVertBeg + charsSize;
+	vertBufSize  = charsSize + beamSize + spiroSpritesSize;
+	initOpenGl();
+	// upload gun sprites
+	glBufferSubData(
+		GL_ARRAY_BUFFER,             // GLenum        target
+		gunVertBeg*sizeof(sprite),   // GLintptr      offset
+		sizeof(sprite),              // GLsizeiptr    size
+		(const GLvoid*)gunSprites    // const GLvoid *data
+	);
 }
+
+
 void initMainMenuSprites(void) {
+	visCharBeg = beamSize;
 	charCount = fileNamesSize;
-	visCharEnd = visCharBeg + charCount;
-	for (int cPos = visCharBeg, row = 0, col = 0; cPos < visCharEnd;) {
+	visCharEnd = visCharBeg + fileNamesSize;
+	
+	printf("fileNames: \n%s\n", fileNames);
+	printf("fileNamesSize: %i\n", fileNamesSize);
+	
+	
+	for (int cPos = visCharBeg, fncPos = 0, row = 0, col = 0;;) {
+		if (fileNames[fncPos] == fileNameDelim) {
+			row++;
+			col = 0;
+			fncPos++;
+			cPos++;
+			continue;
+		}
+		if (!fileNames[fncPos]) {
+			visCharEnd = cPos;
+			break;
+		}
+		if (fncPos >= fileNamesSize) _SHOULD_NOT_BE_HERE_;
+		
+		printf("fncPos: %2i, fileNames[fncPos]: %c\n", fncPos, fileNames[fncPos]);
+		
 		charSprites[cPos].dstCX = 0.0 + col*texAtlGlyphW;
 		charSprites[cPos].dstCY = 0.0 - row*texAtlGlyphH;
 		charSprites[cPos].dstHW = texAtlGlyphW/2.0;
 		charSprites[cPos].dstHH = texAtlGlyphH/2.0;
-		charSprites[cPos].srcX  = texAtlGlyphPosX(fileNames[cPos]);
-		charSprites[cPos].srcY  = texAtlGlyphPosY(fileNames[cPos]);
+		charSprites[cPos].srcX  = texAtlGlyphPosX(fileNames[fncPos]);
+		charSprites[cPos].srcY  = texAtlGlyphPosY(fileNames[fncPos]);
 		charSprites[cPos].srcW  = texAtlGlyphW;
 		charSprites[cPos].srcH  = texAtlGlyphH;
 		charSprites[cPos].mulR  = 0xff;
@@ -161,13 +204,15 @@ void initMainMenuSprites(void) {
 		charSprites[cPos].mulO  = 0xff;
 		charSprites[cPos].rot   = 0.0;
 		col++;
+		fncPos++;
 		cPos++;
-		if (chars[cPos] == fileNameDelim) {
-			row++;
-			cPos++;
-			col = 0;
-		}
 	}
+	glBufferSubData(
+		GL_ARRAY_BUFFER,                        // GLenum        target
+		visCharVertBeg_*sizeof(sprite),         // GLintptr      offset
+		visCharCount_*sizeof(sprite),           // GLsizeiptr    size
+		(const GLvoid*)&charSprites[visCharBeg] // const GLvoid *data
+	);
 	#ifdef LOG_VERTEX_DATA_TO
 	fprintf(LOG_VERTEX_DATA_TO, "\nCOURSE LIST\n");
 	printSprites(&charSprites[visCharBeg], charCount, __LINE__);
@@ -175,6 +220,9 @@ void initMainMenuSprites(void) {
 }
 void initWordQueueSprites(const char* path) {
 	const int fileCharCount = getFileSize(path);
+	
+	printf("fileCharCount: %i\n", fileCharCount);
+	
 	charCount = cleanTxtFile(path, &chars[visCharBeg], fileCharCount);
 	visCharEnd = visCharBeg + charCount;
 	for (int cPos = visCharBeg, row = 0, col = 0; cPos < visCharEnd; cPos++) {
@@ -197,6 +245,12 @@ void initWordQueueSprites(const char* path) {
 			col = 0;
 		}
 	}
+	glBufferSubData(
+		GL_ARRAY_BUFFER,                        // GLenum        target
+		visCharVertBeg_*sizeof(sprite),         // GLintptr      offset
+		visCharCount_*sizeof(sprite),           // GLsizeiptr    size
+		(const GLvoid*)&charSprites[visCharBeg] // const GLvoid *data
+	);
 	#ifdef LOG_VERTEX_DATA_TO
 	fprintf(LOG_VERTEX_DATA_TO, "\nWORD QUEUE\n");
 	printSprites(&charSprites[visCharBeg], charCount, __LINE__);
@@ -243,7 +297,8 @@ void initSpiros(void) {
 
 
 void initSprites(void) {
-	initBeamSprites();
-	initChars();
+	init();
+	initMainMenuSprites();
 	initSpiros();
+	initBounceEnv();
 }

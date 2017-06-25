@@ -1,10 +1,10 @@
 
 #include <stdio.h>
 
-#define LOG_SDL_ERRORS_TO  stderr
-#define LOG_GL_ERRORS_TO   stderr
-//#define LOG_VERTEX_DATA_TO stdout
-//#define LOG_TIMING_TO      stderr
+#define LOG_SDL_ERRORS_TO  stdout
+#define LOG_GL_ERRORS_TO   stdout
+#define LOG_VERTEX_DATA_TO stdout
+//#define LOG_TIMING_TO      stdout
 
 #define enableVSync   1
 #define drawWireFrame 0

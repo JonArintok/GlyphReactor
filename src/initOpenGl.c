@@ -5,20 +5,10 @@
 #include "oglTools.h"
 #include "initWindow.h"
 
-int beamVertBeg;
-int charVertBeg;
-int gunVertBeg;
-int spiroVertBeg;
-int vertBufSize;
 GLint unif_texAtlSize;
 GLint unif_scale;
 GLint unif_translate;
 int initOpenGl(void) {
-	beamVertBeg  = 0;
-	gunVertBeg   = beamSize;
-	charVertBeg  = gunVertBeg + gunSpritesSize;
-	spiroVertBeg = charVertBeg + charsSize;
-	vertBufSize  = charsSize + beamSize + spiroSpritesSize;
 	// vertex array object
 	GLuint vao;
 	glEnable(GL_BLEND);
@@ -34,20 +24,6 @@ int initOpenGl(void) {
 	  vertBufSize*sizeof(sprite),
 	  NULL,
 	  GL_DYNAMIC_DRAW
-	);
-	// upload gun sprite
-	glBufferSubData(
-		GL_ARRAY_BUFFER,             // GLenum        target
-		gunVertBeg*sizeof(sprite),   // GLintptr      offset
-		sizeof(sprite),              // GLsizeiptr    size
-		(const GLvoid*)gunSprites    // const GLvoid *data
-	);
-	// upload char sprites
-	glBufferSubData(
-		GL_ARRAY_BUFFER,                        // GLenum        target
-		visCharVertBeg_*sizeof(sprite),         // GLintptr      offset
-		visCharCount_*sizeof(sprite),           // GLsizeiptr    size
-		(const GLvoid*)&charSprites[visCharBeg] // const GLvoid *data
 	);
 	// shader program
 	GLuint shaderProgram = createShaderProgram(
