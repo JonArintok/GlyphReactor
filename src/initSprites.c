@@ -169,17 +169,11 @@ void initMainMenuSprites(void) {
 	visCharBeg = beamSize;
 	charCount = fileNamesSize;
 	visCharEnd = visCharBeg + fileNamesSize;
-	
-	printf("fileNames: \n%s\n", fileNames);
-	printf("fileNamesSize: %i\n", fileNamesSize);
-	
-	
 	for (int cPos = visCharBeg, fncPos = 0, row = 0, col = 0;;) {
 		if (fileNames[fncPos] == fileNameDelim) {
 			row++;
 			col = 0;
 			fncPos++;
-			cPos++;
 			continue;
 		}
 		if (!fileNames[fncPos]) {
@@ -187,9 +181,6 @@ void initMainMenuSprites(void) {
 			break;
 		}
 		if (fncPos >= fileNamesSize) _SHOULD_NOT_BE_HERE_;
-		
-		printf("fncPos: %2i, fileNames[fncPos]: %c\n", fncPos, fileNames[fncPos]);
-		
 		charSprites[cPos].dstCX = 0.0 + col*texAtlGlyphW;
 		charSprites[cPos].dstCY = 0.0 - row*texAtlGlyphH;
 		charSprites[cPos].dstHW = texAtlGlyphW/2.0;
@@ -220,9 +211,6 @@ void initMainMenuSprites(void) {
 }
 void initWordQueueSprites(const char* path) {
 	const int fileCharCount = getFileSize(path);
-	
-	printf("fileCharCount: %i\n", fileCharCount);
-	
 	charCount = cleanTxtFile(path, &chars[visCharBeg], fileCharCount);
 	visCharEnd = visCharBeg + charCount;
 	for (int cPos = visCharBeg, row = 0, col = 0; cPos < visCharEnd; cPos++) {

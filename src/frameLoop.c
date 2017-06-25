@@ -59,8 +59,8 @@ void frameLoop(void) {
 		getTimeDelta(&ts_oldFrameStart, &ts_newFrameStart, &ts_frameDelta);
 		#ifdef LOG_TIMING_TO
 		fprintf(LOG_TIMING_TO,
-		  "ts_frameDelta: %1ld s, %9ld ns\n",
-		  ts_frameDelta.tv_sec, ts_frameDelta.tv_nsec
+			"ts_frameDelta: %1ld s, %9ld ns\n",
+			ts_frameDelta.tv_sec, ts_frameDelta.tv_nsec
 		);
 		#endif
 		char charEntered = '\0';
@@ -83,7 +83,7 @@ void frameLoop(void) {
 		getTimeDelta(&ts_newFrameStart, &ts_now, &ts_compTime);
 		fprintf(LOG_TIMING_TO,
 			"ts_compTime: %3ld s, %9ld ns\n",
-		  ts_compTime.tv_sec, ts_compTime.tv_nsec
+			ts_compTime.tv_sec, ts_compTime.tv_nsec
 		);
 		#endif
 		SDL_GL_SwapWindow(window);_sdlec

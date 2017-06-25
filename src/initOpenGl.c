@@ -20,19 +20,19 @@ int initOpenGl(void) {
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(
-	  GL_ARRAY_BUFFER,
-	  vertBufSize*sizeof(sprite),
-	  NULL,
-	  GL_DYNAMIC_DRAW
+		GL_ARRAY_BUFFER,
+		vertBufSize*sizeof(sprite),
+		NULL,
+		GL_DYNAMIC_DRAW
 	);
 	// shader program
 	GLuint shaderProgram = createShaderProgram(
-	  "src/shadeVert.glsl",
+		"src/shadeVert.glsl",
 		NULL,
 		NULL,
 		"src/shadeGeom.glsl",
-	  "src/shadeFrag.glsl",
-	  "shaderProgram"
+		"src/shadeFrag.glsl",
+		"shaderProgram"
 	);
 	if (!shaderProgram) return __LINE__;
 	glUseProgram(shaderProgram);

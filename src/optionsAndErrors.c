@@ -3,45 +3,45 @@
 #ifdef LOG_SDL_ERRORS_TO
 #include <SDL2/SDL_error.h>
 void sdlec(int line, const char *file) {
-  const char *error = SDL_GetError();
-  if (!error || !error[0]) return;
+	const char *error = SDL_GetError();
+	if (!error || !error[0]) return;
 	fprintf(LOG_SDL_ERRORS_TO,
 		"SDL error at line %i in %s :\n%s",
 		line, file, error
 	);
-  SDL_ClearError();
-  exit(-10);
+	SDL_ClearError();
+	exit(-10);
 }
 #endif
 
 #ifdef LOG_GL_ERRORS_TO
 static const char* Source(GLenum source) {
 	switch(source) {
-    case GL_DEBUG_SOURCE_API_ARB             : return "API";
-    case GL_DEBUG_SOURCE_WINDOW_SYSTEM_ARB   : return "WINDOW_SYSTEM";
-    case GL_DEBUG_SOURCE_SHADER_COMPILER_ARB : return "SHADER_COMPILER";
-    case GL_DEBUG_SOURCE_THIRD_PARTY_ARB     : return "THIRD_PARTY";
-    case GL_DEBUG_SOURCE_APPLICATION_ARB     : return "APPLICATION";
-    case GL_DEBUG_SOURCE_OTHER_ARB           : return "OTHER";
-    default                                  : return "not enumerated";
-  }
+		case GL_DEBUG_SOURCE_API_ARB             : return "API";
+		case GL_DEBUG_SOURCE_WINDOW_SYSTEM_ARB   : return "WINDOW_SYSTEM";
+		case GL_DEBUG_SOURCE_SHADER_COMPILER_ARB : return "SHADER_COMPILER";
+		case GL_DEBUG_SOURCE_THIRD_PARTY_ARB     : return "THIRD_PARTY";
+		case GL_DEBUG_SOURCE_APPLICATION_ARB     : return "APPLICATION";
+		case GL_DEBUG_SOURCE_OTHER_ARB           : return "OTHER";
+		default                                  : return "not enumerated";
+	}
 }
 static const char* Type(GLenum type) {
-  switch(type) {
-	  case GL_DEBUG_TYPE_ERROR_ARB               : return "ERROR";
-	  case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB : return "DEPRECATED_BEHAVIOR";
-	  case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB  : return "UNDEFINED_BEHAVIOR";
-	  case GL_DEBUG_TYPE_PORTABILITY_ARB         : return "PORTABILITY";
-	  case GL_DEBUG_TYPE_PERFORMANCE_ARB         : return "PERFORMANCE";
-	  case GL_DEBUG_TYPE_OTHER_ARB               : return "OTHER";
-	  default                                    : return "not enumerated";
-  }
+	switch(type) {
+		case GL_DEBUG_TYPE_ERROR_ARB               : return "ERROR";
+		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB : return "DEPRECATED_BEHAVIOR";
+		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB  : return "UNDEFINED_BEHAVIOR";
+		case GL_DEBUG_TYPE_PORTABILITY_ARB         : return "PORTABILITY";
+		case GL_DEBUG_TYPE_PERFORMANCE_ARB         : return "PERFORMANCE";
+		case GL_DEBUG_TYPE_OTHER_ARB               : return "OTHER";
+		default                                    : return "not enumerated";
+	}
 }
 static const char* Severity(GLenum severity) {
-  switch(severity) {
-    case GL_DEBUG_SEVERITY_HIGH_ARB   : return "HIGH";
-    case GL_DEBUG_SEVERITY_MEDIUM_ARB : return "MEDIUM";
-    case GL_DEBUG_SEVERITY_LOW_ARB    : return "LOW";
+	switch(severity) {
+		case GL_DEBUG_SEVERITY_HIGH_ARB   : return "HIGH";
+		case GL_DEBUG_SEVERITY_MEDIUM_ARB : return "MEDIUM";
+		case GL_DEBUG_SEVERITY_LOW_ARB    : return "LOW";
 		default                           : return "not enumerated";
 	}
 }

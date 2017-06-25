@@ -1,4 +1,5 @@
 bin/*
 log/*
 GlyphReactor
+log.txt
 .sconsign.dblite

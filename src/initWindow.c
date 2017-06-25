@@ -25,10 +25,10 @@ int initWindow(void) {
 	glewExperimental = GL_TRUE;
 	{
 		GLenum r = glewInit();
-	  if (r != GLEW_OK) {
-	    printf("GLEW error: %s\n", glewGetErrorString(r));
-	    return r;
-	  }
+		if (r != GLEW_OK) {
+			printf("GLEW error: %s\n", glewGetErrorString(r));
+			return r;
+		}
 	}
 	#ifdef LOG_GL_ERRORS_TO
 	fprintf(LOG_GL_ERRORS_TO,
