@@ -12,9 +12,9 @@
 #include "../img/texAtlas.h"
 
 
-int queueCharCount;
-int visCharBeg;
-int visCharEnd;
+int queueCharCount; // number of characters from file
+int visCharBeg; // starts at gunDistance, goes up and down
+int visCharEnd; // gunDistance + queueCharCount
 #define visCharCount_ (visCharEnd - visCharBeg)
 #define visCharVertBeg_ (charVertBeg + visCharBeg)
 
@@ -32,7 +32,7 @@ const int beamGlowTime = 60; // frames
 void initGlyphReactorLoop(int charCountIn) {
 	queueCharCount = charCountIn;
 	visCharBeg = gunDistance;
-	visCharEnd = queueCharCount + gunDistance;
+	visCharEnd = gunDistance + queueCharCount;
 	stuckCharCount = 0;
 	misBkspCount = 0;
 	curWord = 0;
@@ -138,8 +138,8 @@ int glyphReactorLoop(char charEntered, int curFrame) {
 			setColorFromPhase(&beamSprites[i], 0, charHue);
 		}
 		#ifdef LOG_VERTEX_DATA_TO
-		fprintf(LOG_VERTEX_DATA_TO, "\nBEAM\n");
-		printSprites(beamSprites, beamSize, __LINE__);
+		//fprintf(LOG_VERTEX_DATA_TO, "\nBEAM\n");
+		//printSprites(beamSprites, beamSize, __LINE__);
 		#endif
 	}
 	// draw beam

@@ -305,10 +305,10 @@ int initWordQueueSprites(int courseIndex) {
 		}
 	}
 	glBufferSubData(
-		GL_ARRAY_BUFFER,                         // GLenum        target
-		sizeof(sprite)*charVertBeg+gunDistance,  // GLintptr      offset
-		sizeof(sprite)*charCount,                // GLsizeiptr    size
-		(const GLvoid*)&charSprites[gunDistance] // const GLvoid *data
+		GL_ARRAY_BUFFER,                          // GLenum        target
+		sizeof(sprite)*(charVertBeg+gunDistance), // GLintptr      offset
+		sizeof(sprite)*charCount,                 // GLsizeiptr    size
+		(const GLvoid*)&charSprites[gunDistance]  // const GLvoid *data
 	);
 	#ifdef LOG_VERTEX_DATA_TO
 	fprintf(LOG_VERTEX_DATA_TO, "\nWORD QUEUE\n");
