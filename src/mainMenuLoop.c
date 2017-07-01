@@ -18,9 +18,7 @@ int mainMenuLoop(int charEntered, int curFrame) {
 	switch (charEntered) {
 		case SDLK_ESCAPE: return quitGame;
 		case SDLK_RETURN:
-			printf("listPos: %i\n", listPos);
-			initWordQueueSprites(listPos);
-			initGlyphReactorLoop();
+			initGlyphReactorLoop(initWordQueueSprites(listPos));
 			return glyphReactor;
 		case SDLK_TAB:
 			glUniform2f(unif_translate, 0, 0);
@@ -47,7 +45,7 @@ int mainMenuLoop(int charEntered, int curFrame) {
 		cursorPosY += pow(listMovePhase, 0.5)*listMoveDir*texAtlGlyphH - listMoveDir*texAtlGlyphH;
 	}
 	glUniform2f(unif_translate, originX, cursorPosY);
-	glDrawArrays(GL_POINTS, visCharVertBeg_, visCharCount_);
+	glDrawArrays(GL_POINTS, charVertBeg, fileNamesCharCount);
 	// draw cursor
 	glUniform2f(unif_translate, originX, txtOriginY_);
 	glDrawArrays(GL_POINTS, menuCursorVertBeg, menuCursorSpritesSize);

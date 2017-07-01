@@ -66,7 +66,7 @@ void drawSpiros(void) {
 					setColorFromPhase(&spiroSprites[spriteIndex], vs->exploPhase, charHue);
 					spiroSprites[spriteIndex].rot = tickPhase*vs->arms[arm].glyphRevsWithinFrame;
 					spriteIndex++;
-					if (spriteIndex == spiroSpritesSize) {
+					if (spriteIndex >= spiroSpritesSize) {
 						printf("WARNING: spriteIndex has hit spiroSpritesSize(%i)\n", spiroSpritesSize);
 						goto draw;
 					}

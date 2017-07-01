@@ -11,7 +11,12 @@
 #include "initBounceEnv.h"
 #include "../img/texAtlas.h"
 
-double lerp(double l, double r, double n) {return l + (r-l)*n;}
+
+int queueCharCount;
+int visCharBeg;
+int visCharEnd;
+#define visCharCount_ (visCharEnd - visCharBeg)
+#define visCharVertBeg_ (charVertBeg + visCharBeg)
 
 int stuckCharCount;
 int misBkspCount;
@@ -24,7 +29,10 @@ double charHue;
 const int beamGlowTime = 60; // frames
 
 
-void initGlyphReactorLoop(void) {
+void initGlyphReactorLoop(int charCountIn) {
+	queueCharCount = charCountIn;
+	visCharBeg = gunDistance;
+	visCharEnd = queueCharCount + gunDistance;
 	stuckCharCount = 0;
 	misBkspCount = 0;
 	curWord = 0;
@@ -67,8 +75,8 @@ int glyphReactorLoop(char charEntered, int curFrame) {
 				}
 				glBufferSubData(
 					GL_ARRAY_BUFFER,                        // GLenum        target
-					visCharVertBeg_*sizeof(sprite),         // GLintptr      offset
-					count*sizeof(sprite),                   // GLsizeiptr    size
+					sizeof(sprite)*visCharVertBeg_,         // GLintptr      offset
+					sizeof(sprite)*count,                   // GLsizeiptr    size
 					(const GLvoid*)&charSprites[visCharBeg] // const GLvoid *data
 				);
 			}
@@ -97,7 +105,7 @@ int glyphReactorLoop(char charEntered, int curFrame) {
 				charSprites[visCharBeg].mulO  = 0xff;
 				glBufferSubData(
 					GL_ARRAY_BUFFER,                        // GLenum        target
-					visCharVertBeg_*sizeof(sprite),         // GLintptr      offset
+					sizeof(sprite)*visCharVertBeg_,         // GLintptr      offset
 					sizeof(sprite),                         // GLsizeiptr    size
 					(const GLvoid*)&charSprites[visCharBeg] // const GLvoid *data
 				);
@@ -144,11 +152,11 @@ int glyphReactorLoop(char charEntered, int curFrame) {
 		}
 		glBufferSubData(
 			GL_ARRAY_BUFFER,             // GLenum        target
-			beamVertBeg*sizeof(sprite),  // GLintptr      offset
-			beamSize*sizeof(sprite),     // GLsizeiptr    size
+			sizeof(sprite)*beamVertBeg,  // GLintptr      offset
+			sizeof(sprite)*beamSize,     // GLsizeiptr    size
 			(const GLvoid*)beamSprites   // const GLvoid *data
 		);
-		glDrawArrays(GL_POINTS, 0, beamSize);
+		glDrawArrays(GL_POINTS, beamVertBeg, beamSize);
 	}
 	// draw gun
 	glDrawArrays(GL_POINTS, gunVertBeg, gunSpritesSize);

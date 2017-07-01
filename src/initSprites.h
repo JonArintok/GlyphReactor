@@ -68,14 +68,11 @@ extern sprite   *gunSprites;
 extern const int menuCursorSpritesSize;
 extern sprite   *menuCursorSprites;
 
-extern int       visCharBeg;
 extern int       charsSize;
 extern char     *chars;
 extern sprite   *charSprites;
-//extern int       charCount;
-extern int       visCharEnd;
-#define          visCharCount_ (visCharEnd-visCharBeg)
-#define          visCharVertBeg_ (charVertBeg+visCharBeg)
+extern int       fileNamesCharCount;
+extern int       fileNamesSize;
 extern char     *fileNames;
 extern int       courseCount;
 
@@ -94,7 +91,7 @@ extern spirograph *glyphSpiros;
 
 void initSprites(void);
 void initMainMenuSprites(void);
-void initWordQueueSprites(int courseIndex);
+int  initWordQueueSprites(int courseIndex);
 
 
 enum {quitGame, mainMenu, glyphReactor, spiroViewer};

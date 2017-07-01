@@ -89,13 +89,12 @@ sprite   *menuCursorSprites;
 
 const char *coursesFolderName = "courses";
 int         visCharBeg;
+int         charsSize;
 char       *chars = NULL;
 sprite     *charSprites = NULL;
-int         charsSize;
-int         charCount;
-int         visCharEnd;
+int         fileNamesCharCount;
+int         fileNamesSize;
 char       *fileNames = NULL;
-int         fileNamesSize = 0;
 const char  fileNameDelim = '\n';
 int         courseCount = 0;
 const int   maxFileSize = 0x7fff;
@@ -173,7 +172,9 @@ void init(void) {
 			for (int j = 0; ent->d_name[j]; fileNamesSize++, j++);
 			fileNamesSize++; // one more for delim
 		}
-		charsSize = largestFileSize > maxFileSize ? maxFileSize : largestFileSize;
+		if (largestFileSize+gunDistance > maxFileSize) {
+			charsSize = largestFileSize+gunDistance;
+		} else charsSize = maxFileSize;
 		fileNames = malloc(sizeof(char)*fileNamesSize); // free in "frameLoop.c"
 		chars = malloc(sizeof(char)*charsSize);         // free in "frameLoop.c"
 		charSprites = malloc(sizeof(sprite)*charsSize); // free in "frameLoop.c"
@@ -219,10 +220,7 @@ void init(void) {
 
 
 void initMainMenuSprites(void) {
-	visCharBeg = beamSize;
-	charCount = fileNamesSize;
-	visCharEnd = visCharBeg + fileNamesSize;
-	for (int cPos = visCharBeg, fncPos = 0, row = 0, col = 0;;) {
+	for (int cPos = 0, fncPos = 0, row = 0, col = 0;;) {
 		if (fileNames[fncPos] == fileNameDelim) {
 			row++;
 			col = 0;
@@ -230,7 +228,7 @@ void initMainMenuSprites(void) {
 			continue;
 		}
 		if (!fileNames[fncPos]) {
-			visCharEnd = cPos;
+			fileNamesCharCount = cPos;
 			break;
 		}
 		if (fncPos >= fileNamesSize) _SHOULD_NOT_BE_HERE_;
@@ -252,17 +250,18 @@ void initMainMenuSprites(void) {
 		cPos++;
 	}
 	glBufferSubData(
-		GL_ARRAY_BUFFER,                        // GLenum        target
-		visCharVertBeg_*sizeof(sprite),         // GLintptr      offset
-		visCharCount_*sizeof(sprite),           // GLsizeiptr    size
-		(const GLvoid*)&charSprites[visCharBeg] // const GLvoid *data
+		GL_ARRAY_BUFFER,                   // GLenum        target
+		sizeof(sprite)*charVertBeg,        // GLintptr      offset
+		sizeof(sprite)*fileNamesCharCount, // GLsizeiptr    size
+		(const GLvoid*)charSprites         // const GLvoid *data
 	);
 	#ifdef LOG_VERTEX_DATA_TO
 	fprintf(LOG_VERTEX_DATA_TO, "\nCOURSE LIST\n");
-	printSprites(&charSprites[visCharBeg], charCount, __LINE__);
+	printSprites(charSprites, fileNamesCharCount, __LINE__);
 	#endif
 }
-void initWordQueueSprites(int courseIndex) {
+
+int initWordQueueSprites(int courseIndex) {
 	char path[maxWordSize];
 	int i = 0;
 	int fni = 0;
@@ -278,12 +277,13 @@ void initWordQueueSprites(int courseIndex) {
 		path[i] = fileNames[fni];
 	}
 	path[i] = '\0';
-	puts("path:");puts(path);
 	const int fileCharCount = getFileSize(path);
-	visCharBeg = beamSize;
-	charCount = cleanTxtFile(path, &chars[visCharBeg], fileCharCount);
-	visCharEnd = visCharBeg + charCount;
-	for (int cPos = visCharBeg, row = 0, col = 0; cPos < visCharEnd; cPos++) {
+	int charCount = cleanTxtFile(path, &chars[visCharBeg], fileCharCount);
+	for (
+		int cPos = gunDistance, row = 0, col = 0;
+		cPos < gunDistance+charCount;
+		cPos++
+	) {
 		charSprites[cPos].dstCX = 0.0 + col*texAtlGlyphW;
 		charSprites[cPos].dstCY = 0.0 - row*texAtlGlyphH;
 		charSprites[cPos].dstHW = texAtlGlyphW/2.0;
@@ -304,15 +304,16 @@ void initWordQueueSprites(int courseIndex) {
 		}
 	}
 	glBufferSubData(
-		GL_ARRAY_BUFFER,                        // GLenum        target
-		visCharVertBeg_*sizeof(sprite),         // GLintptr      offset
-		visCharCount_*sizeof(sprite),           // GLsizeiptr    size
-		(const GLvoid*)&charSprites[visCharBeg] // const GLvoid *data
+		GL_ARRAY_BUFFER,                         // GLenum        target
+		sizeof(sprite)*gunDistance,              // GLintptr      offset
+		sizeof(sprite)*charCount,                // GLsizeiptr    size
+		(const GLvoid*)&charSprites[gunDistance] // const GLvoid *data
 	);
 	#ifdef LOG_VERTEX_DATA_TO
 	fprintf(LOG_VERTEX_DATA_TO, "\nWORD QUEUE\n");
 	printSprites(&charSprites[visCharBeg], charCount, __LINE__);
 	#endif
+	return charCount;
 }
 
 double      spiroExploSpeed = 0.003;

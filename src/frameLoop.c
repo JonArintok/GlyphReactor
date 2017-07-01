@@ -51,7 +51,6 @@ timestamp ts_compTime = {0,0}, ts_now = {0,0};
 #endif
 
 void frameLoop(void) {
-	initGlyphReactorLoop();
 	clock_gettime(CLOCK_MONOTONIC, &ts_newFrameStart);
 	for (bool running = true; running; curFrame++) {
 		ts_oldFrameStart = ts_newFrameStart;
