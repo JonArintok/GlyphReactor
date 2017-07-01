@@ -88,7 +88,6 @@ sprite   *menuCursorSprites;
 
 
 const char *coursesFolderName = "courses";
-int         visCharBeg;
 int         charsSize;
 char       *chars = NULL;
 sprite     *charSprites = NULL;
@@ -262,6 +261,7 @@ void initMainMenuSprites(void) {
 }
 
 int initWordQueueSprites(int courseIndex) {
+	// load course file
 	char path[maxWordSize];
 	int i = 0;
 	int fni = 0;
@@ -278,7 +278,8 @@ int initWordQueueSprites(int courseIndex) {
 	}
 	path[i] = '\0';
 	const int fileCharCount = getFileSize(path);
-	int charCount = cleanTxtFile(path, &chars[visCharBeg], fileCharCount);
+	int charCount = cleanTxtFile(path, &chars[gunDistance], fileCharCount);
+	// init word queue sprites
 	for (
 		int cPos = gunDistance, row = 0, col = 0;
 		cPos < gunDistance+charCount;
@@ -305,13 +306,13 @@ int initWordQueueSprites(int courseIndex) {
 	}
 	glBufferSubData(
 		GL_ARRAY_BUFFER,                         // GLenum        target
-		sizeof(sprite)*gunDistance,              // GLintptr      offset
+		sizeof(sprite)*charVertBeg+gunDistance,  // GLintptr      offset
 		sizeof(sprite)*charCount,                // GLsizeiptr    size
 		(const GLvoid*)&charSprites[gunDistance] // const GLvoid *data
 	);
 	#ifdef LOG_VERTEX_DATA_TO
 	fprintf(LOG_VERTEX_DATA_TO, "\nWORD QUEUE\n");
-	printSprites(&charSprites[visCharBeg], charCount, __LINE__);
+	printSprites(&charSprites[gunDistance], charCount, __LINE__);
 	#endif
 	return charCount;
 }
