@@ -2,22 +2,54 @@
 #include <stdio.h>
 #include <SDL2/SDL.h>
 
+#include "initWindow.h"
 #include "initOpenGl.h"
 #include "initSprites.h"
 #include "glyphReactorLoop.h"
+#include "../img/texAtlas.h"
 
-int mainMenuLoop(char charEntered, int curFrame) {
+int listPos = 0;
+int listMoveDir = 0;
+#define listMoveTime 20 // frames
+int frameWhenListMoved = -listMoveTime;
+#define originX (-videoW/4)
+
+int mainMenuLoop(int charEntered, int curFrame) {
 	switch (charEntered) {
 		case SDLK_ESCAPE: return quitGame;
 		case SDLK_RETURN:
-			initWordQueueSprites("courses/home row.txt");
+			printf("listPos: %i\n", listPos);
+			initWordQueueSprites(listPos);
 			initGlyphReactorLoop();
 			return glyphReactor;
 		case SDLK_TAB:
 			glUniform2f(unif_translate, 0, 0);
 			return spiroViewer;
+		case SDLK_UP: // fall
+		case 'u':
+			if (listPos >= courseCount-1) break;
+			listPos++;
+			listMoveDir = 1;
+			frameWhenListMoved = curFrame;
+			break;
+		case SDLK_DOWN: // fall
+		case 'd':
+			if (!listPos) break;
+			listPos--;
+			listMoveDir = -1;
+			frameWhenListMoved = curFrame;
+			break;
 	}
-	glUniform2f(unif_translate, txtOriginX_, txtOriginY_);
+	// draw course list
+	const float listMovePhase = (float)(curFrame-frameWhenListMoved)/listMoveTime;
+	float cursorPosY = txtOriginY_ + texAtlGlyphH*listPos;
+	if (listMovePhase < 1.0) {
+		cursorPosY += pow(listMovePhase, 0.5)*listMoveDir*texAtlGlyphH - listMoveDir*texAtlGlyphH;
+	}
+	glUniform2f(unif_translate, originX, cursorPosY);
 	glDrawArrays(GL_POINTS, visCharVertBeg_, visCharCount_);
+	// draw cursor
+	glUniform2f(unif_translate, originX, txtOriginY_);
+	glDrawArrays(GL_POINTS, menuCursorVertBeg, menuCursorSpritesSize);
 	return mainMenu;
 }

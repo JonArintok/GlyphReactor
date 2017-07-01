@@ -1,3 +1,3 @@
 
 
-int mainMenuLoop(char charEntered, int curFrame);
+int mainMenuLoop(int charEntered, int curFrame);

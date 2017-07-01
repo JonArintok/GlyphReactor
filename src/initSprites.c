@@ -72,8 +72,9 @@ void setColorFromPhase(sprite *s, double phase, double hue) {
 
 
 int beamVertBeg = 0;
-int charVertBeg;
 int gunVertBeg;
+int menuCursorVertBeg;
+int charVertBeg;
 int spiroVertBeg;
 int vertBufSize;
 
@@ -81,9 +82,12 @@ const int gunDistance = 12; // character widths between gun and queue
 int       beamSize;
 sprite   *beamSprites = NULL;
 const int gunSpritesSize = 1;
-sprite   *gunSprites;
+sprite   *gunSprites = NULL;
+const int menuCursorSpritesSize = 3;
+sprite   *menuCursorSprites;
 
-#define coursesFolderName "courses"
+
+const char *coursesFolderName = "courses";
 int         visCharBeg;
 char       *chars = NULL;
 sprite     *charSprites = NULL;
@@ -93,6 +97,7 @@ int         visCharEnd;
 char       *fileNames = NULL;
 int         fileNamesSize = 0;
 const char  fileNameDelim = '\n';
+int         courseCount = 0;
 const int   maxFileSize = 0x7fff;
 int whereAreWe = mainMenu;
 void init(void) {
@@ -100,6 +105,7 @@ void init(void) {
 	beamSize = gunDistance*4;
 	beamSprites = malloc(sizeof(sprite)*beamSize); // free in "frameLoop.c"
 	// init gun sprites
+	const float texAtlGunYoffset = texAtlGlyphH/2;
 	gunSprites = malloc(sizeof(sprite)*gunSpritesSize); // free in "frameLoop.c"
 	gunSprites[0].dstCX = -gunDistance*texAtlGlyphW - texAtlGunW/2;
 	gunSprites[0].dstCY = txtOriginY_ - texAtlGunYoffset;
@@ -114,6 +120,44 @@ void init(void) {
 	gunSprites[0].mulB  = 0xff;
 	gunSprites[0].mulO  = 0xff;
 	gunSprites[0].rot   = 0.0;
+	// init menuCursorSprites
+	{
+		const float cursorX = txtOriginX_ - texAtlGlyphW*1.5;
+		const float cursorYspacing = 20;
+		menuCursorSprites = malloc(sizeof(sprite)*menuCursorSpritesSize); // free in "frameLoop.c"
+		fr (i, menuCursorSpritesSize) {
+			menuCursorSprites[i].dstCX = cursorX;
+			menuCursorSprites[i].dstHW = texAtlGlyphW/2.0;
+			menuCursorSprites[i].dstHH = texAtlGlyphH/2.0;
+			menuCursorSprites[i].srcW  = texAtlGlyphW;
+			menuCursorSprites[i].srcH  = texAtlGlyphH;
+			menuCursorSprites[i].mulR  = 0xff;
+			menuCursorSprites[i].mulG  = 0xff;
+			menuCursorSprites[i].mulB  = 0xff;
+			menuCursorSprites[i].mulO  = 0xff;
+			menuCursorSprites[i].rot   = 0.0;
+		}
+		// u
+		menuCursorSprites[0].dstCY = txtOriginY_ + cursorYspacing;
+		menuCursorSprites[0].srcX  = texAtlGlyphPosX('u');
+		menuCursorSprites[0].srcY  = texAtlGlyphPosY('u');
+		// arrow
+		menuCursorSprites[1].dstCY = txtOriginY_;
+		menuCursorSprites[1].dstHW = texAtlMenuCursorW/2.0;
+		menuCursorSprites[1].dstHH = texAtlMenuCursorH/2.0;
+		menuCursorSprites[1].srcX  = texAtlMenuCursorX;
+		menuCursorSprites[1].srcY  = texAtlMenuCursorY;
+		menuCursorSprites[1].srcW  = texAtlMenuCursorW;
+		menuCursorSprites[1].srcH  = texAtlMenuCursorH;
+		// d
+		menuCursorSprites[2].dstCY = txtOriginY_ - cursorYspacing;
+		menuCursorSprites[2].srcX  = texAtlGlyphPosX('d');
+		menuCursorSprites[2].srcY  = texAtlGlyphPosY('d');
+	}
+	#ifdef LOG_VERTEX_DATA_TO
+	fprintf(LOG_VERTEX_DATA_TO, "\nMENU CURSOR\n");
+	printSprites(menuCursorSprites, menuCursorSpritesSize, __LINE__);
+	#endif
 	// load courses
 	DIR *dir;
 	struct dirent *ent;
@@ -123,6 +167,7 @@ void init(void) {
 		// get file sizes
 		for (int i = 0; (ent = readdir(dir)) != NULL; i++) {
 			if (ent->d_name[0] == '.') continue;
+			courseCount++;
 			int fSize = getFileSize(ent->d_name);
 			if (fSize > largestFileSize) largestFileSize = fSize;
 			for (int j = 0; ent->d_name[j]; fileNamesSize++, j++);
@@ -130,7 +175,7 @@ void init(void) {
 		}
 		charsSize = largestFileSize > maxFileSize ? maxFileSize : largestFileSize;
 		fileNames = malloc(sizeof(char)*fileNamesSize); // free in "frameLoop.c"
-		chars = malloc(sizeof(char)*charsSize); // free in "frameLoop.c"
+		chars = malloc(sizeof(char)*charsSize);         // free in "frameLoop.c"
 		charSprites = malloc(sizeof(sprite)*charsSize); // free in "frameLoop.c"
 		// store file names
 		dir = opendir(coursesFolderName);
@@ -151,16 +196,24 @@ void init(void) {
 	}
 	// init opengl
 	gunVertBeg   = beamSize;
-	charVertBeg  = gunVertBeg + gunSpritesSize;
+	menuCursorVertBeg = gunVertBeg + gunSpritesSize;
+	charVertBeg  = menuCursorVertBeg + menuCursorSpritesSize;
 	spiroVertBeg = charVertBeg + charsSize;
-	vertBufSize  = charsSize + beamSize + spiroSpritesSize;
+	vertBufSize  = beamSize + gunSpritesSize + menuCursorSpritesSize + charsSize + spiroSpritesSize;
 	initOpenGl();
 	// upload gun sprites
 	glBufferSubData(
-		GL_ARRAY_BUFFER,             // GLenum        target
-		gunVertBeg*sizeof(sprite),   // GLintptr      offset
-		sizeof(sprite),              // GLsizeiptr    size
-		(const GLvoid*)gunSprites    // const GLvoid *data
+		GL_ARRAY_BUFFER,               // GLenum        target
+		sizeof(sprite)*gunVertBeg,     // GLintptr      offset
+		sizeof(sprite)*gunSpritesSize, // GLsizeiptr    size
+		(const GLvoid*)gunSprites      // const GLvoid *data
+	);
+	// upload menu cursor sprites
+	glBufferSubData(
+		GL_ARRAY_BUFFER,
+		sizeof(sprite)*menuCursorVertBeg,
+		sizeof(sprite)*menuCursorSpritesSize,
+		(const GLvoid*)menuCursorSprites
 	);
 }
 
@@ -209,8 +262,25 @@ void initMainMenuSprites(void) {
 	printSprites(&charSprites[visCharBeg], charCount, __LINE__);
 	#endif
 }
-void initWordQueueSprites(const char* path) {
+void initWordQueueSprites(int courseIndex) {
+	char path[maxWordSize];
+	int i = 0;
+	int fni = 0;
+	{
+		int delimsEncountered = 0;
+		for (; delimsEncountered < courseIndex; fni++) {
+			if (fileNames[fni] == fileNameDelim) delimsEncountered++;
+		}
+	}
+	for (; coursesFolderName[i]; i++) path[i] = coursesFolderName[i];
+	path[i++] = '/';
+	for (; fileNames[fni] && fileNames[fni] != fileNameDelim; i++, fni++) {
+		path[i] = fileNames[fni];
+	}
+	path[i] = '\0';
+	puts("path:");puts(path);
 	const int fileCharCount = getFileSize(path);
+	visCharBeg = beamSize;
 	charCount = cleanTxtFile(path, &chars[visCharBeg], fileCharCount);
 	visCharEnd = visCharBeg + charCount;
 	for (int cPos = visCharBeg, row = 0, col = 0; cPos < visCharEnd; cPos++) {

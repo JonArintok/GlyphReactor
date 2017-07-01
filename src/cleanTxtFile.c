@@ -6,7 +6,7 @@ int cleanTxtFile(const char *txtPath, char *chars, int writeLimit) {
 	int readPos = 0;
 	int writPos = 0;
 	int writePosInWord = 0;
-	while (readPos < writeLimit) {
+	while (writPos < writeLimit) {
 		if (chars[readPos] == '\0' || readPos > readLimit) {
 			chars[writPos] = '\0';
 			break;

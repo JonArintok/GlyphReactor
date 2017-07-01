@@ -22,7 +22,12 @@
 #define texAtlGunY  30 // top edge
 #define texAtlGunW 206
 #define texAtlGunH 162
-#define texAtlGunYoffset texAtlGlyphH/2
+
+#define texAtlMenuCursorX 240 // left edge
+#define texAtlMenuCursorY 233 // top edge
+#define texAtlMenuCursorW  16
+#define texAtlMenuCursorH  16
+
 
 // texel coordinates of top left corner of glyph
 #define texAtlGlyphPosX(glyphVal) \

@@ -53,27 +53,31 @@ void setColorFromPhase(sprite *s, double phase, double hue);
 
 
 extern int beamVertBeg;
-extern int charVertBeg;
 extern int gunVertBeg;
+extern int menuCursorVertBeg;
+extern int charVertBeg;
 extern int spiroVertBeg;
 extern int vertBufSize;
 
 
-extern const int   gunDistance;
-extern int         beamSize;
-extern sprite     *beamSprites;
-extern const int   gunSpritesSize;
-extern sprite     *gunSprites;
+extern const int gunDistance;
+extern int       beamSize;
+extern sprite   *beamSprites;
+extern const int gunSpritesSize;
+extern sprite   *gunSprites;
+extern const int menuCursorSpritesSize;
+extern sprite   *menuCursorSprites;
 
-extern int         visCharBeg;
-extern int         charsSize;
-extern char       *chars;
-extern sprite     *charSprites;
-//extern int         charCount;
-extern int         visCharEnd;
-#define            visCharCount_ (visCharEnd-visCharBeg)
-#define            visCharVertBeg_ (charVertBeg+visCharBeg)
-extern char       *fileNames;
+extern int       visCharBeg;
+extern int       charsSize;
+extern char     *chars;
+extern sprite   *charSprites;
+//extern int       charCount;
+extern int       visCharEnd;
+#define          visCharCount_ (visCharEnd-visCharBeg)
+#define          visCharVertBeg_ (charVertBeg+visCharBeg)
+extern char     *fileNames;
+extern int       courseCount;
 
 
 extern double      spiroExploSpeed;
@@ -90,7 +94,7 @@ extern spirograph *glyphSpiros;
 
 void initSprites(void);
 void initMainMenuSprites(void);
-void initWordQueueSprites(const char* path);
+void initWordQueueSprites(int courseIndex);
 
 
 enum {quitGame, mainMenu, glyphReactor, spiroViewer};
