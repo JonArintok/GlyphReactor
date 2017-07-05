@@ -11,11 +11,13 @@
 #include "timestamp.h"
 #include "../img/texAtlas.h"
 
-bool handleEvents(char *charEntered) {
+bool running = true;
+
+int handleEvents(void) {
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
-			case SDL_QUIT: return false; break;
+			case SDL_QUIT: running = false; break;
 			case SDL_WINDOWEVENT:
 				switch (event.window.event) {
 					case SDL_WINDOWEVENT_RESIZED:
@@ -28,20 +30,20 @@ bool handleEvents(char *charEntered) {
 				break;
 			case SDL_KEYDOWN:
 				switch (event.key.keysym.sym) {
-					case SDLK_BACKSPACE: *charEntered = bkspChar; break;
-					case SDLK_ESCAPE:    *charEntered = SDLK_ESCAPE; break;
-					case SDLK_RETURN:    *charEntered = SDLK_RETURN; break;
-					case SDLK_TAB:       *charEntered = SDLK_TAB; break;
+					case SDLK_BACKSPACE: return bkspChar;
+					case SDLK_ESCAPE: return SDLK_ESCAPE;
+					case SDLK_RETURN: return SDLK_RETURN;
+					case SDLK_TAB: return SDLK_TAB;
+					case SDLK_UP: return SDLK_UP;
+					case SDLK_DOWN: return SDLK_DOWN;
 				}
 				break;
 			case SDL_TEXTINPUT: {
-				*charEntered = event.text.text[0];
-				break;
+				return event.text.text[0];
 			}
-			case SDL_KEYUP: break;
 		}
 	}
-	return true;
+	return '\0';
 }
 
 int curFrame = 0;
@@ -52,7 +54,7 @@ timestamp ts_compTime = {0,0}, ts_now = {0,0};
 
 void frameLoop(void) {
 	clock_gettime(CLOCK_MONOTONIC, &ts_newFrameStart);
-	for (bool running = true; running; curFrame++) {
+	for (; running; curFrame++) {
 		ts_oldFrameStart = ts_newFrameStart;
 		clock_gettime(CLOCK_MONOTONIC, &ts_newFrameStart);
 		getTimeDelta(&ts_oldFrameStart, &ts_newFrameStart, &ts_frameDelta);
@@ -62,8 +64,7 @@ void frameLoop(void) {
 			ts_frameDelta.tv_sec, ts_frameDelta.tv_nsec
 		);
 		#endif
-		char charEntered = '\0';
-		running = handleEvents(&charEntered);
+		int charEntered = handleEvents();
 		if (!running) break;
 		switch (whereAreWe) {
 			case mainMenu:

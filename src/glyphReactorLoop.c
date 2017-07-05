@@ -41,7 +41,7 @@ void initGlyphReactorLoop(int charCountIn) {
 	whereCurWordStarted = visCharBeg;
 }
 
-int glyphReactorLoop(char charEntered, int curFrame) {
+int glyphReactorLoop(int charEntered, int curFrame) {
 	// respond to character entered
 	if (charEntered) {
 		if (charEntered == SDLK_ESCAPE) {

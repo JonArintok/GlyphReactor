@@ -6,7 +6,7 @@
 #include "drawSpiro.h"
 
 
-int spiroViewerLoop(char charEntered, int curFrame) {
+int spiroViewerLoop(int charEntered, int curFrame) {
 	switch (charEntered) {
 		case SDLK_ESCAPE: return mainMenu;
 		case '\0': break;

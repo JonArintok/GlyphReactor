@@ -1,2 +1,2 @@
 
-int spiroViewerLoop(char charEntered, int curFrame);
+int spiroViewerLoop(int charEntered, int curFrame);
