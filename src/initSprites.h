@@ -92,7 +92,7 @@ extern spirograph *glyphSpiros;
 void initSprites(void);
 void initMainMenuSprites(void);
 int  initWordQueueSprites(int courseIndex);
-
+void cleanupSprites(void);
 
 enum {quitGame, mainMenu, glyphReactor, spiroViewer};
 extern int whereAreWe;

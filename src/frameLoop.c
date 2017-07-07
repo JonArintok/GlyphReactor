@@ -89,12 +89,4 @@ void frameLoop(void) {
 		SDL_GL_SwapWindow(window);_sdlec
 		glClear(GL_COLOR_BUFFER_BIT);
 	}
-	free(chars);             // malloc in "initSprites.c"
-	free(fileNames);         // malloc in "initSprites.c"
-	free(gunSprites);        // malloc in "initSprites.c"
-	free(menuCursorSprites); // malloc in "initSprites.c"
-	free(charSprites);       // malloc in "initSprites.c"
-	free(beamSprites);       // malloc in "initSprites.c"
-	SDL_GL_DeleteContext(GLcontext);_sdlec // init int "initWindow.c"
-	SDL_Quit();_sdlec                      // init int "initWindow.c"
 }

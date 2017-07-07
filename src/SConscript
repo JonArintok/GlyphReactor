@@ -17,6 +17,8 @@ src = [
 	"mainMenuLoop.c",
 	"glyphReactorLoop.c",
 	"spiroViewerLoop.c",
-	"frameLoop.c"
+	"frameLoop.c",
+	"audio.c",
+	"cleanup.c"
 ]
 env.Program("GlyphReactor", src, LIBS = ["GL", "GLEW", "SDL2", "m", "png"])

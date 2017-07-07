@@ -12,12 +12,12 @@ int initWindow(void) {
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 	window = SDL_CreateWindow(
-		"GlyphReactor",            //const char* title,
-		SDL_WINDOWPOS_UNDEFINED,   //int         x,
-		SDL_WINDOWPOS_UNDEFINED,   //int         y,
-		videoW,                    //int         w,
-		videoH,                    //int         h,
-		SDL_WINDOW_OPENGL |        //Uint32      flags
+		"GlyphReactor",          // const char* title,
+		SDL_WINDOWPOS_UNDEFINED, // int         x,
+		SDL_WINDOWPOS_UNDEFINED, // int         y,
+		videoW,                  // int         w,
+		videoH,                  // int         h,
+		SDL_WINDOW_OPENGL |      // Uint32      flags
 		SDL_WINDOW_RESIZABLE
 	);_sdlec
 	GLcontext = SDL_GL_CreateContext(window);_sdlec

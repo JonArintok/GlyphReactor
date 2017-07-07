@@ -101,10 +101,10 @@ int whereAreWe = mainMenu;
 void init(void) {
 	// init sprites
 	beamSize = gunDistance*4;
-	beamSprites = malloc(sizeof(sprite)*beamSize); // free in "frameLoop.c"
+	beamSprites = malloc(sizeof(sprite)*beamSize);
 	// init gun sprites
 	const float texAtlGunYoffset = texAtlGlyphH/2;
-	gunSprites = malloc(sizeof(sprite)*gunSpritesSize); // free in "frameLoop.c"
+	gunSprites = malloc(sizeof(sprite)*gunSpritesSize);
 	gunSprites[0].dstCX = -gunDistance*texAtlGlyphW - texAtlGunW/2;
 	gunSprites[0].dstCY = txtOriginY_ - texAtlGunYoffset;
 	gunSprites[0].dstHW = texAtlGunW/2.0;
@@ -122,7 +122,7 @@ void init(void) {
 	{
 		const float cursorX = txtOriginX_ - texAtlGlyphW*1.5;
 		const float cursorYspacing = 20;
-		menuCursorSprites = malloc(sizeof(sprite)*menuCursorSpritesSize); // free in "frameLoop.c"
+		menuCursorSprites = malloc(sizeof(sprite)*menuCursorSpritesSize);
 		fr (i, menuCursorSpritesSize) {
 			menuCursorSprites[i].dstCX = cursorX;
 			menuCursorSprites[i].dstHW = texAtlGlyphW/2.0;
@@ -174,9 +174,9 @@ void init(void) {
 		if (largestFileSize+gunDistance > maxFileSize) {
 			charsSize = largestFileSize+gunDistance;
 		} else charsSize = maxFileSize;
-		fileNames = malloc(sizeof(char)*fileNamesSize); // free in "frameLoop.c"
-		chars = malloc(sizeof(char)*charsSize);         // free in "frameLoop.c"
-		charSprites = malloc(sizeof(sprite)*charsSize); // free in "frameLoop.c"
+		fileNames = malloc(sizeof(char)*fileNamesSize);
+		chars = malloc(sizeof(char)*charsSize);
+		charSprites = malloc(sizeof(sprite)*charsSize);
 		// store file names
 		dir = opendir(coursesFolderName);
 		int fni = 0;
@@ -324,9 +324,9 @@ spirograph *visSpiros;
 const int   glyphSpirosSize = texAtlGlyphsCount;
 spirograph *glyphSpiros;
 void initSpiros(void) {
-	spiroSprites = malloc(sizeof(sprite)*spiroSpritesSize); // free in "cleanup.c"
-	visSpiros = malloc(sizeof(spirograph)*visSpirosSize); // free in "cleanup.c"
-	glyphSpiros = malloc(sizeof(spirograph)*glyphSpirosSize); // free in "cleanup.c"
+	spiroSprites = malloc(sizeof(sprite)*spiroSpritesSize);
+	visSpiros = malloc(sizeof(spirograph)*visSpirosSize);
+	glyphSpiros = malloc(sizeof(spirograph)*glyphSpirosSize);
 	fr (i, visSpirosSize) visSpiros[i].exploPhase = 1.0;
 	fr (i, glyphSpirosSize) {
 		fr (arm, spiroArmCount) {
@@ -361,4 +361,13 @@ void initSprites(void) {
 	initMainMenuSprites();
 	initSpiros();
 	initBounceEnv();
+}
+
+void cleanupSprites(void) {
+	free(chars);
+	free(fileNames);
+	free(gunSprites);
+	free(menuCursorSprites);
+	free(charSprites);
+	free(beamSprites);
 }

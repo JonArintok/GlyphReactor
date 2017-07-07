@@ -6,7 +6,7 @@ void sdlec(int line, const char *file) {
 	const char *error = SDL_GetError();
 	if (!error || !error[0]) return;
 	fprintf(LOG_SDL_ERRORS_TO,
-		"SDL error at line %i in %s :\n%s",
+		"SDL error at line %i in %s :\n%s\n",
 		line, file, error
 	);
 	SDL_ClearError();
