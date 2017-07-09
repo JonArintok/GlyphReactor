@@ -5,6 +5,7 @@
 #include <math.h>
 #include <SDL2/SDL.h>
 
+#include "audio.h"
 #include "misc.h"
 #include "optionsAndErrors.h"
 
@@ -57,8 +58,8 @@ void audioCallback(void *unused, uint8_t *byteStream, int byteStreamLength) {
 	for (int i = 0; i < floatStreamSize; i += 2) {
 		rampL += rampLIncrem;
 		rampR += rampRIncrem;
-		while (rampL > 1.0) rampL -= 1.0;
-		while (rampR > 1.0) rampR -= 1.0;
+		if (rampL > 1.0) rampL -= (long)rampL;
+		if (rampR > 1.0) rampR -= (long)rampR;
 		floatStream[i  ] = rampL;
 		floatStream[i+1] = rampR;
 	}
