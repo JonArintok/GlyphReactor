@@ -25,5 +25,7 @@ typedef struct {
 
 
 
-int initAudio(void);
-int closeAudio(void);
+int initVoices(int voiceCount);
+int closeVoices(void);
+void unpauseAudio(void);
+void pauseAudio(void);

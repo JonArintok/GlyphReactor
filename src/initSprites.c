@@ -97,7 +97,7 @@ char       *fileNames = NULL;
 const char  fileNameDelim = '\n';
 int         courseCount = 0;
 const int   maxFileSize = 0x7fff;
-int whereAreWe = mainMenu;
+int whereAreWe = screen_mainMenu;
 void init(void) {
 	// init sprites
 	beamSize = gunDistance*4;

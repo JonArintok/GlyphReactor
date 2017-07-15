@@ -8,10 +8,10 @@
 
 int spiroViewerLoop(int charEntered, int curFrame) {
 	switch (charEntered) {
-		case SDLK_ESCAPE: return mainMenu;
+		case SDLK_ESCAPE: return screen_mainMenu;
 		case '\0': break;
 		default: triggerSpiro(charEntered); break;
 	}
 	drawSpiros();
-	return spiroViewer;
+	return screen_spiroViewer;
 }

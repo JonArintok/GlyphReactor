@@ -47,7 +47,7 @@ int glyphReactorLoop(int charEntered, int curFrame) {
 		if (charEntered == SDLK_ESCAPE) {
 			initMainMenuSprites();
 			clearSpiros();
-			return mainMenu;
+			return screen_mainMenu;
 		}
 		lastCharEntered = charEntered;
 		frameWhenCharEntered = curFrame;
@@ -85,13 +85,11 @@ int glyphReactorLoop(int charEntered, int curFrame) {
 		else { // incorrect
 			visCharBeg--;
 			stuckCharCount++;
-			if (visCharBeg < 0 || visCharBeg >= visCharEnd) {
-				return false;
-			}
+			if (visCharBeg < 0 || visCharBeg >= visCharEnd) _SHOULD_NOT_BE_HERE_;
 			charSprites[visCharBeg] = charSprites[visCharBeg+1];
 			charSprites[visCharBeg].dstCX -= texAtlGlyphW;
 			if (charSprites[visCharBeg].dstCX <=  0.0 - texAtlGlyphW*gunDistance) {
-				return false;
+				return screen_gameOver;
 			}
 			else {
 				chars[visCharBeg] = charEntered;
@@ -170,5 +168,5 @@ int glyphReactorLoop(int charEntered, int curFrame) {
 		txtOriginY_ + curWord*texAtlGlyphH - bouncePos((double)(curFrame-frameWhenWordDropped)/beamGlowTime)
 	);
 	glDrawArrays(GL_POINTS, visCharVertBeg_, visCharCount_);
-	return glyphReactor;
+	return screen_glyphReactor;
 }

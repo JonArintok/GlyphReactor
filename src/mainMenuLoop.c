@@ -16,13 +16,13 @@ int frameWhenListMoved = -listMoveTime;
 
 int mainMenuLoop(int charEntered, int curFrame) {
 	switch (charEntered) {
-		case SDLK_ESCAPE: return quitGame;
+		case SDLK_ESCAPE: return screen_quitGame;
 		case SDLK_RETURN:
 			initGlyphReactorLoop(initWordQueueSprites(listPos));
-			return glyphReactor;
+			return screen_glyphReactor;
 		case SDLK_TAB:
 			glUniform2f(unif_translate, 0, 0);
-			return spiroViewer;
+			return screen_spiroViewer;
 		case SDLK_UP: // fall
 		case 'u':
 			if (listPos >= courseCount-1) break;
@@ -49,5 +49,5 @@ int mainMenuLoop(int charEntered, int curFrame) {
 	// draw cursor
 	glUniform2f(unif_translate, originX, txtOriginY_);
 	glDrawArrays(GL_POINTS, menuCursorVertBeg, menuCursorSpritesSize);
-	return mainMenu;
+	return screen_mainMenu;
 }

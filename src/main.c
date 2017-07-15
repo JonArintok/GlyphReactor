@@ -1,13 +1,13 @@
 
 #include "initWindow.h"
 #include "initSprites.h"
-#include "audio.h"
+#include "voice.h"
 #include "frameLoop.h"
 #include "cleanup.h"
 
 int main(int argc, char **argv) {
 	initWindow();
-	initAudio();
+	initVoices(voiceCount);
 	initSprites();
 	frameLoop();
 	return 0;

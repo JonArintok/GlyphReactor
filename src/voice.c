@@ -5,7 +5,7 @@
 #include <math.h>
 #include <SDL2/SDL.h>
 
-#include "audio.h"
+#include "voice.h"
 #include "misc.h"
 #include "optionsAndErrors.h"
 
@@ -26,9 +26,9 @@ SDL_AudioDeviceID AudioDevice;
 SDL_AudioSpec audioSpec;
 
 
-//void buildSineWave(float *data, uint32_t length) {
-//	fr (i, length) data[i] = sin(i*(tau/length));
-//}
+void buildSineWave(float *data, uint32_t length) {
+	fr (i, length) data[i] = sin(i*(tau/length));
+}
 
 #ifdef LOG_AUDIOSPEC_TO
 void logSpec(SDL_AudioSpec as) {
@@ -49,6 +49,8 @@ void logSpec(SDL_AudioSpec as) {
 }
 #endif
 
+voice *voices = NULL;
+
 void audioCallback(void *unused, uint8_t *byteStream, int byteStreamLength) {
 	static float rampL = 0.0;
 	static float rampR = 0.0;
@@ -65,7 +67,7 @@ void audioCallback(void *unused, uint8_t *byteStream, int byteStreamLength) {
 	}
 }
 
-int initAudio(void) {
+int initVoices(int voiceCount) {
 	SDL_Init(SDL_INIT_AUDIO);_sdlec
 	SDL_AudioSpec want = {0};
 	want.freq     = sampleRate;
@@ -88,10 +90,13 @@ int initAudio(void) {
 	}
 	sampleRate = audioSpec.freq;
 	floatStreamSize = audioSpec.size/sizeof(float);
-	SDL_PauseAudioDevice(AudioDevice, 0);_sdlec // unpause audio.
+	voices = malloc(sizeof(voice)*voiceCount);
 	return 0;
 }
-int closeAudio(void) {
+int closeVoices(void) {
 	SDL_CloseAudioDevice(AudioDevice);_sdlec
+	free(voices);
 	return 0;
 }
+void unpauseAudio(void) {SDL_PauseAudioDevice(AudioDevice, 0);_sdlec}
+void   pauseAudio(void) {SDL_PauseAudioDevice(AudioDevice, 1);_sdlec}

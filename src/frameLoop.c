@@ -67,13 +67,13 @@ void frameLoop(void) {
 		int charEntered = handleEvents();
 		if (!running) break;
 		switch (whereAreWe) {
-			case mainMenu:
+			case screen_mainMenu:
 				whereAreWe = mainMenuLoop(charEntered, curFrame);
 				break;
-			case glyphReactor:
+			case screen_glyphReactor:
 				whereAreWe = glyphReactorLoop(charEntered, curFrame);
 				break;
-			case spiroViewer:
+			case screen_spiroViewer:
 				whereAreWe = spiroViewerLoop(charEntered, curFrame);
 				break;
 			default: running = false;
