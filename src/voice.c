@@ -9,6 +9,24 @@
 #include "misc.h"
 #include "optionsAndErrors.h"
 
+typedef struct {
+	float    *shape;     // values are expected to be between -1 and 1
+	uint64_t  shapeSize; // total count of samples(floats) in shape
+	float     pos;       // position in shape
+	float     spd;       // 1.0 results in 1 shape sample per output sample
+	float     amp;       // multiply shape output sample
+	uint16_t  interp;    // enumerated, how to interpolate between shape samples
+	uint16_t  trip;      // enumerated, what to do when pos goes out of bounds
+} envel;
+
+typedef struct {
+	envel wave;      // mono audio clip or waveform
+	envel ampMod;    // modulates volume of wave (multiplied)
+	envel spdMod;    // modulates speed of wave (multiplied)
+	float pan;       // -1.0 is all the way left, 1.0 is all the way right
+	bool  enable;    // voice will be ignored if this is false
+} voice;
+
 const double ChromaticRatio = 1.059463094359295264562; // the twelfth root of 2
 const double A4freq  = 440.0;
 const double A4pitch =  57.0;
@@ -20,7 +38,6 @@ double freqFromPitch(double pitch) {
 uint32_t sampleRate = 48000;
 uint32_t frameRate = 60;
 uint32_t floatStreamSize = 1024; // must be a power of 2
-double practicallySilent = 0.001; // voices with lower volume will be ignored
 
 SDL_AudioDeviceID AudioDevice;
 SDL_AudioSpec audioSpec;
@@ -50,24 +67,54 @@ void logSpec(SDL_AudioSpec as) {
 #endif
 
 voice *voices = NULL;
+int    voiceCount = 0;
 
 void audioCallback(void *unused, uint8_t *byteStream, int byteStreamLength) {
-	static float rampL = 0.0;
-	static float rampR = 0.0;
-	const float rampLIncrem = freqFromPitch(45)/sampleRate; // A3
-	const float rampRIncrem = freqFromPitch(49)/sampleRate; // C#4
 	float *floatStream = (float*)byteStream;
-	for (int i = 0; i < floatStreamSize; i += 2) {
-		rampL += rampLIncrem;
-		rampR += rampRIncrem;
-		if (rampL > 1.0) rampL -= (long)rampL;
-		if (rampR > 1.0) rampR -= (long)rampR;
-		floatStream[i  ] = rampL;
-		floatStream[i+1] = rampR;
+	float enabledVoiceCount = 0;
+	fr (v, voiceCount) {
+		if (!voices[v].enable) continue;
+		enabledVoiceCount++;
+		double waveIncrem   = voices[v].wave.spd   / sampleRate;
+		double ampModIncrem = voices[v].ampMod.spd / sampleRate;
+		double spdModIncrem = voices[v].spdMod.spd / sampleRate;
+		const double rightFactor = (voices[v].pan+1.0)/2;
+		const double leftFactor  = 1.0 - rightFactor;
+		double pos = voices[v].wave.pos;
+		for (int s = 0; s < floatStreamSize; s += 2) {
+			pos += waveIncrem;
+			if (pos > 1 || pos < 0) {
+				switch (voices[v].wave.trip) {
+					case trip_once: goto nextVoice;
+					case trip_loop:
+						pos -= (long)pos;
+						break;
+					case trip_clamp:
+						pos = pos > 1 ? 1.0 : 0.0;
+						waveIncrem = 0;
+						break;
+					case trip_bounce:
+						voices[v].wave.spd *= -1;
+						waveIncrem *= -1;
+						pos = pos > 1 ? 1.0 : 0.0;
+						break;
+					default: printf("ERROR: unrecognized 'trip' value for voice %i\n", v);
+				}
+			}
+			
+			double sample =
+			floatStream[s  ] += sample * leftFactor;
+			floatStream[s+1] += sample * rightFactor;
+		}
+		voices[v].wave.pos = pos;
+		nextVoice:
+	}
+	fr (s, floatStreamSize) {
+		floatStream[s] /= enabledVoiceCount;
 	}
 }
 
-int initVoices(int voiceCount) {
+int initVoices(int initVoiceCount) {
 	SDL_Init(SDL_INIT_AUDIO);_sdlec
 	SDL_AudioSpec want = {0};
 	want.freq     = sampleRate;
@@ -90,7 +137,8 @@ int initVoices(int voiceCount) {
 	}
 	sampleRate = audioSpec.freq;
 	floatStreamSize = audioSpec.size/sizeof(float);
-	voices = malloc(sizeof(voice)*voiceCount);
+	voiceCount = initVoiceCount;
+	voices = calloc(sizeof(voice)*voiceCount);
 	return 0;
 }
 int closeVoices(void) {
