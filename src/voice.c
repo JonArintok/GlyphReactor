@@ -9,24 +9,6 @@
 #include "misc.h"
 #include "optionsAndErrors.h"
 
-typedef struct {
-	float    *shape;     // values are expected to be between -1 and 1
-	uint64_t  shapeSize; // total count of samples(floats) in shape
-	float     pos;       // position in shape
-	float     spd;       // 1.0 results in 1 shape sample per output sample
-	float     amp;       // multiply shape output sample
-	uint16_t  interp;    // enumerated, how to interpolate between shape samples
-	uint16_t  trip;      // enumerated, what to do when pos goes out of bounds
-} envel;
-
-typedef struct {
-	envel wave;      // mono audio clip or waveform
-	envel ampMod;    // modulates volume of wave (multiplied)
-	envel spdMod;    // modulates speed of wave (multiplied)
-	float pan;       // -1.0 is all the way left, 1.0 is all the way right
-	bool  enable;    // voice will be ignored if this is false
-} voice;
-
 const double ChromaticRatio = 1.059463094359295264562; // the twelfth root of 2
 const double A4freq  = 440.0;
 const double A4pitch =  57.0;
@@ -69,49 +51,54 @@ void logSpec(SDL_AudioSpec as) {
 voice *voices = NULL;
 int    voiceCount = 0;
 
+void loopOsc(osc *o) {
+	const double p = o->pos;
+	if      (p > 1) o->pos -= (long)p;
+	else if (p < 0) o->pos -= (long)p-1;
+}
+void clampOsc(osc *o) {
+	const double p = o->pos;
+	if (p > 1) {
+		o->pos = 1;
+		o->spd = 0;
+	}
+	else if (p < 0) {
+		o->pos = 0;
+		o->spd = 0;
+	}
+}
+
+float readOsc(const osc o) {
+	return o.shape[(long)(o.pos * (o.shapeSize-1))];
+}
+
 void audioCallback(void *unused, uint8_t *byteStream, int byteStreamLength) {
 	float *floatStream = (float*)byteStream;
 	float enabledVoiceCount = 0;
 	fr (v, voiceCount) {
 		if (!voices[v].enable) continue;
 		enabledVoiceCount++;
-		double waveIncrem   = voices[v].wave.spd   / sampleRate;
-		double ampModIncrem = voices[v].ampMod.spd / sampleRate;
-		double spdModIncrem = voices[v].spdMod.spd / sampleRate;
-		const double rightFactor = (voices[v].pan+1.0)/2;
+		const double spdModIncrem = voices[v].spdMod.spd / sampleRate;
+		const double ampModIncrem = voices[v].ampMod.spd / sampleRate;
+		const double rightFactor = (voices[v].pan+1.0)/2.0;
 		const double leftFactor  = 1.0 - rightFactor;
-		double pos = voices[v].wave.pos;
 		for (int s = 0; s < floatStreamSize; s += 2) {
-			pos += waveIncrem;
-			if (pos > 1 || pos < 0) {
-				switch (voices[v].wave.trip) {
-					case trip_once: goto nextVoice;
-					case trip_loop:
-						pos -= (long)pos;
-						break;
-					case trip_clamp:
-						pos = pos > 1 ? 1.0 : 0.0;
-						waveIncrem = 0;
-						break;
-					case trip_bounce:
-						voices[v].wave.spd *= -1;
-						waveIncrem *= -1;
-						pos = pos > 1 ? 1.0 : 0.0;
-						break;
-					default: printf("ERROR: unrecognized 'trip' value for voice %i\n", v);
-				}
-			}
-			
-			double sample =
+			voices[v].spdEnv.pos += voices[v].spdEnv.spd / sampleRate;
+			clampOsc(&voices[v].spdEnv);
+			voices[v].spdMod.pos += spdModIncrem;
+			loopOsc(&voices[v].spdMod);
+			voices[v].wave.pos += (voices[v].wave.spd * readOsc(voices[v].spdEnv) * readOsc(voices[v].spdMod)) / sampleRate;
+			loopOsc(&voices[v].wave);
+			voices[v].ampEnv.pos += voices[v].ampEnv.spd / sampleRate;
+			clampOsc(&voices[v].ampEnv);
+			voices[v].ampMod.pos += ampModIncrem;
+			loopOsc(&voices[v].ampMod);
+			const double sample = readOsc(voices[v].wave) * readOsc(voices[v].ampMod) * readOsc(voices[v].ampEnv);
 			floatStream[s  ] += sample * leftFactor;
 			floatStream[s+1] += sample * rightFactor;
 		}
-		voices[v].wave.pos = pos;
-		nextVoice:
 	}
-	fr (s, floatStreamSize) {
-		floatStream[s] /= enabledVoiceCount;
-	}
+	fr (s, floatStreamSize) floatStream[s] /= enabledVoiceCount;
 }
 
 int initVoices(int initVoiceCount) {
@@ -138,7 +125,7 @@ int initVoices(int initVoiceCount) {
 	sampleRate = audioSpec.freq;
 	floatStreamSize = audioSpec.size/sizeof(float);
 	voiceCount = initVoiceCount;
-	voices = calloc(sizeof(voice)*voiceCount);
+	voices = calloc(voiceCount, sizeof(voice));
 	return 0;
 }
 int closeVoices(void) {
