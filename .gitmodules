@@ -1,0 +1,3 @@
+[submodule "src/libVoice"]
+	path = src/libVoice
+	url = https://github.com/DinosaurBlanket/libVoice.git
