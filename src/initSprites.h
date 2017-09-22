@@ -1,5 +1,4 @@
 
-
 #include <stdint.h>
 #include "optionsAndErrors.h"
 
@@ -80,7 +79,6 @@ extern int       courseCount;
 extern double      spiroExploSpeed;
 extern const int   spiroSpritesSize;
 extern sprite     *spiroSprites;
-#define            visSpirosSize 8
 extern spirograph *visSpiros;
 extern const int   glyphSpirosSize;
 extern spirograph *glyphSpiros;

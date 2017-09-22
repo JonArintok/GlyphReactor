@@ -10,6 +10,9 @@
 #define enableVSync   1
 #define drawWireFrame 0
 
+#define visSpirosSize 8
+
+
 #ifdef LOG_SDL_ERRORS_TO
 void sdlec(int line, const char *file);
 #define _sdlec sdlec(__LINE__, __FILE__);

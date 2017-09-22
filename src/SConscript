@@ -11,6 +11,7 @@ src = [
 	"fromHue.c",
 	"initBounceEnv.c",
 	"initWindow.c",
+	"initAudio.c",
 	"initSprites.c",
 	"initOpenGl.c",
 	"drawSpiro.c",
@@ -18,6 +19,7 @@ src = [
 	"glyphReactorLoop.c",
 	"spiroViewerLoop.c",
 	"frameLoop.c",
-	"cleanup.c"
+	"cleanup.c",
+	"libVoice/voice.c"
 ]
 env.Program("GlyphReactor", src, LIBS = ["GL", "GLEW", "SDL2", "m", "png"])
