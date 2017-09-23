@@ -2,8 +2,12 @@
 #include "optionsAndErrors.h"
 
 enum {
-	voice_spiroTone0,
-	voice_menuUpDnTone = visSpirosSize,
+	voice_spiro0,
+	voice_typo = visSpirosSize,
+	voice_bksp,
+	voice_menuUpDn,
+	voice_menuSelect,
+	voice_menuEnd,
 	voice_COUNT
 };
 

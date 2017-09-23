@@ -100,19 +100,3 @@ enum {
 	screen_spiroViewer
 };
 extern int whereAreWe;
-
-enum {
-	voice_spiro00,
-	voice_spiro01,
-	voice_spiro02,
-	voice_spiro03,
-	voice_spiro04,
-	voice_spiro05,
-	voice_spiro06,
-	voice_spiro07,
-	voice_typo,
-	voice_bksp,
-	voice_menuMove,
-	voice_menuSelect,
-	voiceCount
-};
