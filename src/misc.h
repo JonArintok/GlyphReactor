@@ -1,6 +1,8 @@
 #include <stdbool.h>
 
 #define fr(i, bound) for (int i = 0; i < (bound); i++)
+#define greaterOf(a, b) ((a) > (b) ? (a) : (b))
+#define lesserOf(a, b) ((a) < (b) ? (a) : (b))
 
 bool allEq(const float *l, const float *r, int c);
 

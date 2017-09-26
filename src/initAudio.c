@@ -18,12 +18,12 @@ void initAudio(void) {
 	initVoices(voice_COUNT, shape_COUNT);
 	shapeFromSine(shape_sine, 1024);
 	shapeFromSaw (shape_saw,  1024);
-	shapeFromPulse(shape_halfPulse,   2, 1/2);
-	shapeFromPulse(shape_quartPulse,  4, 1/4);
-	shapeFromPulse(shape_eighthPulse, 8, 1/8);
+	shapeFromPulse(shape_halfPulse,   64, 1.0/2.0);
+	shapeFromPulse(shape_quartPulse,  64, 1.0/4.0);
+	shapeFromPulse(shape_eighthPulse, 64, 1.0/8.0);
 	voice v = {
 		// shape,         amp, shift, pos, inc
-		{ -shape_sine,    1.0, 0.0,   1.0, 0.0 }, // wave
+		{  shape_sine,    1.0, 0.0,   1.0, 0.0 }, // wave
 		{  shape_default, 1.0, 0.0,   1.0, 0.0 }, // ampMod
 		{  shape_default, 1.0, 0.0,   1.0, 0.0 }, // incMod
 		{  shape_saw,     0.5, 0.5,   1.0, 0.0 }, // ampEnv
@@ -61,18 +61,21 @@ void initAudio(void) {
 	
 	// short sine wave, pitch rise
 	setVoice(voice_menuUp, v);
-	setOscIncFromFreq(voice_menuUp, vo_wave, freqFromPitch(60));
-	setOscShape(voice_menuUp, vo_incEnv, shape_saw);
-	setOscAmp(voice_menuUp, vo_ampMod, -1.0);
-	setOscIncFromPeriod(voice_menuUp, vo_incEnv, 0.2);
-	setOscIncFromPeriod(voice_menuUp, vo_ampEnv, 0.6);
+	setOscIncFromFreq  (voice_menuUp, vo_wave, freqFromPitch(55));
+	setOscShape        (voice_menuUp, vo_incEnv, shape_saw);
+	setOscAmp          (voice_menuUp, vo_incEnv, -0.5);
+	setOscShift        (voice_menuUp, vo_incEnv, 1.5);
+	setOscIncFromPeriod(voice_menuUp, vo_incEnv, 0.15);
+	setOscIncFromPeriod(voice_menuUp, vo_ampEnv, 0.4);
 	
 	// short sine wave, pitch drop
 	setVoice(voice_menuDn, v);
-	setOscIncFromFreq(voice_menuDn, vo_wave, freqFromPitch(55));
-	setOscShape(voice_menuDn, vo_incEnv, shape_saw);
-	setOscIncFromPeriod(voice_menuDn, vo_incEnv, 0.2);
-	setOscIncFromPeriod(voice_menuDn, vo_ampEnv, 0.6);
+	setOscIncFromFreq  (voice_menuDn, vo_wave, freqFromPitch(60));
+	setOscShape        (voice_menuDn, vo_incEnv, shape_saw);
+	setOscAmp          (voice_menuDn, vo_incEnv, 0.5);
+	setOscShift        (voice_menuDn, vo_incEnv, 1.5);
+	setOscIncFromPeriod(voice_menuDn, vo_incEnv, 0.15);
+	setOscIncFromPeriod(voice_menuDn, vo_ampEnv, 0.4);
 	
 	// short sine wave with vibrato
 	setVoice(voice_menuSelect, v);
@@ -85,11 +88,10 @@ void initAudio(void) {
 	// short quart-pulse wave, square envelope
 	setVoice(voice_menuEnd, v);
 	setOscShape(voice_menuEnd, vo_wave, shape_quartPulse);
-	setOscIncFromFreq(voice_menuEnd, vo_wave, 200.0);
-	setOscShape(voice_menuEnd, vo_ampEnv, shape_quartPulse);
-	setOscIncFromPeriod(voice_menuEnd, vo_ampEnv, 0.6);
+	setOscAmp(voice_menuEnd, vo_wave, 0.4);
+	setOscIncFromFreq(voice_menuEnd, vo_wave, 880.0);
+	setOscIncFromPeriod(voice_menuEnd, vo_ampEnv, 0.05);
 	
-	enableVoices(firstMainMenuLoopVoice, lastMainMenuLoopVoice);
 	unpauseAudio();
 }
 
