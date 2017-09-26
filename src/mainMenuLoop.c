@@ -7,6 +7,8 @@
 #include "initSprites.h"
 #include "glyphReactorLoop.h"
 #include "../img/texAtlas.h"
+#include "initAudio.h"
+#include "libVoice/voice.h"
 
 int listPos = 0;
 int listMoveDir = 0;
@@ -25,10 +27,14 @@ int mainMenuLoop(int charEntered, int curFrame) {
 			return screen_spiroViewer;
 		case SDLK_UP: // fall
 		case 'u':
-			if (listPos >= courseCount-1) break;
+			if (listPos >= courseCount-1) {
+				restartVoice(voice_menuEnd);
+				break;
+			}
 			listPos++;
 			listMoveDir = 1;
 			frameWhenListMoved = curFrame;
+			restartVoice(voice_menuUp);
 			break;
 		case SDLK_DOWN: // fall
 		case 'd':
@@ -36,6 +42,7 @@ int mainMenuLoop(int charEntered, int curFrame) {
 			listPos--;
 			listMoveDir = -1;
 			frameWhenListMoved = curFrame;
+			restartVoice(voice_menuDn);
 			break;
 	}
 	// draw course list
