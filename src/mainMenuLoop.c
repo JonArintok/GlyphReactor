@@ -21,6 +21,7 @@ int mainMenuLoop(int charEntered, int curFrame) {
 	switch (charEntered) {
 		case SDLK_ESCAPE: return screen_quitGame;
 		case SDLK_RETURN:
+			restartVoice(voice_menuSelect);
 			initGlyphReactorLoop(initWordQueueSprites(pos));
 			return screen_glyphReactor;
 		case SDLK_TAB:
@@ -28,41 +29,31 @@ int mainMenuLoop(int charEntered, int curFrame) {
 			return screen_spiroViewer;
 		case SDLK_UP: // fall
 		case 'u':
-			if (!pos) {
-				restartVoice(voice_menuEnd);
-				break;
-			}
+			if (!pos) {restartVoice(voice_menuEnd); break;}
 			pos--;
-			posMoveDir = -1;
+			posMoveDir = 1;
 			frameWhenListMoved = curFrame;
 			restartVoice(voice_menuUp);
 			break;
 		case SDLK_DOWN: // fall
 		case 'd':
-			if (pos >= courseCount-1) {
-				restartVoice(voice_menuEnd);
-				break;
-			}
+			if (pos >= courseCount-1) {restartVoice(voice_menuEnd); break;}
 			pos++;
-			posMoveDir = 1;
+			posMoveDir = -1;
 			frameWhenListMoved = curFrame;
 			restartVoice(voice_menuDn);
 			break;
 	}
-	const float maxCursorCiel = videoH - videoH/16;
-	const float cursorIncMax = texAtlGlyphH;
-	const float cursorCiel = lesserOf(courseCount*cursorIncMax/2, maxCursorCiel);
-	
 	const float movePhase = (float)(curFrame-frameWhenListMoved)/listMoveTime;
 	// draw course list
-	float listPosY = txtOriginY_ + texAtlGlyphH*pos;
-	if (movePhase < 1.0) {
-		listPosY += pow(movePhase, 0.5)*posMoveDir*texAtlGlyphH - posMoveDir*texAtlGlyphH;
-	}
+	float listPosY = txtOriginY_ - courseCount/2;
 	glUniform2f(unif_translate, originX, listPosY);
 	glDrawArrays(GL_POINTS, charVertBeg, fileNamesCharCount);
 	// draw cursor
-	float cursorPosY = txtOriginY_;
+	float cursorPosY = txtOriginY_ - texAtlGlyphH*pos;
+	if (movePhase < 1.0) {
+		cursorPosY += pow(movePhase, 0.5)*posMoveDir*texAtlGlyphH - posMoveDir*texAtlGlyphH;
+	}
 	glUniform2f(unif_translate, originX, cursorPosY);
 	glDrawArrays(GL_POINTS, menuCursorVertBeg, menuCursorSpritesSize);
 	return screen_mainMenu;
