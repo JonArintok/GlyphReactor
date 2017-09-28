@@ -45,17 +45,14 @@ int mainMenuLoop(int charEntered, int curFrame) {
 			break;
 	}
 	const float movePhase = (float)(curFrame-frameWhenListMoved)/listMoveTime;
+	const float phasedPos = pos + (movePhase < 1.0)*(pow(movePhase, 0.5)*-posMoveDir + posMoveDir);
 	const float listTop = txtOriginY_ + texAtlGlyphH*courseCount/2;
 	const float listPosY = listTop;
-	const float cursorPosY = listTop - texAtlGlyphH*pos + (movePhase < 1.0)*(
-		pow(movePhase, 0.5)*posMoveDir*texAtlGlyphH - posMoveDir*texAtlGlyphH
-	);
+	const float cursorPosY = listTop - texAtlGlyphH*phasedPos;
 	const float cursorCiel = videoHH_ - videoH/16;
 	const float cursorVisiblizer = listTop < cursorCiel ? 1.0 : cursorCiel/listTop;
 	const float listVisOffset = (listTop > cursorCiel)*(
-		(-(listTop-cursorCiel) + (listTop-cursorCiel)*2.0*((pos+(movePhase < 1.0)*(
-			pow(movePhase, 0.5)*-posMoveDir + posMoveDir)
-		)/courseCount))
+		-(listTop-cursorCiel) + (listTop-cursorCiel)*2.0*phasedPos/courseCount
 	);
 	// draw course list
 	glUniform2f(unif_translate, originX, listPosY+listVisOffset);
