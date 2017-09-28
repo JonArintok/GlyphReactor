@@ -45,16 +45,23 @@ int mainMenuLoop(int charEntered, int curFrame) {
 			break;
 	}
 	const float movePhase = (float)(curFrame-frameWhenListMoved)/listMoveTime;
+	const float listTop = txtOriginY_ + texAtlGlyphH*courseCount/2;
+	const float listPosY = listTop;
+	const float cursorPosY = listTop - texAtlGlyphH*pos + (movePhase < 1.0)*(
+		pow(movePhase, 0.5)*posMoveDir*texAtlGlyphH - posMoveDir*texAtlGlyphH
+	);
+	const float cursorCiel = videoHH_ - videoH/16;
+	const float cursorVisiblizer = listTop < cursorCiel ? 1.0 : cursorCiel/listTop;
+	const float listVisOffset = (listTop > cursorCiel)*(
+		(-(listTop-cursorCiel) + (listTop-cursorCiel)*2.0*((pos+(movePhase < 1.0)*(
+			pow(movePhase, 0.5)*-posMoveDir + posMoveDir)
+		)/courseCount))
+	);
 	// draw course list
-	float listPosY = txtOriginY_ - courseCount/2;
-	glUniform2f(unif_translate, originX, listPosY);
+	glUniform2f(unif_translate, originX, listPosY+listVisOffset);
 	glDrawArrays(GL_POINTS, charVertBeg, fileNamesCharCount);
 	// draw cursor
-	float cursorPosY = txtOriginY_ - texAtlGlyphH*pos;
-	if (movePhase < 1.0) {
-		cursorPosY += pow(movePhase, 0.5)*posMoveDir*texAtlGlyphH - posMoveDir*texAtlGlyphH;
-	}
-	glUniform2f(unif_translate, originX, cursorPosY);
+	glUniform2f(unif_translate, originX, cursorPosY*cursorVisiblizer);
 	glDrawArrays(GL_POINTS, menuCursorVertBeg, menuCursorSpritesSize);
 	return screen_mainMenu;
 }

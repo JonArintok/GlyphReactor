@@ -70,7 +70,7 @@ void initAudio(void) {
 	
 	// short sine wave, pitch drop
 	setVoice(voice_menuDn, v);
-	setOscIncFromFreq  (voice_menuDn, vo_wave, freqFromPitch(60));
+	setOscIncFromFreq  (voice_menuDn, vo_wave, freqFromPitch(64));
 	setOscShape        (voice_menuDn, vo_incEnv, shape_saw);
 	setOscAmp          (voice_menuDn, vo_incEnv, 0.5);
 	setOscShift        (voice_menuDn, vo_incEnv, 1.5);
@@ -86,11 +86,11 @@ void initAudio(void) {
 	
 	// short sine wave with vibrato
 	setVoice(voice_menuSelect, v);
-	setOscIncFromFreq  (voice_menuSelect, vo_wave, freqFromPitch(64));
-	setOscShape        (voice_menuSelect, vo_incMod, shape_sine);
-	setOscIncFromFreq  (voice_menuSelect, vo_incMod, 6.0);
-	setOscAmp          (voice_menuSelect, vo_incMod, 0.02);
-	setOscShift        (voice_menuSelect, vo_incMod, 1.0);
+	setOscIncFromFreq  (voice_menuSelect, vo_wave, freqFromPitch(60));
+	setOscShape        (voice_menuSelect, vo_incMod, shape_halfPulse);
+	setOscAmp          (voice_menuSelect, vo_incMod, -0.5);
+	setOscShift        (voice_menuSelect, vo_incMod, 1.5);
+	setOscIncFromPeriod(voice_menuSelect, vo_incMod, 0.1);
 	setOscIncFromPeriod(voice_menuSelect, vo_ampEnv, 0.7);
 	
 	unpauseAudio();
