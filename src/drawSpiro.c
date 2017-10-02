@@ -6,41 +6,47 @@
 #include "initSprites.h"
 #include "fromHue.h"
 #include "../img/texAtlas.h"
+#include "libVoice/voice.h"
+#include "initAudio.h"
 
 char visSpiroGlyphs[visSpirosSize];
 
 void addSpiro(int i, char glyph) {
 	visSpiroGlyphs[i] = glyph;
-	visSpiros[i] = glyphSpiros[glyph-texAtlGlyphsAsciiStart];
+	const int glyphi = glyph-texAtlGlyphsAsciiStart;
+	visSpiros[i] = glyphSpiros[glyphi];
 	visSpiros[i].exploPhase = 0;
+	const voice v = {
+		// shape,         amp, sft, pos, inc
+		{  shape_sine,    1.0, 0.0, 0.0, incFromFreq(shape_sine_len, freqFromPitch(glyphi))}, // wave
+		{  shape_default, 1.0, 0.0, 0.0, 0.0 }, // ampMod
+		{  shape_default, 1.0, 0.0, 0.0, 0.0 }, // incMod
+		{  shape_saw,     0.5, 0.5, 0.0, incFromPeriod(4.0)}, // ampEnv
+		{  shape_default, 0.5, 0.5, 0.0, 0.0 }  // incEnv
+	};
+	setVoice(voice_spiro0+i, v);
 }
-
-void clearSpiros(void) {
-	fr (i, visSpirosSize) visSpiros[i].exploPhase = 1.0;
-}
-
 // new takes spot of either first with exploPhase >= 1, or oldest
 int triggerSpiro(char glyph) {
-	int i = 0;
 	float oldestPhase = 0.0;
 	int   oldestIndex = 0;
-	for (; i < visSpirosSize; i++) {
+	fr (i, visSpirosSize) {
 		if (visSpiros[i].exploPhase >= 1.0) {
 			addSpiro(i, glyph);
-			break;
+			return i;
 		}
 		if (visSpiros[i].exploPhase > oldestPhase) {
 			oldestPhase = visSpiros[i].exploPhase;
 			oldestIndex = i;
 		}
 	}
-	if (i == visSpirosSize) {
-		i = oldestIndex;
-		addSpiro(i, glyph);
-	}
-	return i;
+	addSpiro(oldestIndex, glyph);
+	return oldestIndex;
 }
 
+void clearSpiros(void) {
+	fr (i, visSpirosSize) visSpiros[i].exploPhase = 1.0;
+}
 
 void drawSpiros(void) {
 	int spriteIndex = 0;

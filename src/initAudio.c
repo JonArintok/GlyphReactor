@@ -4,22 +4,6 @@
 #include "libVoice/voice.h"
 
 
-enum {
-	shape_default, // [1] {1.0}
-	#define shape_default_len 1
-	shape_sine,
-	#define shape_sine_len 2048
-	shape_saw,
-	#define shape_saw_len 2048
-	shape_halfPulse,
-	#define shape_halfPulse_len 2
-	shape_quartPulse,
-	#define shape_quartPulse_len 4
-	shape_eighthPulse,
-	#define shape_eighthPulse_len 8
-	shape_COUNT
-};
-
 void initAudio(void) {
 	initVoices(voice_COUNT, shape_COUNT);
 	shapeFromSine (shape_sine, shape_sine_len);
