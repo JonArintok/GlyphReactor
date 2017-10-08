@@ -9,30 +9,102 @@
 #include "libVoice/voice.h"
 #include "initAudio.h"
 
-char visSpiroGlyphs[visSpirosSize];
+enum { // letters sorted from most to least used (according to wikipedia)
+	arank_E,
+	arank_T,
+	arank_A,
+	arank_O,
+	arank_I,
+	arank_N,
+	arank_S,
+	arank_H,
+	arank_R,
+	arank_D,
+	arank_L,
+	arank_C,
+	arank_U,
+	arank_M,
+	arank_W,
+	arank_F,
+	arank_G,
+	arank_Y,
+	arank_P,
+	arank_B,
+	arank_V,
+	arank_K,
+	arank_J,
+	arank_X,
+	arank_Q,
+	arank_Z
+};
+int alphaRanks[26] = { // ascii order
+	arank_A, arank_B, arank_C, arank_D, arank_E, arank_F, arank_G,
+	arank_H, arank_I, arank_J, arank_K, arank_L, arank_M, arank_N, arank_O, arank_P,
+	arank_Q, arank_R, arank_S,
+	arank_T, arank_U, arank_V,
+	arank_W, arank_X,
+	arank_Y, /* and */ arank_Z
+};
+float alphaIntervals[26] = { // scale steps up from the base note
+	2, 4, 5, 1,
+	7, 9, 11, 12, 8,
+	14, 16, 18, 19, 15,
+	21, 23, 25, 26, 22,
+	3, 10, 17, 24,
+	6, 13, 20
+}; // arranged to sound "mostly pentatonic"
+#define scaleStepCount 7
+const float scaleIntervals[scaleStepCount] = { // each scale step's distance in pitch from the tonic
+	0, 2, 4, 5, 7, 9, 11
+}; // major scale
+double pitchFromScaleStep(int interval) {
+	int absScaleInterval = alphaIntervals[alphaRanks[interval]];
+	return originPitch + 12*(absScaleInterval/scaleStepCount) + scaleIntervals[absScaleInterval%scaleStepCount];
+}
 
-void addSpiro(int i, char glyph) {
-	visSpiroGlyphs[i] = glyph;
-	const int glyphi = glyph-texAtlGlyphsAsciiStart;
-	visSpiros[i] = glyphSpiros[glyphi];
-	visSpiros[i].exploPhase = 0;
-	const voice v = {
+void setSpiroVoice(int i, char c) {
+	voice v = {
 		// shape,         amp, sft, pos, inc
-		{  shape_sine,    1.0, 0.0, 0.0, incFromFreq(shape_sine_len, freqFromPitch(glyphi))}, // wave
-		{  shape_default, 1.0, 0.0, 0.0, 0.0 }, // ampMod
+		{  shape_sine,    1.0, 0.0, 0.0, 0.0 }, // wave
+		{  shape_sine,    0.0, 1.0, 0.0, 0.0 }, // ampMod
 		{  shape_default, 1.0, 0.0, 0.0, 0.0 }, // incMod
 		{  shape_saw,     0.5, 0.5, 0.0, incFromPeriod(4.0)}, // ampEnv
 		{  shape_default, 0.5, 0.5, 0.0, 0.0 }  // incEnv
 	};
+	if (c == ' ') {
+		v[vo_wave].inc = incFromFreq(shape_sine_len, freqFromPitch(originPitch));
+	}
+	else if (c >= 'a' && c <= 'z') {
+		v[vo_wave].inc = incFromFreq(shape_sine_len, freqFromPitch(pitchFromScaleStep(c - 'a')));
+	}
+	else if (c >= 'A' && c <= 'Z') {
+		v[vo_wave].inc = incFromFreq(shape_sine_len, freqFromPitch(pitchFromScaleStep(c - 'A')));
+		v[vo_ampMod].inc = v[vo_wave].inc * 2;
+		v[vo_ampMod].amp = 1.0;
+		v[vo_ampMod].shift = 0.0;
+	}
+	else {
+		
+	}
 	setVoice(voice_spiro0+i, v);
 }
+
+char visSpiroGlyphs[visSpirosSize];
+
+void addSpiro(int i, char c) {
+	visSpiroGlyphs[i] = c;
+	const int glyphi = c-texAtlGlyphsAsciiStart;
+	visSpiros[i] = glyphSpiros[glyphi];
+	visSpiros[i].exploPhase = 0;
+	setSpiroVoice(i, c);
+}
 // new takes spot of either first with exploPhase >= 1, or oldest
-int triggerSpiro(char glyph) {
+int triggerSpiro(char c) {
 	float oldestPhase = 0.0;
 	int   oldestIndex = 0;
 	fr (i, visSpirosSize) {
 		if (visSpiros[i].exploPhase >= 1.0) {
-			addSpiro(i, glyph);
+			addSpiro(i, c);
 			return i;
 		}
 		if (visSpiros[i].exploPhase > oldestPhase) {
@@ -40,7 +112,7 @@ int triggerSpiro(char glyph) {
 			oldestIndex = i;
 		}
 	}
-	addSpiro(oldestIndex, glyph);
+	addSpiro(oldestIndex, c);
 	return oldestIndex;
 }
 

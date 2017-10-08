@@ -1,4 +1,4 @@
 
-void triggerSpiro(int spirodex);
+void triggerSpiro(char c);
 void clearSpiros(void);
 void drawSpiros(void);

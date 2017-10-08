@@ -29,5 +29,7 @@ enum {
 	shape_COUNT
 };
 
+#define originPitch 36.0
+
 void initAudio(void);
 void cleanupAudio(void);
