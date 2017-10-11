@@ -35,9 +35,10 @@ enum { // letters sorted from most to least used (according to wikipedia)
 	arank_J,
 	arank_X,
 	arank_Q,
-	arank_Z
+	arank_Z,
+	alphabetLength
 };
-int alphaRanks[26] = { // ascii order
+int alphaRanks[alphabetLength] = { // ascii order
 	arank_A, arank_B, arank_C, arank_D, arank_E, arank_F, arank_G,
 	arank_H, arank_I, arank_J, arank_K, arank_L, arank_M, arank_N, arank_O, arank_P,
 	arank_Q, arank_R, arank_S,
@@ -45,7 +46,7 @@ int alphaRanks[26] = { // ascii order
 	arank_W, arank_X,
 	arank_Y, /* and */ arank_Z
 };
-float alphaIntervals[26] = { // scale steps up from the base note
+float alphaIntervals[alphabetLength] = { // scale steps up from the origin
 	2, 4, 5, 1,
 	7, 9, 11, 12, 8,
 	14, 16, 18, 19, 15,
@@ -66,22 +67,29 @@ void setSpiroVoice(int i, char c) {
 	voice v = {
 		// shape,         amp, sft, pos, inc
 		{  shape_sine,    1.0, 0.0, 0.0, 0.0 }, // wave
-		{  shape_sine,    0.0, 1.0, 0.0, 0.0 }, // ampMod
+		{  shape_sine,    0.0, 0.0, 0.0, 0.0 }, // ampMod
 		{  shape_default, 1.0, 0.0, 0.0, 0.0 }, // incMod
 		{  shape_saw,     0.5, 0.5, 0.0, incFromPeriod(4.0)}, // ampEnv
 		{  shape_default, 0.5, 0.5, 0.0, 0.0 }  // incEnv
 	};
 	if (c == ' ') {
 		v[vo_wave].inc = incFromFreq(shape_sine_len, freqFromPitch(originPitch));
+		v[vo_wave].amp = 1.4;
+		v[vo_ampMod].inc = v[vo_wave].inc/2.0;
+		v[vo_ampMod].amp = 0.5;
+		v[vo_ampMod].shift = 1.5;
 	}
 	else if (c >= 'a' && c <= 'z') {
 		v[vo_wave].inc = incFromFreq(shape_sine_len, freqFromPitch(pitchFromScaleStep(c - 'a')));
+		v[vo_wave].amp = 1.0 - (v[vo_wave].inc/0.06);
+		v[vo_ampMod].inc = v[vo_wave].inc*2.0;
+		v[vo_ampMod].amp = v[vo_wave].amp*0.7;
 	}
 	else if (c >= 'A' && c <= 'Z') {
 		v[vo_wave].inc = incFromFreq(shape_sine_len, freqFromPitch(pitchFromScaleStep(c - 'A')));
-		v[vo_ampMod].inc = v[vo_wave].inc * 2;
-		v[vo_ampMod].amp = 1.0;
-		v[vo_ampMod].shift = 0.0;
+		v[vo_wave].amp = 1.0 - (v[vo_wave].inc/0.07);
+		v[vo_ampMod].inc = v[vo_wave].inc/2.0;
+		v[vo_ampMod].amp = v[vo_wave].amp*0.8;
 	}
 	else {
 		
