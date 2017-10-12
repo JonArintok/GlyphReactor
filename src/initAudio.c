@@ -100,6 +100,7 @@ void initAudio(void) {
 		};
 		setVoice(voice_menuSelect, v);
 	}
+	setGlobalVolume(visSpirosSize/2.0);
 	unpauseAudio();
 }
 

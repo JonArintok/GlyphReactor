@@ -98,7 +98,8 @@ void setSpiroVoice(int i, char c) {
 		v[vo_wave].inc = incFromFreq(shape_sine_len, freqFromPitch(pitchFromScaleStep(c - '0')));
 	}
 	else {
-		// pure sine wave, pitch is always one higher than highest alphabet pitch (all the same)
+		v[vo_wave].inc = incFromFreq(shape_sine_len, freqFromPitch(pitchFromScaleStep(alphabetLength+1)));
+		v[vo_wave].amp = 1.0 - (v[vo_wave].inc/0.06);
 	}
 	setVoice(voice_spiro0+i, v);
 }
