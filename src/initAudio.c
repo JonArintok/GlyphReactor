@@ -8,6 +8,7 @@ void initAudio(void) {
 	initVoices(voice_COUNT, shape_COUNT);
 	shapeFromSine (shape_sine, shape_sine_len);
 	shapeFromSaw  (shape_saw,  shape_saw_len);
+	shapeFromTri  (shape_tri,  shape_tri_len);
 	shapeFromPulse(shape_halfPulse,   shape_halfPulse_len,   1.0/2.0);
 	shapeFromPulse(shape_quartPulse,  shape_quartPulse_len,  1.0/4.0);
 	shapeFromPulse(shape_eighthPulse, shape_eighthPulse_len, 1.0/8.0);

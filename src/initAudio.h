@@ -17,9 +17,11 @@ enum {
 	shape_default, // {1.0}
 	#define shape_default_len 1
 	shape_sine,
-	#define shape_sine_len 2048
+	#define shape_sine_len 1024
 	shape_saw,
-	#define shape_saw_len 2048
+	#define shape_saw_len 1024
+	shape_tri,
+	#define shape_tri_len 1024
 	shape_halfPulse,
 	#define shape_halfPulse_len 2
 	shape_quartPulse,

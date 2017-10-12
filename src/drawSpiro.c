@@ -38,7 +38,7 @@ enum { // letters sorted from most to least used (according to wikipedia)
 	arank_Z,
 	alphabetLength
 };
-int alphaRanks[alphabetLength] = { // ascii order
+const int alphaRanks[alphabetLength] = { // ascii order
 	arank_A, arank_B, arank_C, arank_D, arank_E, arank_F, arank_G,
 	arank_H, arank_I, arank_J, arank_K, arank_L, arank_M, arank_N, arank_O, arank_P,
 	arank_Q, arank_R, arank_S,
@@ -46,7 +46,7 @@ int alphaRanks[alphabetLength] = { // ascii order
 	arank_W, arank_X,
 	arank_Y, /* and */ arank_Z
 };
-float alphaIntervals[alphabetLength] = { // scale steps up from the origin
+const float alphaIntervals[alphabetLength] = { // scale steps up from the origin
 	2, 4, 5, 1,
 	7, 9, 11, 12, 8,
 	14, 16, 18, 19, 15,
@@ -59,15 +59,14 @@ const float scaleIntervals[scaleStepCount] = { // each scale step's distance in 
 	0, 2, 4, 5, 7, 9, 11
 }; // major scale
 double pitchFromScaleStep(int interval) {
-	int absScaleInterval = alphaIntervals[alphaRanks[interval]];
-	return originPitch + 12*(absScaleInterval/scaleStepCount) + scaleIntervals[absScaleInterval%scaleStepCount];
+	return originPitch + 12*(interval/scaleStepCount) + scaleIntervals[interval%scaleStepCount];
 }
 
 void setSpiroVoice(int i, char c) {
 	voice v = {
 		// shape,         amp, sft, pos, inc
 		{  shape_sine,    1.0, 0.0, 0.0, 0.0 }, // wave
-		{  shape_sine,    0.0, 0.0, 0.0, 0.0 }, // ampMod
+		{  shape_default, 1.0, 0.0, 0.0, 0.0 }, // ampMod
 		{  shape_default, 1.0, 0.0, 0.0, 0.0 }, // incMod
 		{  shape_saw,     0.5, 0.5, 0.0, incFromPeriod(4.0)}, // ampEnv
 		{  shape_default, 0.5, 0.5, 0.0, 0.0 }  // incEnv
@@ -75,24 +74,31 @@ void setSpiroVoice(int i, char c) {
 	if (c == ' ') {
 		v[vo_wave].inc = incFromFreq(shape_sine_len, freqFromPitch(originPitch));
 		v[vo_wave].amp = 1.4;
+		v[vo_ampMod].shape = shape_sine;
 		v[vo_ampMod].inc = v[vo_wave].inc/2.0;
 		v[vo_ampMod].amp = 0.5;
 		v[vo_ampMod].shift = 1.5;
 	}
 	else if (c >= 'a' && c <= 'z') {
-		v[vo_wave].inc = incFromFreq(shape_sine_len, freqFromPitch(pitchFromScaleStep(c - 'a')));
-		v[vo_wave].amp = 1.0 - (v[vo_wave].inc/0.06);
+		v[vo_wave].inc = incFromFreq(shape_sine_len, freqFromPitch(pitchFromScaleStep(alphaIntervals[alphaRanks[c - 'a']])));
+		v[vo_wave].amp = 1.0 - (v[vo_wave].inc/0.06); // decrease the denominator to increase the amount of drop-off as pitch rises
+		v[vo_ampMod].shape = shape_sine;
 		v[vo_ampMod].inc = v[vo_wave].inc*2.0;
 		v[vo_ampMod].amp = v[vo_wave].amp*0.7;
 	}
 	else if (c >= 'A' && c <= 'Z') {
-		v[vo_wave].inc = incFromFreq(shape_sine_len, freqFromPitch(pitchFromScaleStep(c - 'A')));
-		v[vo_wave].amp = 1.0 - (v[vo_wave].inc/0.07);
+		v[vo_wave].inc = incFromFreq(shape_sine_len, freqFromPitch(pitchFromScaleStep(alphaIntervals[alphaRanks[c - 'A']])));
+		v[vo_wave].amp = 1.0 - (v[vo_wave].inc/0.06);
+		v[vo_ampMod].shape = shape_sine;
 		v[vo_ampMod].inc = v[vo_wave].inc/2.0;
 		v[vo_ampMod].amp = v[vo_wave].amp*0.8;
 	}
+	else if (c >= '0' && c <= '9') {
+		v[vo_wave].shape = shape_tri;
+		v[vo_wave].inc = incFromFreq(shape_sine_len, freqFromPitch(pitchFromScaleStep(c - '0')));
+	}
 	else {
-		
+		// pure sine wave, pitch is always one higher than highest alphabet pitch (all the same)
 	}
 	setVoice(voice_spiro0+i, v);
 }
