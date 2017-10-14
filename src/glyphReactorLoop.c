@@ -43,7 +43,7 @@ void initGlyphReactorLoop(int charCountIn) {
 
 int glyphReactorLoop(int charEntered, int curFrame) {
 	// respond to character entered
-	if (charEntered) {
+	if (charEntered && charEntered != SDLK_TAB && charEntered != SDLK_RETURN) {
 		if (charEntered == SDLK_ESCAPE) {
 			initMainMenuSprites();
 			clearSpiros();
