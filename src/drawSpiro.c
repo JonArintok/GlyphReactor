@@ -61,6 +61,12 @@ const float scaleIntervals[scaleStepCount] = { // each scale step's distance in 
 double pitchFromScaleStep(int interval) {
 	return originPitch + 12*(interval/scaleStepCount) + scaleIntervals[interval%scaleStepCount];
 }
+double incFromScaleStep(long shapeLength, int scaleStep) {
+	return incFromFreq(shapeLength, freqFromPitch(pitchFromScaleStep(scaleStep)));
+}
+int scaleStepFromAlphaStep(int alphaStep) {
+	return alphaIntervals[alphaRanks[alphaStep]];
+}
 
 void setSpiroVoice(int i, char c) {
 	voice v = {
@@ -80,14 +86,14 @@ void setSpiroVoice(int i, char c) {
 		v[vo_ampMod].shift = 1.5;
 	}
 	else if (c >= 'a' && c <= 'z') {
-		v[vo_wave].inc = incFromFreq(shape_sine_len, freqFromPitch(pitchFromScaleStep(alphaIntervals[alphaRanks[c - 'a']])));
+		v[vo_wave].inc = incFromScaleStep(shape_sine_len, scaleStepFromAlphaStep(c - 'a'));
 		v[vo_wave].amp = 1.0 - (v[vo_wave].inc/0.06); // decrease the denominator to increase the amount of drop-off as pitch rises
 		v[vo_ampMod].shape = shape_sine;
 		v[vo_ampMod].inc = v[vo_wave].inc*2.0;
 		v[vo_ampMod].amp = v[vo_wave].amp*0.7;
 	}
 	else if (c >= 'A' && c <= 'Z') {
-		v[vo_wave].inc = incFromFreq(shape_sine_len, freqFromPitch(pitchFromScaleStep(alphaIntervals[alphaRanks[c - 'A']])));
+		v[vo_wave].inc = incFromScaleStep(shape_sine_len, scaleStepFromAlphaStep(c - 'A'));
 		v[vo_wave].amp = 1.0 - (v[vo_wave].inc/0.06);
 		v[vo_ampMod].shape = shape_sine;
 		v[vo_ampMod].inc = v[vo_wave].inc/2.0;
@@ -95,10 +101,10 @@ void setSpiroVoice(int i, char c) {
 	}
 	else if (c >= '0' && c <= '9') {
 		v[vo_wave].shape = shape_tri;
-		v[vo_wave].inc = incFromFreq(shape_sine_len, freqFromPitch(pitchFromScaleStep(c - '0')));
+		v[vo_wave].inc = incFromScaleStep(shape_tri_len, c - '0');
 	}
 	else {
-		v[vo_wave].inc = incFromFreq(shape_sine_len, freqFromPitch(pitchFromScaleStep(alphabetLength+1)));
+		v[vo_wave].inc = incFromScaleStep(shape_sine_len, alphabetLength+1);
 		v[vo_wave].amp = 1.0 - (v[vo_wave].inc/0.06);
 	}
 	setVoice(voice_spiro0+i, v);

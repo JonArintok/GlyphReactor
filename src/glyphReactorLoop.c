@@ -53,11 +53,32 @@ int glyphReactorLoop(int charEntered, int curFrame) {
 		frameWhenCharEntered = curFrame;
 		charHue = hueFromChar(charEntered);
 		if (charEntered == bkspChar) { // backspace
+			//const double vwInc = 
 			if (stuckCharCount) {
 				stuckCharCount--;
 				visCharBeg++;
+				// voice v = { // short rising pitch from floor to pitch of deleted glyph
+				// 	// shape,         amp, sft, pos, inc
+				// 	{  shape_sine,    1.0, 0.0, 0.0, 0.0 }, // wave
+				// 	{  shape_default, 1.0, 0.0, 0.0, 0.0 }, // ampMod
+				// 	{  shape_default, 1.0, 0.0, 0.0, 0.0 }, // incMod
+				// 	{  shape_saw,     0.5, 0.5, 0.0, incFromPeriod(0.4)}, // ampEnv
+				// 	{  shape_saw,    -1.0, 2.0, 0.0, incFromPeriod(0.3)}  // incEnv
+				// };
+				// setVoice(voice_bksp, v);
 			}
-			else misBkspCount++;
+			else {
+				misBkspCount++;
+				// voice v = { // short tone
+				// 	// shape,         amp, sft, pos, inc
+				// 	{  shape_sine,    1.0, 0.0, 0.0, 0.0 }, // wave
+				// 	{  shape_default, 1.0, 0.0, 0.0, 0.0 }, // ampMod
+				// 	{  shape_default, 1.0, 0.0, 0.0, 0.0 }, // incMod
+				// 	{  shape_saw,     0.5, 0.5, 0.0, incFromPeriod(4.0)}, // ampEnv
+				// 	{  shape_default, 0.5, 0.5, 0.0, 0.0 }  // incEnv
+				// };
+				// setVoice(voice_misbksp, v);
+			}
 		}
 		else if (charEntered == chars[visCharBeg] && !stuckCharCount) { // correct
 			visCharBeg++;
@@ -85,6 +106,15 @@ int glyphReactorLoop(int charEntered, int curFrame) {
 		else { // incorrect
 			visCharBeg--;
 			stuckCharCount++;
+			// voice v = { // same pitch as correct but with metalic pitch modulation and shorter
+			// 	// shape,         amp, sft, pos, inc
+			// 	{  shape_sine,    1.0, 0.0, 0.0, 0.0 }, // wave
+			// 	{  shape_default, 1.0, 0.0, 0.0, 0.0 }, // ampMod
+			// 	{  shape_default, 1.0, 0.0, 0.0, 0.0 }, // incMod
+			// 	{  shape_saw,     0.5, 0.5, 0.0, incFromPeriod(4.0)}, // ampEnv
+			// 	{  shape_default, 0.5, 0.5, 0.0, 0.0 }  // incEnv
+			// };
+			// setVoice(voice_typo, v);
 			if (visCharBeg < 0 || visCharBeg >= visCharEnd) _SHOULD_NOT_BE_HERE_;
 			charSprites[visCharBeg] = charSprites[visCharBeg+1];
 			charSprites[visCharBeg].dstCX -= texAtlGlyphW;
