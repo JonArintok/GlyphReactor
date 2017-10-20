@@ -10,6 +10,8 @@
 #include "fromHue.h"
 #include "initBounceEnv.h"
 #include "../img/texAtlas.h"
+#include "libVoice/voice.h"
+#include "initAudio.h"
 
 
 int queueCharCount; // number of characters from file
@@ -53,34 +55,36 @@ int glyphReactorLoop(int charEntered, int curFrame) {
 		frameWhenCharEntered = curFrame;
 		charHue = hueFromChar(charEntered);
 		if (charEntered == bkspChar) { // backspace
-			//const double vwInc = 
+			const int bkspShape = shape_halfPulse;
+			const double vwInc = incFromFreq(bkspShape, freqFromPitch(originPitch-12));
 			if (stuckCharCount) {
 				stuckCharCount--;
 				visCharBeg++;
-				// voice v = { // short rising pitch from floor to pitch of deleted glyph
-				// 	// shape,         amp, sft, pos, inc
-				// 	{  shape_sine,    1.0, 0.0, 0.0, 0.0 }, // wave
-				// 	{  shape_default, 1.0, 0.0, 0.0, 0.0 }, // ampMod
-				// 	{  shape_default, 1.0, 0.0, 0.0, 0.0 }, // incMod
-				// 	{  shape_saw,     0.5, 0.5, 0.0, incFromPeriod(0.4)}, // ampEnv
-				// 	{  shape_saw,    -1.0, 2.0, 0.0, incFromPeriod(0.3)}  // incEnv
-				// };
-				// setVoice(voice_bksp, v);
+				voice v = { // short rising pitch from floor to pitch of deleted glyph
+					// shape,         amp, sft, pos, inc
+					{  bkspShape,     0.7, 0.0, 0.0, vwInc}, // wave
+					{  shape_default, 1.0, 0.0, 0.0, 0.0 }, // ampMod
+					{  shape_default, 1.0, 0.0, 0.0, 0.0 }, // incMod
+					{  shape_saw,     0.5, 0.5, 0.0, incFromPeriod(0.4)}, // ampEnv
+					{  shape_saw,    -1.0, 2.0, 0.0, incFromPeriod(0.3)}  // incEnv
+				};
+				setVoice(voice_bksp, v);
 			}
 			else {
 				misBkspCount++;
-				// voice v = { // short tone
-				// 	// shape,         amp, sft, pos, inc
-				// 	{  shape_sine,    1.0, 0.0, 0.0, 0.0 }, // wave
-				// 	{  shape_default, 1.0, 0.0, 0.0, 0.0 }, // ampMod
-				// 	{  shape_default, 1.0, 0.0, 0.0, 0.0 }, // incMod
-				// 	{  shape_saw,     0.5, 0.5, 0.0, incFromPeriod(4.0)}, // ampEnv
-				// 	{  shape_default, 0.5, 0.5, 0.0, 0.0 }  // incEnv
-				// };
-				// setVoice(voice_misbksp, v);
+				voice v = { // short tone
+					// shape,         amp, sft, pos, inc
+					{  bkspShape,     1.0, 0.0, 0.0, vwInc }, // wave
+					{  shape_default, 1.0, 0.0, 0.0, 0.0 }, // ampMod
+					{  shape_default, 1.0, 0.0, 0.0, 0.0 }, // incMod
+					{  shape_saw,     0.5, 0.5, 0.0, incFromPeriod(0.2)}, // ampEnv
+					{  shape_default, 0.5, 0.5, 0.0, 0.0 }  // incEnv
+				};
+				setVoice(voice_misbksp, v);
 			}
 		}
 		else if (charEntered == chars[visCharBeg] && !stuckCharCount) { // correct
+			triggerSpiro(charEntered);
 			visCharBeg++;
 			if (charEntered == delim) {
 				curWord++;
@@ -101,20 +105,11 @@ int glyphReactorLoop(int charEntered, int curFrame) {
 					(const GLvoid*)&charSprites[visCharBeg] // const GLvoid *data
 				);
 			}
-			triggerSpiro(charEntered);
 		}
 		else { // incorrect
+			setGlyphVoice(voice_typo, charEntered, false);
 			visCharBeg--;
 			stuckCharCount++;
-			// voice v = { // same pitch as correct but with metalic pitch modulation and shorter
-			// 	// shape,         amp, sft, pos, inc
-			// 	{  shape_sine,    1.0, 0.0, 0.0, 0.0 }, // wave
-			// 	{  shape_default, 1.0, 0.0, 0.0, 0.0 }, // ampMod
-			// 	{  shape_default, 1.0, 0.0, 0.0, 0.0 }, // incMod
-			// 	{  shape_saw,     0.5, 0.5, 0.0, incFromPeriod(4.0)}, // ampEnv
-			// 	{  shape_default, 0.5, 0.5, 0.0, 0.0 }  // incEnv
-			// };
-			// setVoice(voice_typo, v);
 			if (visCharBeg < 0 || visCharBeg >= visCharEnd) _SHOULD_NOT_BE_HERE_;
 			charSprites[visCharBeg] = charSprites[visCharBeg+1];
 			charSprites[visCharBeg].dstCX -= texAtlGlyphW;

@@ -1,5 +1,6 @@
 
 #include "optionsAndErrors.h"
+#include "stdbool.h"
 
 enum {
 	voice_spiro0,
@@ -35,3 +36,5 @@ enum {
 
 void initAudio(void);
 void cleanupAudio(void);
+
+void setGlyphVoice(int voiceIndex, char c, bool correct);
