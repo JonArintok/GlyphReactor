@@ -43,6 +43,17 @@ void initGlyphReactorLoop(int charCountIn) {
 	whereCurWordStarted = visCharBeg;
 }
 
+void setColorFlashFromPhase(sprite *s, double phase, double hue) {
+	const double diff  = pow(phase, 0.3); // curve to taste
+	int rh = 0xff*redFromHue(hue);
+	int gh = 0xff*grnFromHue(hue);
+	int bh = 0xff*bluFromHue(hue);
+	s->mulR = rh + (0xff-rh)*diff;
+	s->mulG = gh + (0xff-gh)*diff;
+	s->mulB = bh + (0xff-bh)*diff;
+	s->mulO = 0xff;
+}
+
 int glyphReactorLoop(int charEntered, int curFrame) {
 	// respond to character entered
 	if (charEntered && charEntered != SDLK_TAB && charEntered != SDLK_RETURN) {
@@ -158,19 +169,20 @@ int glyphReactorLoop(int charEntered, int curFrame) {
 			beamSprites[i].srcY  = texAtlGlyphPosY(charEntered);
 			beamSprites[i].srcW  = texAtlGlyphW;
 			beamSprites[i].srcH  = texAtlGlyphH;
-			setColorFromPhase(&beamSprites[i], 0, charHue);
+			setHueFromPhase(&beamSprites[i], 0, charHue);
 		}
 		#ifdef LOG_VERTEX_DATA_TO
 		//fprintf(LOG_VERTEX_DATA_TO, "\nBEAM\n");
 		//printSprites(beamSprites, beamSize, __LINE__);
 		#endif
+		setHueFromPhase(&gunSprites[0], 0, charHue);
 	}
 	// draw beam
 	glUniform2f(unif_translate, txtOriginX_, txtOriginY_);
 	const float beamPhase = (float)(curFrame-frameWhenCharEntered)/beamGlowTime;
 	if (beamPhase < 1) {
 		fr (i, beamSize) {
-			setColorFromPhase(&beamSprites[i], beamPhase, charHue);
+			setHueFromPhase(&beamSprites[i], beamPhase, charHue);
 			beamSprites[i].mulO  = 0xff * (1.0 - pow(beamPhase, 0.5));
 		}
 		glBufferSubData(
@@ -180,8 +192,18 @@ int glyphReactorLoop(int charEntered, int curFrame) {
 			(const GLvoid*)beamSprites   // const GLvoid *data
 		);
 		glDrawArrays(GL_POINTS, beamVertBeg, beamSize);
+		
 	}
 	// draw gun
+	if (beamPhase <= 1) {
+		setColorFlashFromPhase(&gunSprites[0], beamPhase, charHue);
+		glBufferSubData(
+			GL_ARRAY_BUFFER,             // GLenum        target
+			sizeof(sprite)*gunVertBeg,   // GLintptr      offset
+			sizeof(sprite)*1,            // GLsizeiptr    size
+			(const GLvoid*)gunSprites    // const GLvoid *data
+		);
+	}
 	glDrawArrays(GL_POINTS, gunVertBeg, gunSpritesSize);
 	// draw spirographs
 	glUniform2f(unif_translate, txtOriginX_, txtOriginY_);

@@ -18,10 +18,10 @@
 #define texAtlGlyphsAsciiStart 32
 #define bkspChar 127
 
-#define texAtlGunX 280 // left edge
-#define texAtlGunY  30 // top edge
-#define texAtlGunW 206
-#define texAtlGunH 162
+#define texAtlGunX 258 // left edge
+#define texAtlGunY   2 // top edge
+#define texAtlGunW 252
+#define texAtlGunH 252
 
 #define texAtlMenuCursorX 240 // left edge
 #define texAtlMenuCursorY 233 // top edge

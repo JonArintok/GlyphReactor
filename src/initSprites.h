@@ -48,7 +48,7 @@ typedef struct {
 
 
 double hueFromChar(char c);
-void setColorFromPhase(sprite *s, double phase, double hue);
+void setHueFromPhase(sprite *s, double phase, double hue);
 
 
 extern int beamVertBeg;

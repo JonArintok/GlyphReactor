@@ -61,13 +61,13 @@ void printSprites(sprite *sprites, int count, int line) {
 double hueFromChar(char c) {
 	return fractionalPart(7.0*(double)(c-texAtlGlyphsAsciiStart)/texAtlGlyphsCount);
 }
-void setColorFromPhase(sprite *s, double phase, double hue) {
-	const double diff  = pow(phase, 0.3);
+void setHueFromPhase(sprite *s, double phase, double hue) {
+	const double diff  = pow(phase, 0.3); // curve to taste
 	const double start = 1.0 - diff;
-	s->mulR  = 0xff * (start + diff*redFromHue(hue));
-	s->mulG  = 0xff * (start + diff*grnFromHue(hue));
-	s->mulB  = 0xff * (start + diff*bluFromHue(hue));
-	s->mulO  = 0xff;
+	s->mulR = 0xff * (start + diff*redFromHue(hue));
+	s->mulG = 0xff * (start + diff*grnFromHue(hue));
+	s->mulB = 0xff * (start + diff*bluFromHue(hue));
+	s->mulO = 0xff;
 }
 
 
