@@ -180,7 +180,7 @@ void setGlyphVoice(int voiceIndex, char c, bool correct) {
 		v[vo_wave].amp = 1.4;
 		v[vo_ampMod].shape = shape_sine;
 		v[vo_ampMod].inc = correct ? v[vo_wave].inc/2.0 : incFromFreq(shape_sine_len, freqFromPitch(originPitch-7));
-		v[vo_ampMod].amp = 0.5;
+		v[vo_ampMod].amp = correct ? 0.5 : 0.8;
 		v[vo_ampMod].shift = 1.5;
 	}
 	else if (c >= 'a' && c <= 'z') {
@@ -188,7 +188,7 @@ void setGlyphVoice(int voiceIndex, char c, bool correct) {
 		v[vo_wave].amp = 1.0 - (v[vo_wave].inc/0.06); // decrease the denominator to increase the amount of drop-off as pitch rises
 		v[vo_ampMod].shape = shape_sine;
 		v[vo_ampMod].inc = correct ? v[vo_wave].inc*2.0 : incFromFreq(shape_sine_len, freqFromPitch(originPitch+7));
-		v[vo_ampMod].amp = v[vo_wave].amp*0.7;
+		v[vo_ampMod].amp = correct ? v[vo_wave].amp*0.7 : v[vo_wave].amp*1.2;
 	}
 	else if (c >= 'A' && c <= 'Z') {
 		v[vo_wave].inc = incFromScaleStep(shape_sine_len, scaleStepFromAlphaStep(c - 'A'));

@@ -25,6 +25,15 @@ int handleEvents(void) {
 						videoH = event.window.data2;
 						glViewport(0, 0, videoW, videoH);
 						glUniform2f(unif_scale, scaleX_, scaleY_);
+						// stretch gun belt
+						gunSprites[0].dstCY = -videoH/4.0;
+						gunSprites[0].dstHH =  videoH/4.0;
+						glBufferSubData(
+							GL_ARRAY_BUFFER,           // GLenum        target
+							sizeof(sprite)*gunVertBeg, // GLintptr      offset
+							sizeof(sprite)*1,          // GLsizeiptr    size
+							(const GLvoid*)gunSprites  // const GLvoid *data
+						);
 					break;
 				}
 				break;

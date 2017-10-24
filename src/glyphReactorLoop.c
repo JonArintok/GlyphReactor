@@ -73,7 +73,7 @@ int glyphReactorLoop(int charEntered, int curFrame) {
 				visCharBeg++;
 				voice v = { // short rising pitch from floor to pitch of deleted glyph
 					// shape,         amp, sft, pos, inc
-					{  bkspShape,     0.7, 0.0, 0.0, vwInc}, // wave
+					{  bkspShape,     0.4, 0.0, 0.0, vwInc}, // wave
 					{  shape_default, 1.0, 0.0, 0.0, 0.0 }, // ampMod
 					{  shape_default, 1.0, 0.0, 0.0, 0.0 }, // incMod
 					{  shape_saw,     0.5, 0.5, 0.0, incFromPeriod(0.4)}, // ampEnv
@@ -85,7 +85,7 @@ int glyphReactorLoop(int charEntered, int curFrame) {
 				misBkspCount++;
 				voice v = { // short tone
 					// shape,         amp, sft, pos, inc
-					{  bkspShape,     1.0, 0.0, 0.0, vwInc }, // wave
+					{  bkspShape,     0.5, 0.0, 0.0, vwInc }, // wave
 					{  shape_default, 1.0, 0.0, 0.0, 0.0 }, // ampMod
 					{  shape_default, 1.0, 0.0, 0.0, 0.0 }, // incMod
 					{  shape_saw,     0.5, 0.5, 0.0, incFromPeriod(0.2)}, // ampEnv
@@ -196,12 +196,12 @@ int glyphReactorLoop(int charEntered, int curFrame) {
 	}
 	// draw gun
 	if (beamPhase <= 1) {
-		setColorFlashFromPhase(&gunSprites[0], beamPhase, charHue);
+		setColorFlashFromPhase(&gunSprites[1], beamPhase, charHue);
 		glBufferSubData(
-			GL_ARRAY_BUFFER,             // GLenum        target
-			sizeof(sprite)*gunVertBeg,   // GLintptr      offset
-			sizeof(sprite)*1,            // GLsizeiptr    size
-			(const GLvoid*)gunSprites    // const GLvoid *data
+			GL_ARRAY_BUFFER,               // GLenum        target
+			sizeof(sprite)*(gunVertBeg+1), // GLintptr      offset
+			sizeof(sprite)*1,              // GLsizeiptr    size
+			(const GLvoid*)&gunSprites[1]  // const GLvoid *data
 		);
 	}
 	glDrawArrays(GL_POINTS, gunVertBeg, gunSpritesSize);

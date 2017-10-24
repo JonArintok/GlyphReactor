@@ -81,7 +81,7 @@ int vertBufSize;
 const int gunDistance = 12; // character widths between gun and queue
 int       beamSize;
 sprite   *beamSprites = NULL;
-const int gunSpritesSize = 1;
+const int gunSpritesSize = 2;
 sprite   *gunSprites = NULL;
 const int menuCursorSpritesSize = 3;
 sprite   *menuCursorSprites;
@@ -103,21 +103,36 @@ void init(void) {
 	beamSize = gunDistance*4;
 	beamSprites = malloc(sizeof(sprite)*beamSize);
 	// init gun sprites
-	const float texAtlGunYoffset = texAtlGlyphH/2;
+	const float texAtlGunYoffset = (texAtlGunW-texAtlGunH)/2;
 	gunSprites = malloc(sizeof(sprite)*gunSpritesSize);
-	gunSprites[0].dstCX = -gunDistance*texAtlGlyphW - texAtlGunW/2;
-	gunSprites[0].dstCY = txtOriginY_ - texAtlGunYoffset;
-	gunSprites[0].dstHW = texAtlGunW/2.0;
-	gunSprites[0].dstHH = texAtlGunH/2.0;
-	gunSprites[0].srcX  = texAtlGunX;
-	gunSprites[0].srcY  = texAtlGunY;
-	gunSprites[0].srcW  = texAtlGunW;
-	gunSprites[0].srcH  = texAtlGunH;
+	// belt tube
+	gunSprites[0].dstCX = -gunDistance*texAtlGlyphW - texAtlGunW/2.0;
+	gunSprites[0].dstCY = -videoH/4.0;
+	gunSprites[0].dstHW = texAtlBeltW/2.0;
+	gunSprites[0].dstHH = videoH/4.0;
+	gunSprites[0].srcX  = texAtlBeltX;
+	gunSprites[0].srcY  = texAtlBeltY;
+	gunSprites[0].srcW  = texAtlBeltW;
+	gunSprites[0].srcH  = texAtlBeltH;
 	gunSprites[0].mulR  = 0xff;
 	gunSprites[0].mulG  = 0xff;
 	gunSprites[0].mulB  = 0xff;
 	gunSprites[0].mulO  = 0xff;
 	gunSprites[0].rot   = 0.0;
+	// sphere
+	gunSprites[1].dstCX = -gunDistance*texAtlGlyphW - texAtlGunW/2;
+	gunSprites[1].dstCY = txtOriginY_ + texAtlGunYoffset;
+	gunSprites[1].dstHW = texAtlGunW/2.0;
+	gunSprites[1].dstHH = texAtlGunH/2.0;
+	gunSprites[1].srcX  = texAtlGunX;
+	gunSprites[1].srcY  = texAtlGunY;
+	gunSprites[1].srcW  = texAtlGunW;
+	gunSprites[1].srcH  = texAtlGunH;
+	gunSprites[1].mulR  = 0xff;
+	gunSprites[1].mulG  = 0xff;
+	gunSprites[1].mulB  = 0xff;
+	gunSprites[1].mulO  = 0xff;
+	gunSprites[1].rot   = 0.0;
 	// init menuCursorSprites
 	{
 		const float cursorX = txtOriginX_ - texAtlGlyphW*1.5;
