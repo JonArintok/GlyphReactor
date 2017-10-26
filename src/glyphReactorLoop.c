@@ -31,7 +31,6 @@ double charHue;
 const int beamGlowTime = 60; // frames
 bool gameOver = false;
 
-
 void initGlyphReactorLoop(int charCountIn) {
 	queueCharCount = charCountIn;
 	visCharBeg = gunDistance;
@@ -40,8 +39,12 @@ void initGlyphReactorLoop(int charCountIn) {
 	whereCurWordStarted = visCharBeg;
 }
 
+float frand(float lb, float hb) {
+	return lb + (hb - lb)*((float)rand()/RAND_MAX);
+}
+
 void setColorFlashFromPhase(sprite *s, double phase, double hue) {
-	const double diff  = pow(phase, 0.3); // curve to taste
+	const double diff = pow(phase, 0.3); // curve to taste
 	int rh = 0xff*redFromHue(hue);
 	int gh = 0xff*grnFromHue(hue);
 	int bh = 0xff*bluFromHue(hue);
@@ -114,12 +117,12 @@ int glyphReactorLoop(int charEntered, int curFrame) {
 				);
 			}
 		}
-		else if (!gameOver) { // add stuck char
+		else if (!gameOver) {
 			if (stuckCharCount == gunDistance) {
 				puts("GAME OVER");
 				gameOver = true;
 			}
-			else {
+			else { // add stuck char
 				setGlyphVoice(voice_typo, charEntered, false);
 				visCharBeg--;
 				stuckCharCount++;
@@ -207,7 +210,23 @@ int glyphReactorLoop(int charEntered, int curFrame) {
 	// draw spirographs
 	glUniform2f(unif_translate, txtOriginX_, txtOriginY_);
 	drawSpiros();
-	// draw word queue
+	// draw word queue and stuck chars
+	if (stuckCharCount >= gunDistance-2) {
+		// stuck characters jiggle
+		const float jiggleRange = texAtlGlyphW/(2*(gunDistance-stuckCharCount+1));
+		fr (i, stuckCharCount) {
+			charSprites[visCharBeg+i].dstCY = txtOriginY_ + frand(-jiggleRange, jiggleRange);
+		}
+		glBufferSubData(
+			GL_ARRAY_BUFFER,                        // GLenum        target
+			sizeof(sprite)*visCharVertBeg_,         // GLintptr      offset
+			sizeof(sprite)*stuckCharCount,          // GLsizeiptr    size
+			(const GLvoid*)&charSprites[visCharBeg] // const GLvoid *data
+		);
+	}
+	else if (gameOver) {
+		// words are blown away
+	}
 	glUniform2f(
 		unif_translate,
 		txtOriginX_,
