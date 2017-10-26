@@ -20,25 +20,22 @@ int visCharEnd; // gunDistance + queueCharCount
 #define visCharCount_ (visCharEnd - visCharBeg)
 #define visCharVertBeg_ (charVertBeg + visCharBeg)
 
-int stuckCharCount;
-int misBkspCount;
-int curWord;
-int frameWhenWordDropped;
+int stuckCharCount = 0;
+int misBkspCount = 0;
+int curWord = 0;
+int frameWhenWordDropped = 0;
 int frameWhenCharEntered;
 int whereCurWordStarted;
 int lastCharEntered = '\0';
 double charHue;
 const int beamGlowTime = 60; // frames
+bool gameOver = false;
 
 
 void initGlyphReactorLoop(int charCountIn) {
 	queueCharCount = charCountIn;
 	visCharBeg = gunDistance;
 	visCharEnd = gunDistance + queueCharCount;
-	stuckCharCount = 0;
-	misBkspCount = 0;
-	curWord = 0;
-	frameWhenWordDropped = 0;
 	frameWhenCharEntered = -beamGlowTime;
 	whereCurWordStarted = visCharBeg;
 }
@@ -117,17 +114,18 @@ int glyphReactorLoop(int charEntered, int curFrame) {
 				);
 			}
 		}
-		else { // incorrect
-			setGlyphVoice(voice_typo, charEntered, false);
-			visCharBeg--;
-			stuckCharCount++;
-			if (visCharBeg < 0 || visCharBeg >= visCharEnd) _SHOULD_NOT_BE_HERE_;
-			charSprites[visCharBeg] = charSprites[visCharBeg+1];
-			charSprites[visCharBeg].dstCX -= texAtlGlyphW;
-			if (charSprites[visCharBeg].dstCX <=  0.0 - texAtlGlyphW*gunDistance) {
-				return screen_gameOver;
+		else if (!gameOver) { // add stuck char
+			if (stuckCharCount == gunDistance) {
+				puts("GAME OVER");
+				gameOver = true;
 			}
 			else {
+				setGlyphVoice(voice_typo, charEntered, false);
+				visCharBeg--;
+				stuckCharCount++;
+				if (visCharBeg < 0 || visCharBeg >= visCharEnd) _SHOULD_NOT_BE_HERE_;
+				charSprites[visCharBeg] = charSprites[visCharBeg+1];
+				charSprites[visCharBeg].dstCX -= texAtlGlyphW;
 				chars[visCharBeg] = charEntered;
 				charSprites[visCharBeg].dstHW = -texAtlGlyphW/2.0;
 				charSprites[visCharBeg].dstHH = -texAtlGlyphH/2.0;
@@ -145,6 +143,7 @@ int glyphReactorLoop(int charEntered, int curFrame) {
 				);
 			}
 		}
+		// else ignore the keypress
 		// init beam
 		const int boltCornerCount = gunDistance;
 		const int boltDeviation = 32; // plus or minus
