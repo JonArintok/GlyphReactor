@@ -29,7 +29,8 @@ int whereCurWordStarted;
 int lastCharEntered = '\0';
 double charHue;
 const int beamGlowTime = 60; // frames
-bool gameOver = false;
+int gameOver = 0; // frame
+const int postGameOverTime = 60; // frames
 
 void initGlyphReactorLoop(int charCountIn) {
 	queueCharCount = charCountIn;
@@ -56,12 +57,12 @@ void setColorFlashFromPhase(sprite *s, double phase, double hue) {
 
 int glyphReactorLoop(int charEntered, int curFrame) {
 	// respond to character entered
-	if (charEntered && charEntered != SDLK_TAB && charEntered != SDLK_RETURN) {
-		if (charEntered == SDLK_ESCAPE) {
-			initMainMenuSprites();
-			clearSpiros();
-			return screen_mainMenu;
-		}
+	if (charEntered == SDLK_ESCAPE) {
+		initMainMenuSprites();
+		clearSpiros();
+		return screen_mainMenu;
+	}
+	else if (!gameOver && charEntered && charEntered != SDLK_TAB && charEntered != SDLK_RETURN) {
 		lastCharEntered = charEntered;
 		frameWhenCharEntered = curFrame;
 		charHue = hueFromChar(charEntered);
@@ -117,11 +118,8 @@ int glyphReactorLoop(int charEntered, int curFrame) {
 				);
 			}
 		}
-		else if (!gameOver) {
-			if (stuckCharCount == gunDistance) {
-				puts("GAME OVER");
-				gameOver = true;
-			}
+		else {
+			if (stuckCharCount == gunDistance) gameOver = curFrame;
 			else { // add stuck char
 				setGlyphVoice(voice_typo, charEntered, false);
 				visCharBeg--;
@@ -211,11 +209,31 @@ int glyphReactorLoop(int charEntered, int curFrame) {
 	glUniform2f(unif_translate, txtOriginX_, txtOriginY_);
 	drawSpiros();
 	// draw word queue and stuck chars
-	if (stuckCharCount >= gunDistance-2) {
+	if (gameOver) {
+		const float gameOverPhase = (float)(curFrame-gameOver)/postGameOverTime;
+		if (gameOverPhase < 1) {
+			if (gameOver == curFrame) {
+				// play sound
+			}
+			const float affectedCount = gunDistance + maxWordSize/2;
+			const float throw = videoW/12.0;
+			//printf("1.0 - pow(%f, 0.2): %f\n", gameOverPhase, 1.0 - pow(gameOverPhase, 0.2));
+			fr (i, affectedCount) {
+				charSprites[visCharBeg+i].dstCX += (1.0-pow(gameOverPhase, 0.3))*(1.0-pow(i/affectedCount, 0.3))*throw;
+			}
+			glBufferSubData(
+				GL_ARRAY_BUFFER,                        // GLenum        target
+				sizeof(sprite)*visCharVertBeg_,         // GLintptr      offset
+				sizeof(sprite)*affectedCount,           // GLsizeiptr    size
+				(const GLvoid*)&charSprites[visCharBeg] // const GLvoid *data
+			);
+		}
+	}
+	else if (stuckCharCount >= gunDistance-2) {
 		// stuck characters jiggle
 		const float jiggleRange = texAtlGlyphW/(2*(gunDistance-stuckCharCount+1));
 		fr (i, stuckCharCount) {
-			charSprites[visCharBeg+i].dstCY = txtOriginY_ + frand(-jiggleRange, jiggleRange);
+			charSprites[visCharBeg+i].dstCY = txtOriginY_ - curWord*texAtlGlyphH + frand(-jiggleRange, jiggleRange);
 		}
 		glBufferSubData(
 			GL_ARRAY_BUFFER,                        // GLenum        target
@@ -223,9 +241,6 @@ int glyphReactorLoop(int charEntered, int curFrame) {
 			sizeof(sprite)*stuckCharCount,          // GLsizeiptr    size
 			(const GLvoid*)&charSprites[visCharBeg] // const GLvoid *data
 		);
-	}
-	else if (gameOver) {
-		// words are blown away
 	}
 	glUniform2f(
 		unif_translate,
