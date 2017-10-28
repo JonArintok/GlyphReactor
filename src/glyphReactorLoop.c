@@ -196,13 +196,23 @@ int glyphReactorLoop(int charEntered, int curFrame) {
 	}
 	// draw gun
 	if (beamPhase <= 1) {
-		setColorFlashFromPhase(&gunSprites[1], beamPhase, charHue);
-		glBufferSubData(
-			GL_ARRAY_BUFFER,               // GLenum        target
-			sizeof(sprite)*(gunVertBeg+1), // GLintptr      offset
-			sizeof(sprite)*1,              // GLsizeiptr    size
-			(const GLvoid*)&gunSprites[1]  // const GLvoid *data
-		);
+		if (gameOver == curFrame) {
+			const uint8_t mulCol = 0x20;
+			gunSprites[1].mulR = mulCol;
+			gunSprites[1].mulG = mulCol;
+			gunSprites[1].mulB = mulCol;
+		}
+		else if (!gameOver) {
+			setColorFlashFromPhase(&gunSprites[1], beamPhase, charHue);
+		}
+		if (gameOver <= curFrame) {
+			glBufferSubData(
+				GL_ARRAY_BUFFER,               // GLenum        target
+				sizeof(sprite)*(gunVertBeg+1), // GLintptr      offset
+				sizeof(sprite)*1,              // GLsizeiptr    size
+				(const GLvoid*)&gunSprites[1]  // const GLvoid *data
+			);
+		}
 	}
 	glDrawArrays(GL_POINTS, gunVertBeg, gunSpritesSize);
 	// draw spirographs
@@ -212,14 +222,11 @@ int glyphReactorLoop(int charEntered, int curFrame) {
 	if (gameOver) {
 		const float gameOverPhase = (float)(curFrame-gameOver)/postGameOverTime;
 		if (gameOverPhase < 1) {
-			if (gameOver == curFrame) {
-				// play sound
-			}
+			if (gameOver == curFrame) restartVoice(voice_gameOver);
 			const float affectedCount = gunDistance + maxWordSize/2;
-			const float throw = videoW/12.0;
-			//printf("1.0 - pow(%f, 0.2): %f\n", gameOverPhase, 1.0 - pow(gameOverPhase, 0.2));
+			const float throw = videoW/8.0; // to taste
 			fr (i, affectedCount) {
-				charSprites[visCharBeg+i].dstCX += (1.0-pow(gameOverPhase, 0.3))*(1.0-pow(i/affectedCount, 0.3))*throw;
+				charSprites[visCharBeg+i].dstCX += (1.0-pow(gameOverPhase, 0.3))*(1.0-pow(i/affectedCount, 0.1))*throw;
 			}
 			glBufferSubData(
 				GL_ARRAY_BUFFER,                        // GLenum        target

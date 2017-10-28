@@ -56,6 +56,17 @@ void initAudio(void) {
 		};
 		setVoice(voice_misbksp, v);
 	}
+	{ // game over
+		const voice v = {
+			// shape,         amp, sft, pos, inc
+			{  shape_saw,     1.0, 0.0, 1.0, incFromFreq(shape_sine_len, freqFromPitch(originPitch)) },
+			{  shape_default, 1.0, 0.0, 1.0, 0.0 }, // ampMod
+			{  shape_default, 1.0, 0.0, 1.0, 0.0 }, // incMod
+			{  shape_saw,     0.5, 0.5, 1.0, incFromPeriod(0.2) }, // ampEnv
+			{  shape_saw,     8.0, 6.0, 1.0, incFromPeriod(0.2) }  // incEnv
+		};
+		setVoice(voice_gameOver, v);
+	}
 	{ // menu up
 		const voice v = {
 			// shape,         amp, sft, pos, inc

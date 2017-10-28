@@ -7,6 +7,7 @@ enum {
 	voice_typo = visSpirosSize,
 	voice_bksp,
 	voice_misbksp,
+	voice_gameOver,
 	voice_menuUp,
 	voice_menuDn,
 	voice_menuSelect,
