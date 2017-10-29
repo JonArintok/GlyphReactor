@@ -10,3 +10,4 @@ bool allEq(const float *l, const float *r, int c);
 double sinTau(double n);
 double fractionalPart(double n);
 double lerp(double l, double r, double n);
+double frand(double lb, double hb);

@@ -40,10 +40,6 @@ void initGlyphReactorLoop(int charCountIn) {
 	whereCurWordStarted = visCharBeg;
 }
 
-float frand(float lb, float hb) {
-	return lb + (hb - lb)*((float)rand()/RAND_MAX);
-}
-
 void setColorFlashFromPhase(sprite *s, double phase, double hue) {
 	const double diff = pow(phase, 0.3); // curve to taste
 	int rh = 0xff*redFromHue(hue);
