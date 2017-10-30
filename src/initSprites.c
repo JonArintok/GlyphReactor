@@ -70,6 +70,7 @@ void setHueFromPhase(sprite *s, double phase, double hue) {
 	s->mulO = 0xff;
 }
 
+const char gameOverMessage[gameOverMessageLength] = "INCOMPLETE";
 
 int beamVertBeg;
 int gunVertBeg;
@@ -84,7 +85,7 @@ int       beamSize;
 sprite   *beamSprites = NULL;
 const int gunSpritesSize = 2;
 sprite   *gunSprites = NULL;
-const int messageSpritesSize = 10; // Enough glyphs for "incomplete"
+const int messageSpritesSize = gameOverMessageLength;
 sprite   *messageSprites = NULL;
 const int menuCursorSpritesSize = 3;
 sprite   *menuCursorSprites;

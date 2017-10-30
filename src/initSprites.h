@@ -50,6 +50,8 @@ typedef struct {
 double hueFromChar(char c);
 void setHueFromPhase(sprite *s, double phase, double hue);
 
+#define gameOverMessageLength 10 // length of "INCOMPLETE"
+extern const char gameOverMessage[10];
 
 extern int beamVertBeg;
 extern int gunVertBeg;

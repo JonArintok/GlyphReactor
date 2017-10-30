@@ -20,19 +20,25 @@ int visCharEnd; // gunDistance + queueCharCount
 #define visCharCount_ (visCharEnd - visCharBeg)
 #define visCharVertBeg_ (charVertBeg + visCharBeg)
 
-int stuckCharCount = 0;
-int misBkspCount = 0;
-int curWord = 0;
-int frameWhenWordDropped = 0;
+int stuckCharCount;
+int misBkspCount;
+int curWord;
+int frameWhenWordDropped;
+int lastCharEntered;
+int gameOver; // frame
 int frameWhenCharEntered;
 int whereCurWordStarted;
-int lastCharEntered = '\0';
 double charHue;
 const int beamGlowTime = 60; // frames
-int gameOver = 0; // frame
 const int postGameOverTime = 60; // frames
 
 void initGlyphReactorLoop(int charCountIn) {
+	stuckCharCount = 0;
+	misBkspCount = 0;
+	curWord = 0;
+	frameWhenWordDropped = 0;
+	lastCharEntered = '\0';
+	gameOver = 0; // frame
 	queueCharCount = charCountIn;
 	visCharBeg = gunDistance;
 	visCharEnd = gunDistance + queueCharCount;
@@ -214,10 +220,11 @@ int glyphReactorLoop(int charEntered, int curFrame) {
 	// draw spirographs
 	glUniform2f(unif_translate, txtOriginX_, txtOriginY_);
 	drawSpiros();
-	// draw word queue and stuck chars
+	// draw word queue, stuck chars, message
 	if (gameOver) {
-		const float gameOverPhase = (float)(curFrame-gameOver)/postGameOverTime;
-		if (gameOverPhase < 1) {
+		const double gameOverPhase = (float)(curFrame-gameOver)/postGameOverTime;
+		// glyphs being blown away
+		if (gameOverPhase <= 1.0) {
 			if (gameOver == curFrame) restartVoice(voice_gameOver);
 			const float affectedCount = gunDistance + maxWordSize/2;
 			const float throw = videoW/8.0; // to taste
@@ -230,7 +237,30 @@ int glyphReactorLoop(int charEntered, int curFrame) {
 				sizeof(sprite)*affectedCount,           // GLsizeiptr    size
 				(const GLvoid*)&charSprites[visCharBeg] // const GLvoid *data
 			);
+			// gameOver message
+			fr (i, gameOverMessageLength) {
+				messageSprites[i].dstCX = -messageSpritesSize*texAtlGlyphW/2.0 + i*texAtlGlyphW;
+				messageSprites[i].dstCY = texAtlGlyphH;
+				messageSprites[i].dstHW = texAtlGlyphW/2.0;
+				messageSprites[i].dstHH = texAtlGlyphH/2.0;
+				messageSprites[i].srcX  = texAtlGlyphPosX(gameOverMessage[i]);
+				messageSprites[i].srcY  = texAtlGlyphPosY(gameOverMessage[i]);
+				messageSprites[i].srcW  = texAtlGlyphW;
+				messageSprites[i].srcH  = texAtlGlyphH;
+				messageSprites[i].mulR  = 0xff;
+				messageSprites[i].mulG  = 0x00;
+				messageSprites[i].mulB  = 0x00;
+				messageSprites[i].mulO  = 0xff*gameOverPhase;
+				messageSprites[i].rot   = 0.0;
+			}
+			glBufferSubData(
+				GL_ARRAY_BUFFER,                       // GLenum        target
+				sizeof(sprite)*messageVertBeg,         // GLintptr      offset
+				sizeof(sprite)*gameOverMessageLength,  // GLsizeiptr    size
+				(const GLvoid*)messageSprites          // const GLvoid *data
+			);
 		}
+		glDrawArrays(GL_POINTS, messageVertBeg, gameOverMessageLength);
 	}
 	else if (stuckCharCount >= gunDistance-2) {
 		// stuck characters jiggle
