@@ -53,17 +53,19 @@ void setHueFromPhase(sprite *s, double phase, double hue);
 
 extern int beamVertBeg;
 extern int gunVertBeg;
+extern int messageVertBeg;
 extern int menuCursorVertBeg;
 extern int charVertBeg;
 extern int spiroVertBeg;
 extern int vertBufSize;
-
 
 extern const int gunDistance;
 extern int       beamSize;
 extern sprite   *beamSprites;
 extern const int gunSpritesSize;
 extern sprite   *gunSprites;
+extern const int messageSpritesSize;
+extern sprite   *messageSprites;
 extern const int menuCursorSpritesSize;
 extern sprite   *menuCursorSprites;
 
@@ -75,7 +77,6 @@ extern int       fileNamesSize;
 extern char     *fileNames;
 extern int       courseCount;
 
-
 extern double      spiroExploSpeed;
 extern const int   spiroSpritesSize;
 extern sprite     *spiroSprites;
@@ -86,7 +87,6 @@ extern spirograph *glyphSpiros;
 #define txtOriginX_ 0
 #define txtOriginY_ 0
 
-
 void initSprites(void);
 void initMainMenuSprites(void);
 int  initWordQueueSprites(int courseIndex);
@@ -96,7 +96,6 @@ enum {
 	screen_quitGame,
 	screen_mainMenu,
 	screen_glyphReactor,
-	screen_gameOver,
 	screen_spiroViewer
 };
 extern int whereAreWe;

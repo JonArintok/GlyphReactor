@@ -71,10 +71,11 @@ void setHueFromPhase(sprite *s, double phase, double hue) {
 }
 
 
-int beamVertBeg = 0;
+int beamVertBeg;
 int gunVertBeg;
 int menuCursorVertBeg;
 int charVertBeg;
+int messageVertBeg;
 int spiroVertBeg;
 int vertBufSize;
 
@@ -83,6 +84,8 @@ int       beamSize;
 sprite   *beamSprites = NULL;
 const int gunSpritesSize = 2;
 sprite   *gunSprites = NULL;
+const int messageSpritesSize = 10; // Enough glyphs for "incomplete"
+sprite   *messageSprites = NULL;
 const int menuCursorSpritesSize = 3;
 sprite   *menuCursorSprites;
 
@@ -133,6 +136,8 @@ void init(void) {
 	gunSprites[1].mulB  = 0xff;
 	gunSprites[1].mulO  = 0xff;
 	gunSprites[1].rot   = 0.0;
+	// message
+	messageSprites = malloc(sizeof(sprite)*messageSpritesSize);
 	// init menuCursorSprites
 	{
 		const float cursorX = txtOriginX_ - texAtlGlyphW*1.5;
@@ -210,11 +215,13 @@ void init(void) {
 		closedir(dir);
 	}
 	// init opengl
-	gunVertBeg   = beamSize;
-	menuCursorVertBeg = gunVertBeg + gunSpritesSize;
-	charVertBeg  = menuCursorVertBeg + menuCursorSpritesSize;
-	spiroVertBeg = charVertBeg + charsSize;
-	vertBufSize  = beamSize + gunSpritesSize + menuCursorSpritesSize + charsSize + spiroSpritesSize;
+	beamVertBeg       = 0;
+	gunVertBeg        = beamVertBeg       + beamSize;
+	messageVertBeg    = gunVertBeg        + gunSpritesSize;
+	menuCursorVertBeg = messageVertBeg    + messageSpritesSize;
+	charVertBeg       = menuCursorVertBeg + menuCursorSpritesSize;
+	spiroVertBeg      = charVertBeg       + charsSize;
+	vertBufSize       = spiroVertBeg      + spiroSpritesSize;
 	initOpenGl();
 	// upload gun sprites
 	glBufferSubData(
