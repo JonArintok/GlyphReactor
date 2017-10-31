@@ -26,11 +26,12 @@ int curWord;
 int frameWhenWordDropped;
 int lastCharEntered;
 int gameOver; // frame
+int gameComplete; // frame
 int frameWhenCharEntered;
 int whereCurWordStarted;
 double charHue;
 const int beamGlowTime = 60; // frames
-const int postGameOverTime = 60; // frames
+const int postGameTime = 60; // frames
 
 void initGlyphReactorLoop(int charCountIn) {
 	stuckCharCount = 0;
@@ -39,6 +40,7 @@ void initGlyphReactorLoop(int charCountIn) {
 	frameWhenWordDropped = 0;
 	lastCharEntered = '\0';
 	gameOver = 0; // frame
+	gameComplete = 0; // frame
 	queueCharCount = charCountIn;
 	visCharBeg = gunDistance;
 	visCharEnd = gunDistance + queueCharCount;
@@ -64,7 +66,13 @@ int glyphReactorLoop(int charEntered, int curFrame) {
 		clearSpiros();
 		return screen_mainMenu;
 	}
-	else if (!gameOver && charEntered && charEntered != SDLK_TAB && charEntered != SDLK_RETURN) {
+	else if (
+		!gameOver &&
+		!gameComplete &&
+		charEntered &&
+		charEntered != SDLK_TAB &&
+		charEntered != SDLK_RETURN
+	) {
 		lastCharEntered = charEntered;
 		frameWhenCharEntered = curFrame;
 		charHue = hueFromChar(charEntered);
@@ -74,7 +82,7 @@ int glyphReactorLoop(int charEntered, int curFrame) {
 			if (stuckCharCount) {
 				stuckCharCount--;
 				visCharBeg++;
-				voice v = { // short rising pitch from floor to pitch of deleted glyph
+				voice v = {
 					// shape,         amp, sft, pos, inc
 					{  bkspShape,     0.4, 0.0, 0.0, vwInc}, // wave
 					{  shape_default, 1.0, 0.0, 0.0, 0.0 }, // ampMod
@@ -86,7 +94,7 @@ int glyphReactorLoop(int charEntered, int curFrame) {
 			}
 			else {
 				misBkspCount++;
-				voice v = { // short tone
+				voice v = {
 					// shape,         amp, sft, pos, inc
 					{  bkspShape,     0.5, 0.0, 0.0, vwInc }, // wave
 					{  shape_default, 1.0, 0.0, 0.0, 0.0 }, // ampMod
@@ -118,6 +126,10 @@ int glyphReactorLoop(int charEntered, int curFrame) {
 					sizeof(sprite)*count,                   // GLsizeiptr    size
 					(const GLvoid*)&charSprites[visCharBeg] // const GLvoid *data
 				);
+			}
+			if (visCharBeg == visCharEnd) {
+				gameComplete = curFrame;
+				puts("gameComplete");
 			}
 		}
 		else {
@@ -222,7 +234,7 @@ int glyphReactorLoop(int charEntered, int curFrame) {
 	drawSpiros();
 	// draw word queue, stuck chars, message
 	if (gameOver) {
-		const double gameOverPhase = (float)(curFrame-gameOver)/postGameOverTime;
+		const double gameOverPhase = (double)(curFrame-gameOver)/postGameTime;
 		// glyphs being blown away
 		if (gameOverPhase <= 1.0) {
 			if (gameOver == curFrame) restartVoice(voice_gameOver);
@@ -274,6 +286,35 @@ int glyphReactorLoop(int charEntered, int curFrame) {
 			sizeof(sprite)*stuckCharCount,          // GLsizeiptr    size
 			(const GLvoid*)&charSprites[visCharBeg] // const GLvoid *data
 		);
+	}
+	else if (gameComplete) {
+		const double messagePhase = (double)(curFrame-gameComplete)/postGameTime;
+		#define messageLength 7
+		if (messagePhase <= 1.0) {
+			const char message[messageLength] = {'W','P','M',':','0','0','0'};
+			fr (i, messageLength) {
+				messageSprites[i].dstCX = -messageLength*texAtlGlyphW/2.0 + i*texAtlGlyphW;
+				messageSprites[i].dstCY = texAtlGlyphH;
+				messageSprites[i].dstHW = texAtlGlyphW/2.0;
+				messageSprites[i].dstHH = texAtlGlyphH/2.0;
+				messageSprites[i].srcX  = texAtlGlyphPosX(message[i]);
+				messageSprites[i].srcY  = texAtlGlyphPosY(message[i]);
+				messageSprites[i].srcW  = texAtlGlyphW;
+				messageSprites[i].srcH  = texAtlGlyphH;
+				messageSprites[i].mulR  = 0xf0;
+				messageSprites[i].mulG  = 0xf0;
+				messageSprites[i].mulB  = 0xff;
+				messageSprites[i].mulO  = 0xff*messagePhase;
+				messageSprites[i].rot   = 0.0;
+			}
+			glBufferSubData(
+				GL_ARRAY_BUFFER,               // GLenum        target
+				sizeof(sprite)*messageVertBeg, // GLintptr      offset
+				sizeof(sprite)*messageLength,  // GLsizeiptr    size
+				(const GLvoid*)messageSprites  // const GLvoid *data
+			);
+		}
+		glDrawArrays(GL_POINTS, messageVertBeg, messageLength);
 	}
 	glUniform2f(
 		unif_translate,
