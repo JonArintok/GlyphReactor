@@ -12,6 +12,7 @@
 #include "../img/texAtlas.h"
 #include "libVoice/voice.h"
 #include "initAudio.h"
+#include "timestamp.h"
 
 
 int queueCharCount; // number of characters from file
@@ -29,6 +30,7 @@ int gameOver; // frame
 int gameComplete; // frame
 int frameWhenCharEntered;
 int whereCurWordStarted;
+int startTime; // milliseconds
 double charHue;
 const int beamGlowTime = 60; // frames
 const int postGameTime = 60; // frames
@@ -46,6 +48,7 @@ void initGlyphReactorLoop(int charCountIn) {
 	visCharEnd = gunDistance + queueCharCount;
 	frameWhenCharEntered = -beamGlowTime;
 	whereCurWordStarted = visCharBeg;
+	startTime = SDL_GetTicks();;
 }
 
 void setColorFlashFromPhase(sprite *s, double phase, double hue) {
@@ -127,10 +130,7 @@ int glyphReactorLoop(int charEntered, int curFrame) {
 					(const GLvoid*)&charSprites[visCharBeg] // const GLvoid *data
 				);
 			}
-			if (visCharBeg == visCharEnd) {
-				gameComplete = curFrame;
-				puts("gameComplete");
-			}
+			if (visCharBeg == visCharEnd) gameComplete = curFrame;
 		}
 		else {
 			if (stuckCharCount == gunDistance) gameOver = curFrame;
@@ -288,10 +288,16 @@ int glyphReactorLoop(int charEntered, int curFrame) {
 		);
 	}
 	else if (gameComplete) {
-		const double messagePhase = (double)(curFrame-gameComplete)/postGameTime;
 		#define messageLength 7
+		static char message[messageLength+1] = {'W','P','M',':','0','0','0','\0'};
+		if (gameComplete == curFrame) {
+			const int secondsPast = (SDL_GetTicks() - startTime)/1000;
+			const int charsPerMinute = (queueCharCount*60)/secondsPast;
+			const int wpm = charsPerMinute/5; // weird standard, not my idea...
+			snprintf(&message[4], 4, "%03i", wpm);
+		}
+		const double messagePhase = (double)(curFrame-gameComplete)/postGameTime;
 		if (messagePhase <= 1.0) {
-			const char message[messageLength] = {'W','P','M',':','0','0','0'};
 			fr (i, messageLength) {
 				messageSprites[i].dstCX = -messageLength*texAtlGlyphW/2.0 + i*texAtlGlyphW;
 				messageSprites[i].dstCY = texAtlGlyphH;
