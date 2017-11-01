@@ -13,6 +13,15 @@
 
 bool running = true;
 
+void toggleFullScreen(void) {
+	SDL_SetWindowFullscreen(
+		window,
+		SDL_GetWindowFlags(window)&SDL_WINDOW_FULLSCREEN_DESKTOP ?
+			0 :
+			SDL_WINDOW_FULLSCREEN_DESKTOP
+	);
+}
+
 int handleEvents(void) {
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
@@ -45,6 +54,9 @@ int handleEvents(void) {
 					case SDLK_TAB: return SDLK_TAB;
 					case SDLK_UP: return SDLK_UP;
 					case SDLK_DOWN: return SDLK_DOWN;
+					case SDLK_F11:
+						toggleFullScreen();
+						break;
 				}
 				break;
 			case SDL_TEXTINPUT: {
