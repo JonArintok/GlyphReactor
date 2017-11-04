@@ -370,8 +370,6 @@ void initSpiros(void) {
 		glyphSpiros[i].arms[3].revsWithinFrame = (1 + i%4)*2 + 1;
 		glyphSpiros[i].arms[3].glyphRevsWithinFrame = 4.0;
 		
-		fr (arm, spiroArmCount) glyphSpiros[i].offsets[arm] = 0.0;
-		fr (arm, spiroArmCount) glyphSpiros[i].offsetVelocs[arm] = arm*0.005*(1 - 2*(arm%2));
 		glyphSpiros[i].exploPhase = 1.0;
 		glyphSpiros[i].stampEnablePerArm = 0x0008;
 		glyphSpiros[i].ticksPerFrame = 400;

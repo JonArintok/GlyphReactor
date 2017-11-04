@@ -39,8 +39,6 @@ typedef struct {
 #define spiroArmCount 4
 typedef struct {
 	spiroArm arms[spiroArmCount];
-	float    offsets[spiroArmCount]; // moves between frames
-	float    offsetVelocs[spiroArmCount]; // offset moves by this much
 	float    exploPhase; // phase of "explosion"
 	uint16_t stampEnablePerArm; // 1 bit per arm
 	uint16_t ticksPerFrame;
