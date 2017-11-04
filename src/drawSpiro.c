@@ -49,10 +49,11 @@ void drawSpiros(void) {
 		if (vs->exploPhase >= 1) continue;
 		fr (tick, vs->ticksPerFrame) {
 			const double tickPhase = (double)tick/vs->ticksPerFrame;
+			const double phaseExponent = 0.1;
 			fr (arm, spiroArmCount) {
 				if (!vs->arms[arm].armLength) break;
 				vs->arms[arm].posX =
-					pow(vs->exploPhase, 0.2) *
+					pow(vs->exploPhase, phaseExponent) *
 					(
 						(arm ? vs->arms[arm-1].posX : 0) +
 						vs->arms[arm].armLength * sinTau(
@@ -61,7 +62,7 @@ void drawSpiros(void) {
 					)
 				;
 				vs->arms[arm].posY =
-					pow(vs->exploPhase, 0.2) * (
+					pow(vs->exploPhase, phaseExponent) * (
 						(arm ? vs->arms[arm-1].posY : 0) +
 						vs->arms[arm].armLength * sinTau(
 							tickPhase*vs->arms[arm].revsWithinFrame + 0.25
