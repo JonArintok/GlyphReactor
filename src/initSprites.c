@@ -390,6 +390,7 @@ void cleanupSprites(void) {
 	free(chars);
 	free(fileNames);
 	free(gunSprites);
+	free(messageSprites);
 	free(menuCursorSprites);
 	free(charSprites);
 	free(beamSprites);
