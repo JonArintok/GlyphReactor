@@ -79,6 +79,7 @@ void drawSpiros(void) {
 					spiroSprites[spriteIndex].srcW  = texAtlGlyphW;
 					spiroSprites[spriteIndex].srcH  = texAtlGlyphH;
 					setHueFromPhase(&spiroSprites[spriteIndex], vs->exploPhase, charHue);
+					spiroSprites[spriteIndex].mulO = 0xff * (1.0 - pow(vs->exploPhase, 4.0));
 					spiroSprites[spriteIndex].rot = tickPhase*vs->arms[arm].glyphRevsWithinFrame;
 					spriteIndex++;
 					if (spriteIndex >= spiroSpritesSize) {

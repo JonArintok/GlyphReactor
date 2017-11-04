@@ -341,7 +341,7 @@ int initWordQueueSprites(int courseIndex) {
 }
 
 double      spiroExploSpeed = 0.003;
-const int   spiroSpritesSize = 4096; // a guess, raise it if you hit it
+const int   spiroSpritesSize = 8192; // a guess, raise it if you hit it
 sprite     *spiroSprites;
 spirograph *visSpiros;
 const int   glyphSpirosSize = texAtlGlyphsCount;
@@ -357,22 +357,19 @@ void initSpiros(void) {
 			glyphSpiros[i].arms[arm].posX = 0.0;
 			glyphSpiros[i].arms[arm].posY = 0.0;
 		}
-		glyphSpiros[i].arms[0].armLength = 1.2*videoH;
-		glyphSpiros[i].arms[0].revsWithinFrame = 1.0;
-		
-		glyphSpiros[i].arms[1].armLength = 0.2*videoH;
-		glyphSpiros[i].arms[1].revsWithinFrame = (1 + i%2)*2 + 1;
-		
-		glyphSpiros[i].arms[2].armLength = 0.1*videoH;
-		glyphSpiros[i].arms[2].revsWithinFrame = (1 + i%4)*4 + 1;
-		
-		glyphSpiros[i].arms[3].armLength = 0.1*videoH;
-		glyphSpiros[i].arms[3].revsWithinFrame = (1 + i%4)*2 + 1;
-		glyphSpiros[i].arms[3].glyphRevsWithinFrame = 4.0;
-		
 		glyphSpiros[i].exploPhase = 1.0;
 		glyphSpiros[i].stampEnablePerArm = 0x0008;
-		glyphSpiros[i].ticksPerFrame = 400;
+		// the following seetings are rather arbitrary, feel free to fiddle with them
+		glyphSpiros[i].ticksPerFrame = 600;
+		glyphSpiros[i].arms[0].armLength = (1.0 + 0.4*(double)i/glyphSpirosSize)*videoH;
+		glyphSpiros[i].arms[0].revsWithinFrame = 1.0;
+		glyphSpiros[i].arms[1].armLength = (0.1 + 0.3*(double)i/glyphSpirosSize)*videoH;
+		glyphSpiros[i].arms[1].revsWithinFrame = (1 + i%3)*2 + 1;
+		glyphSpiros[i].arms[2].armLength = (0.1 + 0.2*(double)i/glyphSpirosSize)*videoH;
+		glyphSpiros[i].arms[2].revsWithinFrame = (1 + i%7)*4 + 1;
+		glyphSpiros[i].arms[3].armLength = (0.1 + 0.1*(double)i/glyphSpirosSize)*videoH;
+		glyphSpiros[i].arms[3].revsWithinFrame = (1 + i%13)*2 + 1;
+		glyphSpiros[i].arms[3].glyphRevsWithinFrame = glyphSpiros[i].arms[3].revsWithinFrame;
 	}
 }
 
