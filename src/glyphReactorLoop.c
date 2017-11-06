@@ -48,7 +48,17 @@ void initGlyphReactorLoop(int charCountIn) {
 	visCharEnd = gunDistance + queueCharCount;
 	frameWhenCharEntered = -beamGlowTime;
 	whereCurWordStarted = visCharBeg;
-	startTime = SDL_GetTicks();;
+	startTime = SDL_GetTicks();
+	// reset color multiplyer of gunsprites in case it was changed by game over
+	gunSprites[1].mulR  = 0xff;
+	gunSprites[1].mulG  = 0xff;
+	gunSprites[1].mulB  = 0xff;
+	glBufferSubData(
+		GL_ARRAY_BUFFER,               // GLenum        target
+		sizeof(sprite)*(gunVertBeg+1), // GLintptr      offset
+		sizeof(sprite)*1,              // GLsizeiptr    size
+		(const GLvoid*)&gunSprites[1]  // const GLvoid *data
+	);
 }
 
 void setColorFlashFromPhase(sprite *s, double phase, double hue) {
