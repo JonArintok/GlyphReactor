@@ -20,6 +20,7 @@ int initWindow(void) {
 		SDL_WINDOW_OPENGL |      // Uint32      flags
 		SDL_WINDOW_RESIZABLE
 	);_sdlec
+	SDL_ShowCursor(SDL_DISABLE);
 	GLcontext = SDL_GL_CreateContext(window);_sdlec
 	SDL_GL_SetSwapInterval(enableVSync);_sdlec
 	glewExperimental = GL_TRUE;
