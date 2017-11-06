@@ -1,8 +1,8 @@
 
 #include <stdio.h>
 
-#define LOG_SDL_ERRORS_TO  stdout
-#define LOG_GL_ERRORS_TO   stdout
+//#define LOG_SDL_ERRORS_TO  stdout
+//#define LOG_GL_ERRORS_TO   stdout
 //#define LOG_VERTEX_DATA_TO stdout
 //#define LOG_AUDIOSPEC_TO   stdout
 //#define LOG_TIMING_TO      stdout
