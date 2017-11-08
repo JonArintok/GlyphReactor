@@ -16,3 +16,8 @@ Toggle full-screen with 'F11'.
 
 Courses can be added by simply placing text files to the "courses" folder.
 Only ASCII characters are supported.
+
+To build from source, you will need Scons, and the following libs
+- SDL2
+- GLEW
+- libpng
