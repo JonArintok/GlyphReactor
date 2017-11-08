@@ -1,7 +1,7 @@
 
 # Glyph Reactor
 
-Select a course from the main menu (move the cursor with 'u' or 'd' or the arrow keys, then select with 'Enter'), then type in the words that you see. If you enter any wrong characters, erase them with backspace.
+Select a course from the main menu (move the cursor with 'u' or 'd' or the arrow keys, then select with 'Enter'), then type in the words that you see, separated by a space. If you enter any wrong characters, erase them with backspace.
 
 ![screenshot](https://github.com/JonArintok/GlyphReactor/blob/master/img/screenshot04.png)
 
