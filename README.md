@@ -14,7 +14,7 @@ Pressing the 'tab' key from the menu will enter a mode where you can just enter 
 
 Toggle full-screen with 'F11'.
 
-Courses can be added by simply placing text files to the "courses" folder.
+Courses can be added by simply placing text files in the "courses" folder.
 Only ASCII characters are supported.
 
 To build from source, you will need Scons, and the following libs
