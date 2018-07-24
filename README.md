@@ -19,7 +19,10 @@ Toggle full-screen with 'F11'.
 Courses can be added by simply placing text files in the "courses" folder.
 Only ASCII characters are supported.
 
-To build from source, you will need Scons, and the following libs
+To build from source, you will need Scons, a C compiler(like GCC), and the following libs
 - SDL2
 - GLEW
 - libpng
+
+Run `git submodule init` then `git submodule update` for [libVoice](https://github.com/JonArintok/libVoice), then run `scons` to build. The output will be named "GlyphReactor".
+
