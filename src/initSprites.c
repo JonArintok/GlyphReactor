@@ -187,7 +187,13 @@ void init(void) {
 		for (int i = 0; (ent = readdir(dir)) != NULL; i++) {
 			if (ent->d_name[0] == '.') continue;
 			courseCount++;
-			int fSize = getFileSize(ent->d_name);
+			char path[maxWordSize*2];
+			int c = 0;
+			for (; coursesFolderName[c]; c++) path[c] = coursesFolderName[c];
+			path[c++] = '/';
+			path[c++] = '\0';
+			strncat(path, ent->d_name, maxWordSize-c);
+			int fSize = getFileSize(path);
 			if (fSize > largestFileSize) largestFileSize = fSize;
 			for (int j = 0; ent->d_name[j]; fileNamesSize++, j++);
 			fileNamesSize++; // one more for delim

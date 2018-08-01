@@ -4,7 +4,7 @@
 #include <sys/stat.h>
 
 int getFileSize(const char *path) {
-	struct stat st;
+	struct stat st = {0};
 	stat(path, &st);
 	return st.st_size + 1;
 }
